@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
-	Initialize(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
+	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 
 	// Тест
 	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx);
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 	printf( "Task time in seconds:\t%.2f\n", (double) finish_time/CLOCKS_PER_SEC);
 
 	// Завершение работы и освобождение памяти
-	Finalize(HostArraysPtr, DevArraysPtr, DevBuffer);
+	finalization(HostArraysPtr, DevArraysPtr, DevBuffer);
 
 	// При запуске в Windows после работы программы оставлять окно консоли
 #ifdef _WIN32
@@ -82,19 +82,19 @@ int main(int argc, char* argv[])
 // 8. Обмен между процессорами пограничными значениями P1 и S2
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t, int localNx, int localNy, int rank,int size, int blocksX, int blocksY, int blocksZ)
 {
-	P1_S2_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (8)
-	ro_P2_Xi_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (1)
-	P2_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (2)
+	Pw_Sn_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (8)
+	ro_Pn_Xi_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (1)
+	Pn_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (2)
 	u_calculation(HostArraysPtr,DevArraysPtr,localNx,rank,size,blocksX,blocksY, blocksZ, def); // (3)
 	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (4)
 	roS_calculation(HostArraysPtr,DevArraysPtr,def,t,localNx,rank,size,blocksX,blocksY, blocksZ); // (5)
-	P1_S2_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (6)
+	Pw_Sn_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (6)
 	boundary_conditions(HostArraysPtr,DevArraysPtr,localNx,rank,size,blocksX,blocksY, blocksZ, def); // (7)
 	
 }
 
 // Применение начальных данных во всех точках
-void initial_data(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def)
+void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def)
 {
 	*t=0;
 	for(int i=0;i<localNx;i++)
@@ -106,15 +106,15 @@ void initial_data(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, in
 						int I=i_to_I(i,rank,size,def);
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
-						if ((j==0) && (I>=(def.NX)/2-(def.source)) && (I<=(def.NX)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]=S2_gr;
+						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=S_n_gr;
 						else
-							HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]=0;
+							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=0;
 
-						HostArraysPtr.P1[i+j*localNx+k*localNx*(def.Ny)]=P_atm+j*ro01*g_const*(def.h2);
-						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.h1);
-						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.h2);
-						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.h3);
+						HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]=P_atm+j*ro0_w*g_const*(def.hy);
+						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
+						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
+						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
 
@@ -145,15 +145,15 @@ void initial_data(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, in
 int i_to_I(int i, int rank, int size, consts def)
 {
 	int I;
-	if (rank <= (def.NX)%size)
+	if (rank <= (def.Nx)%size)
 	{
 		if(rank==0)
 			I=i;
 		else
-			I=((def.NX)/size+1)*rank+i-1;
+			I=((def.Nx)/size+1)*rank+i-1;
 	}
 	else
-		I=((def.NX)/size+1)*rank-(rank-(def.NX)%size)+i-1;
+		I=((def.Nx)/size+1)*rank-(rank-(def.Nx)%size)+i-1;
 	return I;
 }
 
@@ -163,10 +163,10 @@ int i_to_I(int i, int rank, int size, consts def)
 // обмена данными, если имеет соседа 
 // (если 2 соседа с обеих сторон,то +2 точки). 
 // Глобальные границы хранятся как обычные точки (отсюда и условие на rank==0)
-void N_to_local (int* localNx, int* localNy, int size, int rank, consts def)
+void global_to_local_vars (int* localNx, int* localNy, int size, int rank, consts def)
 {
-	*localNx=(def.NX)/size;
-	if (rank < (def.NX)%size)
+	*localNx=(def.Nx)/size;
+	if (rank < (def.Nx)%size)
 		(*localNx)++;
 
 	// Крайние процессоры получают по 1 точке для граничных данных,
@@ -201,17 +201,17 @@ int is_active_point(int i, int localNx, int rank, int size)
 
 // Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2), 
 // инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
-void Initialize(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int* localNx, int* localNy, int* size, int* rank, int* blocksX, int* blocksY, int* blocksZ, int argc, char* argv[], consts def)
+void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int* localNx, int* localNy, int* size, int* rank, int* blocksX, int* blocksY, int* blocksZ, int argc, char* argv[], consts def)
 {
 	FILE *f_save;
 
-	Communication_Initialize(argc, argv, size, rank, def); // (1)
+	communication_initialization(argc, argv, size, rank, def); // (1)
 
-	N_to_local(localNx, localNy, *size, *rank, def); // (2)
+	global_to_local_vars(localNx, localNy, *size, *rank, def); // (2)
 
-	Device_Initialize(*rank, blocksX, blocksY, blocksZ, *localNx, def); // (2.5)
+	device_initialization(*rank, blocksX, blocksY, blocksZ, *localNx, def); // (2.5)
 
-	memory_alloc(HostArraysPtr, DevArraysPtr, (def.NX)/(*size)+3, (def.Ny), def); // (3)
+	memory_allocation(HostArraysPtr, DevArraysPtr, (def.Nx)/(*size)+3, (def.Ny), def); // (3)
 
 	// Если нулевой процессор может открыть файл сохраненного состояния,
 	// то восстанавливаем состояние, иначе применяем начальные условия
@@ -221,27 +221,27 @@ void Initialize(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int
 		restore(*HostArraysPtr, j, *rank, *size, *localNx, def);
 	}
 	else
-		initial_data (*HostArraysPtr, j, *localNx, *localNy, *rank, *size, def); // (4)
+		data_initialization (*HostArraysPtr, j, *localNx, *localNy, *rank, *size, def); // (4)
 
-	load_data_to_device((*HostArraysPtr).P1, (*DevArraysPtr).P1, *localNx, def);
-	load_data_to_device((*HostArraysPtr).S2, (*DevArraysPtr).S2, *localNx, def);
-	load_data_to_device((*HostArraysPtr).roS1_old, (*DevArraysPtr).roS1_old, *localNx, def);
-	load_data_to_device((*HostArraysPtr).roS2_old, (*DevArraysPtr).roS2_old, *localNx, def);
+	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *localNx, def);
+	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *localNx, def);
+	load_data_to_device((*HostArraysPtr).roS_w_old, (*DevArraysPtr).roS_w_old, *localNx, def);
+	load_data_to_device((*HostArraysPtr).roS_n_old, (*DevArraysPtr).roS_n_old, *localNx, def);
 	load_data_to_device_int((*HostArraysPtr).media, (*DevArraysPtr).media, *localNx, def);
 }
 
 // Завершение работы (1), освобождение памяти (2)
-void Finalize(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer)
+void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer)
 {
 	memory_free(HostArraysPtr, DevArraysPtr); // (2)
-	Communication_Finalize(); // (1)
+	communication_finalization(); // (1)
 }
 
 // Выделение памяти хоста (1) и ускорителя (2) под массив точек расчетной области
-void memory_alloc(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int localNx, int nY, consts def)
+void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int localNx, int nY, consts def)
 {
-	host_memory_alloc(HostArraysPtr, localNx, nY, def); // (1)
-	device_memory_alloc(DevArraysPtr, &DevBuffer, localNx, def); // (2)
+	host_memory_allocation(HostArraysPtr, localNx, nY, def); // (1)
+	device_memory_allocation(DevArraysPtr, &DevBuffer, localNx, def); // (2)
 }
 
 // Освобожение памяти хоста (1) и ускорителя (2) из под массива точек расчетной области
@@ -252,7 +252,7 @@ void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 }
 
 // Выделение памяти хоста под массив точек расчетной области
-void host_memory_alloc(ptr_Arrays* ArraysPtr, int localNx, int nY, consts def)		
+void host_memory_allocation(ptr_Arrays* ArraysPtr, int localNx, int nY, consts def)		
 {	
 	if (!(HostBuffer=new double[2*(def.Ny)*(def.Nz)]))
 		printf ("\nWarning! Memory for *HostBuffer is not allocated in function host_memory_alloc\n");
@@ -262,23 +262,23 @@ void host_memory_alloc(ptr_Arrays* ArraysPtr, int localNx, int nY, consts def)
 		(*ArraysPtr).x=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).y=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).z=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).P1=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).P2=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).S2=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).ro1=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).ro2=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u1x=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u1y=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u1z=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u2x=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u2y=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).u2z=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).Xi1=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).Xi2=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).roS1=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).roS1_old=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).roS2=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).roS2_old=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).P_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).P_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).S_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ro_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ro_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ux_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uy_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uz_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ux_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uy_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uz_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).Xi_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).Xi_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_w_old=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_n=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_n_old=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).media=new int [localNx*nY*(def.Nz)];
 	}
 	catch(...)
@@ -295,23 +295,23 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.x;
 	delete[] ArraysPtr.y;
 	delete[] ArraysPtr.z;
-	delete[] ArraysPtr.P1;
-	delete[] ArraysPtr.P2;
-	delete[] ArraysPtr.S2;
-	delete[] ArraysPtr.ro1;
-	delete[] ArraysPtr.ro2;
-	delete[] ArraysPtr.u1x;
-	delete[] ArraysPtr.u1y;
-	delete[] ArraysPtr.u1z;
-	delete[] ArraysPtr.u2x;
-	delete[] ArraysPtr.u2y;
-	delete[] ArraysPtr.u2z;
-	delete[] ArraysPtr.Xi1;
-	delete[] ArraysPtr.Xi2;
-	delete[] ArraysPtr.roS1;
-	delete[] ArraysPtr.roS1_old;
-	delete[] ArraysPtr.roS2;
-	delete[] ArraysPtr.roS2_old;
+	delete[] ArraysPtr.P_w;
+	delete[] ArraysPtr.P_n;
+	delete[] ArraysPtr.S_n;
+	delete[] ArraysPtr.ro_w;
+	delete[] ArraysPtr.ro_n;
+	delete[] ArraysPtr.ux_w;
+	delete[] ArraysPtr.uy_w;
+	delete[] ArraysPtr.uz_w;
+	delete[] ArraysPtr.ux_n;
+	delete[] ArraysPtr.uy_n;
+	delete[] ArraysPtr.uz_n;
+	delete[] ArraysPtr.Xi_w;
+	delete[] ArraysPtr.Xi_n;
+	delete[] ArraysPtr.roS_w;
+	delete[] ArraysPtr.roS_w_old;
+	delete[] ArraysPtr.roS_n;
+	delete[] ArraysPtr.roS_n_old;
 	delete[] ArraysPtr.media;
 }
 
@@ -319,16 +319,16 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, int size, int rank, int localNx, consts def)
 {
 	// Загрузка в память хоста результатов расчета
-	load_data_to_host(HostArraysPtr.P1, DevArraysPtr.P1 , localNx, def);
-	load_data_to_host(HostArraysPtr.S2, DevArraysPtr.S2 , localNx, def);
-	load_data_to_host(HostArraysPtr.u2x, DevArraysPtr.u2x , localNx, def);
-	load_data_to_host(HostArraysPtr.u2y, DevArraysPtr.u2y , localNx, def);
-	load_data_to_host(HostArraysPtr.u2z, DevArraysPtr.u2z , localNx, def);
+	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , localNx, def);
+	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , localNx, def);
+	load_data_to_host(HostArraysPtr.ux_n, DevArraysPtr.ux_n , localNx, def);
+	load_data_to_host(HostArraysPtr.uy_n, DevArraysPtr.uy_n , localNx, def);
+	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , localNx, def);
 	//load_data_to_host(HostArraysPtr.roS1, DevArraysPtr.roS1 , localNx, def);
 
 	// Проверка на выход из допустимого диапазона значений P1/P2 и S2
 #ifdef TEST
-	test_correct_P1_S2(HostArraysPtr, localNx, rank, def);
+	test_correct_Pw_Sn(HostArraysPtr, localNx, rank, def);
 #endif
 	
 	// Нулевой процессор создает директории, файлы и прописывает заголовки файлов
@@ -340,7 +340,7 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	for (int cpu=0; cpu<size;cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
-		Barrier();
+		barrier();
 		if (rank==cpu)
 			print_plots(HostArraysPtr, t, rank, size, localNx,def);	
 	}
@@ -388,15 +388,15 @@ void print_plots_top (double t, consts def)
 
 	fprintf(fp_S2,"TITLE =  \"Saturation of DNALP in time=%5.2f\" \n", t); // (1)
 	fprintf(fp_S2,"VARIABLES = \"X\",\"Y\",\"Z\",\"S2\",\"P1\",\"u_x\", \"u_y\", \"u_z\" \n");
-	fprintf(fp_S2,"ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.NX), (def.Nz), (def.Ny));
+	fprintf(fp_S2,"ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Nz), (def.Ny));
 
 	fprintf(fp_P1,"TITLE =  \"Pressure of water in time=%5.2f\" \n", t); // (2)
 	fprintf(fp_P1,"VARIABLES = \"X\",\"Y\",\"P1\" \n");
-	fprintf(fp_P1,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.NX), (def.Ny)); 
+	fprintf(fp_P1,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny)); 
 
 	fprintf(fp_u,"TITLE =  \"Velocity of DNALP in time=%5.2f\" \n", t); // (3)
 	fprintf(fp_u,"VARIABLES = \"X\",\"Y\",\"u_x\", \"u_y\" \n");
-	fprintf(fp_u,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.NX)-2, (def.Ny)-2);
+	fprintf(fp_u,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.Nx)-2, (def.Ny)-2);
 
 	fprintf(fp_S2y,"TITLE =  \"Saturation of DNALP in time=%5.2f\" \n", t); // (4)
 	fprintf(fp_S2y,"VARIABLES = \"Y\",\"S2\" \n");
@@ -404,11 +404,11 @@ void print_plots_top (double t, consts def)
 
 	fprintf(fp_S2x,"TITLE =  \"Saturation of DNALP in time=%5.2f\" \n", t); // (5)
 	fprintf(fp_S2x,"VARIABLES = \"X\",\"S2\" \n");
-	fprintf(fp_S2x,"ZONE T = \"BIG ZONE\", J=%d, F = POINT\n", (def.NX));
+	fprintf(fp_S2x,"ZONE T = \"BIG ZONE\", J=%d, F = POINT\n", (def.Nx));
 
 	fprintf(fp_media,"TITLE =  \"Porous media\" \n"); // (6)
 	fprintf(fp_media,"VARIABLES = \"X\",\"Y\",\"media\" \n");
-	fprintf(fp_media,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.NX), (def.Ny)); 
+	fprintf(fp_media,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny)); 
 
 	fclose(fp_S2);
 	fclose(fp_P1);
@@ -449,29 +449,29 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 					local=i+j*localNx+k*localNx*(def.Ny);
 					//fprintf(fp_S2,"%d %d %d\n", i, j, rank); // TEST
 					//fprintf(fp_S2,"%.2e %.2e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]); // (1)
-					fprintf(fp_S2,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.h2)-HostArraysPtr.y[local], HostArraysPtr.S2[local], HostArraysPtr.P1[local], HostArraysPtr.u2x[local], HostArraysPtr.u2z[local], (-1)*HostArraysPtr.u2y[local]); // (1)
-					fprintf(fp_P1,"%d %d %d %.3e %.3e %.3e %.3e %.3e\n", i, j, k, HostArraysPtr.S2[local], HostArraysPtr.P1[local], HostArraysPtr.u2x[local], HostArraysPtr.u2z[local], (-1)*HostArraysPtr.u2y[local]); // (1)
-					fprintf(fp_media,"%.2e %.2e %d\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]);	// (6)
-					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.u2x[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.u2y[i+j*localNx+k*localNx*(def.Ny)]); // (3)
+					fprintf(fp_S2,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
+					fprintf(fp_P1,"%d %d %d %.3e %.3e %.3e %.3e %.3e\n", i, j, k, HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
+					fprintf(fp_media,"%.2e %.2e %d\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]);	// (6)
+					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]); // (3)
 				}
 
 	for(int i=1; i<localNx-1; i++)
 		for(int j=1; j<(def.Ny)-1; j++)
 			for(int k=1; k<(def.Nz)-1; k++)
 				if(!((rank!=0 && i==0) || (rank!=size-1 && i==localNx-1)))
-					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.u2x[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.u2y[i+j*localNx+k*localNx*(def.Ny)]); // (3)
+					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]); // (3)
 
 	// Не очень хорошо, так как запуск функции, условный оператор в цикле
 	for(int i=0; i<localNx; i++)
 		for(int k=0; k<(def.Nz); k++)
-			if ((i_to_I(i,rank,size, def)==(def.NX)/2) && is_active_point(i,localNx,rank,size))
+			if ((i_to_I(i,rank,size, def)==(def.Nx)/2) && is_active_point(i,localNx,rank,size))
 				for(int j=0; j<(def.Ny); j++)
-					fprintf(fp_S2y,"%.2e %.3e\n", HostArraysPtr.y[localNx/2+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S2[localNx/2+j*localNx+k*localNx*(def.Ny)]); // (4)
+					fprintf(fp_S2y,"%.2e %.3e\n", HostArraysPtr.y[localNx/2+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S_n[localNx/2+j*localNx+k*localNx*(def.Ny)]); // (4)
 	
 
 	for(int i=0; i<localNx; i++)
 		for(int k=0; k<(def.Nz); k++)
-			fprintf(fp_S2x,"%.2e %.3e\n", HostArraysPtr.x[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)], HostArraysPtr.S2[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)]); // (5)
+			fprintf(fp_S2x,"%.2e %.3e\n", HostArraysPtr.x[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)], HostArraysPtr.S_n[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)]); // (5)
 		
 	fclose(fp_S2);
 	fclose(fp_P1);
@@ -489,8 +489,8 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 	// x,y и media не изменились и загрузки не требуют.
 	//load_data_to_host(HostArraysPtr.P1, DevArraysPtr.P1 , localNx);
 	//load_data_to_host(HostArraysPtr.S2, DevArraysPtr.S2 , localNx);
-	load_data_to_host(HostArraysPtr.roS1_old, DevArraysPtr.roS1_old , localNx, def);
-	load_data_to_host(HostArraysPtr.roS2_old, DevArraysPtr.roS2_old , localNx, def);
+	load_data_to_host(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old , localNx, def);
+	load_data_to_host(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old , localNx, def);
 
 	FILE *f_save;
 
@@ -514,7 +514,7 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 	for (int cpu=0; cpu<size;cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
-		Barrier();
+		barrier();
 		if (rank==cpu)
 		{
 			if(!(f_save=fopen("save/save.dat","ab")))
@@ -524,13 +524,13 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 			}
 
 			fwrite(&j, sizeof(int), 1, f_save);
-			fwrite(HostArraysPtr.P1, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
-			fwrite(HostArraysPtr.S2, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.P_w, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.S_n, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.x, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.y, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.z, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
-			fwrite(HostArraysPtr.roS1_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
-			fwrite(HostArraysPtr.roS2_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.roS_w_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.roS_n_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.media, sizeof(int), localNx * (def.Ny) * (def.Nz), f_save);
 			fclose(f_save);
 		}
@@ -544,7 +544,7 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 	for (int cpu=0; cpu<size;cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
-		Barrier();
+		barrier();
 		int lNx=0, lNy=0;
 		if (rank==cpu)
 		{
@@ -555,15 +555,15 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 			}
 			for (int queue=0;queue<=rank;queue++)
 			{
-				N_to_local(&lNx,&lNy,size,queue, def);
+				global_to_local_vars(&lNx,&lNy,size,queue, def);
 				fread(j, sizeof(int), 1, f_save);
-				fread(HostArraysPtr.P1, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
-				fread(HostArraysPtr.S2, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.P_w, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.S_n, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.x, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.y, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.z, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
-				fread(HostArraysPtr.roS1_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
-				fread(HostArraysPtr.roS2_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.roS_w_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.roS_n_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.media, sizeof(int), lNx * (def.Ny) * (def.Nz), f_save);
 			}
 			fclose(f_save);
@@ -578,15 +578,15 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 
 // Функция проверки на выход из допустимого диапазона значений P1/P2 и S2
 // во всех точках расчетной области процессора
-void test_correct_P1_S2(ptr_Arrays HostArraysPtr, int localNx, int rank, consts def)
+void test_correct_Pw_Sn(ptr_Arrays HostArraysPtr, int localNx, int rank, consts def)
 {
 	for(int i=0;i<localNx;i++)
 		for(int j=0;j<(def.Ny);j++)
 			for(int k=0;k<(def.Nz);k++)
 			{
-				if (HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]<0)
+				if (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]<0)
 					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (HostArraysPtr.P1[i+j*localNx+k*localNx*(def.Ny)]<=0)
+				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 			}
 }
@@ -649,12 +649,12 @@ void read_defines(int argc, char *argv[], consts* def)
 			attr_value[j-i-1]='\0';
 
 
-			if(!strcmp(attr_name,"H1")) 
-				(*def).h1 = atof(attr_value);
-			if(!strcmp(attr_name,"H2")) 
-				(*def).h2 = atof(attr_value);
-			if(!strcmp(attr_name,"H3")) 
-				(*def).h3 = atof(attr_value);
+			if(!strcmp(attr_name,"HX")) 
+				(*def).hx = atof(attr_value);
+			if(!strcmp(attr_name,"HY")) 
+				(*def).hy = atof(attr_value);
+			if(!strcmp(attr_name,"HZ")) 
+				(*def).hz = atof(attr_value);
 			if(!strcmp(attr_name,"TAU")) 
 				(*def).tau = atof(attr_value);
 			if(!strcmp(attr_name,"DT")) 
@@ -665,10 +665,10 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).l_n = atof(attr_value);
 			if(!strcmp(attr_name,"C")) 
 				(*def).c = atof(attr_value);
-			if(!strcmp(attr_name,"BETA1")) 
-				(*def).beta1 = atof(attr_value);
-			if(!strcmp(attr_name,"BETA2")) 
-				(*def).beta2 = atof(attr_value);
+			if(!strcmp(attr_name,"BETA_W")) 
+				(*def).beta_w = atof(attr_value);
+			if(!strcmp(attr_name,"BETA_N")) 
+				(*def).beta_n = atof(attr_value);
 
 			if(!strcmp(attr_name,"SOURCE"))
 				(*def).source = atoi(attr_value);
@@ -677,7 +677,7 @@ void read_defines(int argc, char *argv[], consts* def)
 			if(!strcmp(attr_name,"PRINT_SCREEN"))
 				(*def).print_screen = atoi(attr_value);
 			if(!strcmp(attr_name,"NX"))
-				(*def).NX = atoi(attr_value);
+				(*def).Nx = atoi(attr_value);
 			if(!strcmp(attr_name,"NY"))
 				(*def).Ny = atoi(attr_value);
 			if(!strcmp(attr_name,"NZ"))
