@@ -1,7 +1,9 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
-#define TWO_PHASE
+#define THREE_PHASE
+
+
 // Считать направленными разностями (если не определена NR, то считается без них)
 //#define NR 
 #define TEST
@@ -25,17 +27,29 @@
 #include <sys/stat.h>
 #endif
 
-const double K[2]={6.64e-11,7.15e-12};
-const double lambda[2]={2.7,2.0};
-const double S_wr[2]={0.09,0.12};
-const double m[2]={0.4,0.39};
-const double P_d[2]={755,2060};
+#ifdef THREE_PHASE
+	const double S_wr[2]={0.02,0.12};
+	const double S_nr[2]={0.01,0.12};
+	const double S_gr[2]={0.01,0.12};
+	const double K[2]={6.64e-11,7.15e-12};
+	const double m[2]={0.4,0.39};
+	const double lambda[2]={3.25,3.25};
+#else
+	const double K[2]={6.64e-11,7.15e-12};
+	const double lambda[2]={2.7,2.0};
+	const double S_wr[2]={0.09,0.12};
+	const double m[2]={0.4,0.39};
+	const double P_d[2]={755,2060};
+#endif
 
 struct ptr_Arrays_tag 
 {
 	double *x, *y, *z;
 	double *P_w, *P_n, *S_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n,*roS_w,*roS_w_old,*roS_n,*roS_n_old;
 	int *media;
+#ifdef THREE_PHASE 
+	double *P_g, *S_w, *S_g, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
+#endif
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
 
@@ -46,10 +60,16 @@ struct consts_tag
 	double lambda[2];
 	double S_wr[2];
 	double m[2];
-	double P_d[2];
 	double hx, hy, hz, dt, tau, l_w, l_n, c, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, S_n_gr;
 	int Nx, Ny, Nz;
 	int source, timeX, save_plots, print_screen, newton_iterations;
+#ifdef TWO_PHASE
+	double P_d[2];
+#endif
+#ifdef THREE_PHASE
+	double S_nr[2];
+	double S_gr[2];
+#endif
 };
 typedef struct consts_tag consts;
 
