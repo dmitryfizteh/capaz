@@ -1,31 +1,16 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
+#define TWO_PHASE
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
-#define NR 
+//#define NR 
 #define TEST
 #define DEFINES_FILE "..//defines.ini"
-#define timeX 500
-
-#define mu_w 0.001
-#define mu_n 0.0009
-#define ro0_w 1000
-#define ro0_n 1460
-#define S_n_gr 0.4
-#define P_atm 100000
-#define g_const 9.8
-#define NEWTON_ITERATIONS 7
 
 // Ќитей в блоке ускорител€
-#define BlockNX 16
+#define BlockNX 4
 #define BlockNY 4
 #define BlockNZ 4
-
-const double K[2]={6.64e-11,7.15e-12};
-const double lambda[2]={2.7,2.0};
-const double S_wr[2]={0.09,0.12};
-const double m[2]={0.4,0.39};
-const double P_d[2]={755,2060};
 
 #include <stdio.h>
 #include <iostream>
@@ -39,6 +24,12 @@ const double P_d[2]={755,2060};
 #else
 #include <sys/stat.h>
 #endif
+
+const double K[2]={6.64e-11,7.15e-12};
+const double lambda[2]={2.7,2.0};
+const double S_wr[2]={0.09,0.12};
+const double m[2]={0.4,0.39};
+const double P_d[2]={755,2060};
 
 struct ptr_Arrays_tag 
 {
@@ -56,9 +47,9 @@ struct consts_tag
 	double S_wr[2];
 	double m[2];
 	double P_d[2];
-	double hx, hy, hz, dt, tau, l_w, l_n, c, beta_w, beta_n;
+	double hx, hy, hz, dt, tau, l_w, l_n, c, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, S_n_gr;
 	int Nx, Ny, Nz;
-	int source, save_plots, print_screen;
+	int source, timeX, save_plots, print_screen, newton_iterations;
 };
 typedef struct consts_tag consts;
 
