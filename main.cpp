@@ -106,6 +106,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						int I=i_to_I(i,rank,size,def);
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
+#ifndef THREE_PHASE					
 						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
 							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=def.S_n_gr;
 						else
@@ -117,6 +118,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
+#endif
 
 					
 						/*
@@ -223,8 +225,10 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 	else
 		data_initialization (*HostArraysPtr, j, *localNx, *localNy, *rank, *size, def); // (4)
 
+#ifndef THREE_PHASE
 	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *localNx, def);
 	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *localNx, def);
+#endif
 	load_data_to_device((*HostArraysPtr).roS_w_old, (*DevArraysPtr).roS_w_old, *localNx, def);
 	load_data_to_device((*HostArraysPtr).roS_n_old, (*DevArraysPtr).roS_n_old, *localNx, def);
 	load_data_to_device_int((*HostArraysPtr).media, (*DevArraysPtr).media, *localNx, def);
@@ -264,7 +268,6 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, int localNx, int nY, consts d
 		(*ArraysPtr).z=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).P_w=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).P_n=new double [localNx*nY*(def.Nz)];
-		(*ArraysPtr).S_n=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).ro_w=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).ro_n=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).ux_w=new double [localNx*nY*(def.Nz)];
@@ -291,6 +294,8 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, int localNx, int nY, consts d
 		(*ArraysPtr).Xi_g=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).roS_g=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).roS_g_old=new double [localNx*nY*(def.Nz)];
+#else
+		(*ArraysPtr).S_n=new double [localNx*nY*(def.Nz)];
 #endif
 	}
 	catch(...)
@@ -309,7 +314,6 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.z;
 	delete[] ArraysPtr.P_w;
 	delete[] ArraysPtr.P_n;
-	delete[] ArraysPtr.S_n;
 	delete[] ArraysPtr.ro_w;
 	delete[] ArraysPtr.ro_n;
 	delete[] ArraysPtr.ux_w;
@@ -336,6 +340,8 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.Xi_g;
 	delete[] ArraysPtr.roS_g;
 	delete[] ArraysPtr.roS_g_old;
+#else
+	delete[] ArraysPtr.S_n;
 #endif
 }
 
@@ -343,8 +349,10 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, int size, int rank, int localNx, consts def)
 {
 	// Загрузка в память хоста результатов расчета
+#ifndef THREE_PHASE
 	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , localNx, def);
 	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , localNx, def);
+#endif
 	load_data_to_host(HostArraysPtr.ux_n, DevArraysPtr.ux_n , localNx, def);
 	load_data_to_host(HostArraysPtr.uy_n, DevArraysPtr.uy_n , localNx, def);
 	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , localNx, def);
@@ -470,6 +478,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 			for(int k=0; k<(def.Nz); k++)
 				if(is_active_point(i, localNx, rank, size))
 				{
+#ifndef THREE_PHASE
 					local=i+j*localNx+k*localNx*(def.Ny);
 					//fprintf(fp_S2,"%d %d %d\n", i, j, rank); // TEST
 					//fprintf(fp_S2,"%.2e %.2e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]); // (1)
@@ -477,6 +486,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 					fprintf(fp_P1,"%d %d %d %.3e %.3e %.3e %.3e %.3e\n", i, j, k, HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
 					fprintf(fp_media,"%.2e %.2e %d\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]);	// (6)
 					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]); // (3)
+#endif
 				}
 
 	for(int i=1; i<localNx-1; i++)
@@ -490,12 +500,16 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 		for(int k=0; k<(def.Nz); k++)
 			if ((i_to_I(i,rank,size, def)==(def.Nx)/2) && is_active_point(i,localNx,rank,size))
 				for(int j=0; j<(def.Ny); j++)
+#ifndef THREE_PHASE
 					fprintf(fp_S2y,"%.2e %.3e\n", HostArraysPtr.y[localNx/2+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S_n[localNx/2+j*localNx+k*localNx*(def.Ny)]); // (4)
+#endif
 	
 
 	for(int i=0; i<localNx; i++)
 		for(int k=0; k<(def.Nz); k++)
+#ifndef THREE_PHASE
 			fprintf(fp_S2x,"%.2e %.3e\n", HostArraysPtr.x[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)], HostArraysPtr.S_n[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)]); // (5)
+#endif
 		
 	fclose(fp_S2);
 	fclose(fp_P1);
@@ -549,7 +563,9 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 
 			fwrite(&j, sizeof(int), 1, f_save);
 			fwrite(HostArraysPtr.P_w, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+#ifndef THREE_PHASE
 			fwrite(HostArraysPtr.S_n, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+#endif
 			fwrite(HostArraysPtr.x, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.y, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.z, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
@@ -582,7 +598,9 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 				global_to_local_vars(&lNx,&lNy,size,queue, def);
 				fread(j, sizeof(int), 1, f_save);
 				fread(HostArraysPtr.P_w, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+#ifndef THREE_PHASE
 				fread(HostArraysPtr.S_n, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+#endif
 				fread(HostArraysPtr.x, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.y, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.z, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
@@ -608,10 +626,12 @@ void test_correct_Pw_Sn(ptr_Arrays HostArraysPtr, int localNx, int rank, consts 
 		for(int j=0;j<(def.Ny);j++)
 			for(int k=0;k<(def.Nz);k++)
 			{
+#ifndef THREE_PHASE
 				if (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]<0)
 					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+#endif
 			}
 }
 
@@ -717,8 +737,6 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).g_const = atof(attr_value);
 			if(!strcmp(attr_name,"P_ATM")) 
 				(*def).P_atm = atof(attr_value);
-			if(!strcmp(attr_name,"S_N_GR")) 
-				(*def).S_n_gr = atof(attr_value);
 #ifdef THREE_PHASE
 			if(!strcmp(attr_name,"L_C")) 
 				(*def).l_c = atof(attr_value);
@@ -732,6 +750,9 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).S_w_gr = atof(attr_value);
 			if(!strcmp(attr_name,"S_G_GR")) 
 				(*def).S_g_gr = atof(attr_value);
+#else
+			if(!strcmp(attr_name,"S_N_GR")) 
+				(*def).S_n_gr = atof(attr_value);
 #endif
 
 			if(!strcmp(attr_name,"SOURCE"))

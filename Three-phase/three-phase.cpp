@@ -1,11 +1,12 @@
 #include "../defines.h"
 
-void assign_Pw_Pg_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+void assign_Pn_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	int media = HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)];
 
+	double Sn = (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]);
 	double S_w_e = (HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media]-def.S_nr[media]-def.S_gr[media]);
-	double S_n_e = (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - def.S_nr[media]) / (1. - def.S_wr[media]-def.S_nr[media]-def.S_gr[media]);
+	double S_n_e = (Sn - def.S_nr[media]) / (1. - def.S_wr[media]-def.S_nr[media]-def.S_gr[media]);
 	double S_g_e = (HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media]-def.S_nr[media]-def.S_gr[media]);
 	double k_w = pow(S_w_e,0.5)*pow(1.-pow(1.-pow(S_w_e,def.lambda[media]/(def.lambda[media]-1.)),(def.lambda[media]-1.)/def.lambda[media]),2.);
 	double k_g = pow(S_g_e,0.5)*pow(1.-pow(1.-S_g_e,def.lambda[media]/(def.lambda[media]-1.)),2.*(def.lambda[media]-1.)/def.lambda[media]);
@@ -23,14 +24,6 @@ void assign_Pw_Pg_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx,
 	HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] = -1. * (def.K[media]) * k_g / def.mu_g;
 }
 
-void Pn_Sw_Sg_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
-{
-	for(int i=0;i<localNx;i++)
-		for(int j=0;j<(def.Ny);j++)
-			for(int k=0;k<(def.Nz);k++)
-				if(is_active_point(i, localNx, rank, size))
-					Newton(HostArraysPtr,i,j,k,localNx,def);
-}
 
 void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
@@ -153,9 +146,4 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 		HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_n[i+j*localNx+(k-1)*localNx*(def.Ny)];
 		return;
 	}
-}
-
-void assign_Pn_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
-{
-	;
 }
