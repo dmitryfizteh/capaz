@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// 2. Каждые (def.print_screen) раз на экран выводится информация о временном слое
 	// 3. Каждые save_plots раз данные выгружаются в память хоста и 
 	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
-	for (j++; j <= timeX/(def.dt); j++)
+	for (j++; j <= def.timeX/(def.dt); j++)
 	{
 		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def,j*(def.dt),localNx,localNy,rank,size,blocksX,blocksY,blocksZ); // (1)
 
@@ -107,11 +107,11 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
 						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=S_n_gr;
+							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=def.S_n_gr;
 						else
 							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=0;
 
-						HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]=P_atm+j*ro0_w*g_const*(def.hy);
+						HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_w) * (def.g_const)*(def.hy);
 						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
 						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
@@ -669,9 +669,27 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).beta_w = atof(attr_value);
 			if(!strcmp(attr_name,"BETA_N")) 
 				(*def).beta_n = atof(attr_value);
+			if(!strcmp(attr_name,"RO_W")) 
+				(*def).ro0_w = atof(attr_value);
+			if(!strcmp(attr_name,"RO_N")) 
+				(*def).ro0_n = atof(attr_value);
+			if(!strcmp(attr_name,"MU_W")) 
+				(*def).mu_w = atof(attr_value);
+			if(!strcmp(attr_name,"MU_N")) 
+				(*def).mu_n = atof(attr_value);
+			if(!strcmp(attr_name,"G_CONST")) 
+				(*def).g_const = atof(attr_value);
+			if(!strcmp(attr_name,"P_ATM")) 
+				(*def).P_atm = atof(attr_value);
+			if(!strcmp(attr_name,"S_N_GR")) 
+				(*def).S_n_gr = atof(attr_value);
 
 			if(!strcmp(attr_name,"SOURCE"))
 				(*def).source = atoi(attr_value);
+			if(!strcmp(attr_name,"ITERATIONS"))
+				(*def).newton_iterations = atoi(attr_value);
+			if(!strcmp(attr_name,"TIMEX"))
+				(*def).timeX = atoi(attr_value);
 			if(!strcmp(attr_name,"SAVE_PLOTS"))
 				(*def).save_plots = atoi(attr_value);
 			if(!strcmp(attr_name,"PRINT_SCREEN"))

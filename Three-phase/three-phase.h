@@ -1,3 +1,3 @@
-#ifndef TWO_PHASE
-#define TWO_PHASE
+#ifndef THREE_PHASE
+#define THREE_PHASE
 #endif
