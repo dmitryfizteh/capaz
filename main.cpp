@@ -280,6 +280,18 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, int localNx, int nY, consts d
 		(*ArraysPtr).roS_n=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).roS_n_old=new double [localNx*nY*(def.Nz)];
 		(*ArraysPtr).media=new int [localNx*nY*(def.Nz)];
+#ifdef THREE_PHASE
+		(*ArraysPtr).P_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).S_w=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).S_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ro_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).ux_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uy_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).uz_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).Xi_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_g=new double [localNx*nY*(def.Nz)];
+		(*ArraysPtr).roS_g_old=new double [localNx*nY*(def.Nz)];
+#endif
 	}
 	catch(...)
 	{
@@ -313,6 +325,18 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.roS_n;
 	delete[] ArraysPtr.roS_n_old;
 	delete[] ArraysPtr.media;
+#ifdef THREE_PHASE
+	delete[] ArraysPtr.P_g;
+	delete[] ArraysPtr.S_w;
+	delete[] ArraysPtr.S_g;
+	delete[] ArraysPtr.ro_g;
+	delete[] ArraysPtr.ux_g;
+	delete[] ArraysPtr.uy_g;
+	delete[] ArraysPtr.uz_g;
+	delete[] ArraysPtr.Xi_g;
+	delete[] ArraysPtr.roS_g;
+	delete[] ArraysPtr.roS_g_old;
+#endif
 }
 
 // Функция сохранения графиков в файлы
@@ -617,6 +641,10 @@ void read_defines(int argc, char *argv[], consts* def)
 	(*def).S_nr[1]=S_nr[1];
 	(*def).S_gr[0]=S_gr[0];
 	(*def).S_gr[1]=S_gr[1];
+	(*def).P_d_nw[0]=P_d_nw[0];
+	(*def).P_d_nw[1]=P_d_nw[1];
+	(*def).P_d_gn[0]=P_d_gn[0];
+	(*def).P_d_gn[1]=P_d_gn[1];
 #endif
 
 	FILE *defs;
@@ -691,6 +719,20 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).P_atm = atof(attr_value);
 			if(!strcmp(attr_name,"S_N_GR")) 
 				(*def).S_n_gr = atof(attr_value);
+#ifdef THREE_PHASE
+			if(!strcmp(attr_name,"L_C")) 
+				(*def).l_c = atof(attr_value);
+			if(!strcmp(attr_name,"BETA_G")) 
+				(*def).beta_g = atof(attr_value);
+			if(!strcmp(attr_name,"RO_G")) 
+				(*def).ro0_g = atof(attr_value);
+			if(!strcmp(attr_name,"MU_G")) 
+				(*def).mu_g = atof(attr_value);
+			if(!strcmp(attr_name,"S_W_GR")) 
+				(*def).S_w_gr = atof(attr_value);
+			if(!strcmp(attr_name,"S_G_GR")) 
+				(*def).S_g_gr = atof(attr_value);
+#endif
 
 			if(!strcmp(attr_name,"SOURCE"))
 				(*def).source = atoi(attr_value);
