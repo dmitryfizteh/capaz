@@ -34,6 +34,8 @@
 	const double K[2]={6.64e-11,7.15e-12};
 	const double m[2]={0.4,0.39};
 	const double lambda[2]={3.25,3.25};
+	const double P_d_nw[2]={755,2060};
+	const double P_d_gn[2]={755,2060};
 #else
 	const double K[2]={6.64e-11,7.15e-12};
 	const double lambda[2]={2.7,2.0};
@@ -69,6 +71,9 @@ struct consts_tag
 #ifdef THREE_PHASE
 	double S_nr[2];
 	double S_gr[2];
+	double P_d_nw[2];
+	double P_d_gn[2];
+	double l_c, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
 #endif
 };
 typedef struct consts_tag consts;
@@ -115,6 +120,12 @@ extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int 
 extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
 extern void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
 extern void Border_Pw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
+#ifdef THREE_PHASE
+void assign_Pw_Pg_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
+extern void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
+extern void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
+extern void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
+#endif
 
 extern void ro_Pn_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
 extern void Pn_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
@@ -124,6 +135,9 @@ extern void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, c
 extern void Pw_Sn_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
 extern void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def);
 extern void Pw_Sn_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
+#ifdef THREE_PHASE
+void Pn_Sw_Sg_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
+#endif
 
 extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
 extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
