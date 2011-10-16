@@ -608,8 +608,16 @@ void read_defines(int argc, char *argv[], consts* def)
 	(*def).S_wr[1]=S_wr[1];
 	(*def).m[0]=m[0];
 	(*def).m[1]=m[1];
+#ifdef TWO_PHASE
 	(*def).P_d[0]=P_d[0];
 	(*def).P_d[1]=P_d[1];
+#endif
+#ifdef THREE_PHASE
+	(*def).S_nr[0]=S_nr[0];
+	(*def).S_nr[1]=S_nr[1];
+	(*def).S_gr[0]=S_gr[0];
+	(*def).S_gr[1]=S_gr[1];
+#endif
 
 	FILE *defs;
 	char *file;
