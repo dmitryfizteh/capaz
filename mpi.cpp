@@ -8,11 +8,6 @@ void right_send_recv(double* HostBuffer, int destination_rank, int send_recv_id,
 
 	if (! MPI_Sendrecv_replace(HostBuffer+(def.Ny)*(def.Nz),(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id,destination_rank,send_recv_id+1,MPI_COMM_WORLD,&status)==MPI_SUCCESS)
 		printf("MPI Error: MPI_Sendrecv_replace returned an error.\n");
-
-	//printf("Send right %d to rank=%d.\n", send_recv_id, destination_rank);
-
-	//MPI_Send(HostBuffer+(def.Ny)*(def.Nz),(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id,MPI_COMM_WORLD);
-	//MPI_Recv(HostBuffer+(def.Ny)*(def.Nz),(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id+1,MPI_COMM_WORLD,&status);
 }
 
 // Получение и передача данных на левой границе
@@ -22,11 +17,6 @@ void left_recv_send(double* HostBuffer, int destination_rank, int send_recv_id, 
 
 	if (! MPI_Sendrecv_replace(HostBuffer,(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id+1,destination_rank,send_recv_id,MPI_COMM_WORLD,&status)==MPI_SUCCESS)
 		printf("MPI Error: MPI_Sendrecv_replace returned an error.\n");
-
-	//printf("Send left %d to rank=%d.\n", send_recv_id, destination_rank);
-
-	//MPI_Recv(HostBuffer,(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id,MPI_COMM_WORLD,&status);
-	//MPI_Send(HostBuffer,(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id+1,MPI_COMM_WORLD);
 }
 
 // Обмен данными на границах между всеми процессорами
@@ -63,13 +53,13 @@ void exchange(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, dou
 }
 
 // Обмен граничными значениями давления P2, плотностей ro1 и ro2, Xi между процессорами
-void P2_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
+void Pn_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {
-	exchange(HostArraysPtr.P2, DevArraysPtr.P2, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	exchange(HostArraysPtr.ro1, DevArraysPtr.ro1, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	exchange(HostArraysPtr.ro2, DevArraysPtr.ro2, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	exchange(HostArraysPtr.Xi1, DevArraysPtr.Xi1, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	exchange(HostArraysPtr.Xi2, DevArraysPtr.Xi2, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.P_n, DevArraysPtr.P_n, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.ro_w, DevArraysPtr.ro_w, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.ro_n, DevArraysPtr.ro_n, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.Xi_w, DevArraysPtr.Xi_w, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.Xi_n, DevArraysPtr.Xi_n, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
 }
 
 
@@ -78,28 +68,19 @@ void P2_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double
 // передача u1y и u2y не требуется
 void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {
-	exchange(HostArraysPtr.u1x, DevArraysPtr.u1x, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	exchange(HostArraysPtr.u2x, DevArraysPtr.u2x, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
-	//exchange(HostArraysPtr.u1y, localNx, rank, size);
-	//exchange(HostArraysPtr.u2y, localNx, rank, size);
+	exchange(HostArraysPtr.ux_w, DevArraysPtr.ux_w, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.ux_n, DevArraysPtr.ux_n, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
 }
 
 // Обмен граничными значениями давления воды P1 и насыщенности NAPL S2 между процессорами
-void P1_S2_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
+void Pw_Sn_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {
-	exchange(HostArraysPtr.P1, DevArraysPtr.P1, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.P_w, DevArraysPtr.P_w, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
 
-
-
-/*	for(int i=0;j<(localNx);i++)
-		for(int j=0;j<(def.Ny);j++)
-			for(int k=0;k<(def.Nz);k++)
-				HostArraysPtr.P1[i+j*(def.Nx)+k*(def.Nx)*(def.Ny)]*/
-
-	exchange(HostArraysPtr.S2, DevArraysPtr.S2, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
+	exchange(HostArraysPtr.S_n, DevArraysPtr.S_n, HostBuffer, DevBuffer, localNx, blocksY, blocksZ, rank, size, def);
 }
 
-void Communication_Initialize(int argc, char* argv[], int* size, int* rank, consts def)
+void communication_initialization(int argc, char* argv[], int* size, int* rank, consts def)
 {
 	MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD,size); // The amount of processors
@@ -107,13 +88,13 @@ void Communication_Initialize(int argc, char* argv[], int* size, int* rank, cons
 	std::cout << "size=" <<*size<<"  "<<"rank= "<<*rank<<"\n";
 }
 
-void Communication_Finalize(void)
+void communication_finalization(void)
 {
 	MPI_Finalize();
 }
 
 // Реализация фунции Barrier для различных коммуникаций
-void Barrier(void)
+void barrier(void)
 {
 	MPI_Barrier(MPI_COMM_WORLD);
 }
