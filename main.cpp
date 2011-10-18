@@ -766,7 +766,7 @@ void read_defines(int argc, char *argv[], consts* def)
 			if(!strcmp(attr_name,"P_ATM")) 
 				(*def).P_atm = atof(attr_value);
 #ifdef THREE_PHASE
-			if(!strcmp(attr_name,"L_C")) 
+			if(!strcmp(attr_name,"L_G")) 
 				(*def).l_g = atof(attr_value);
 			if(!strcmp(attr_name,"BETA_G")) 
 				(*def).beta_g = atof(attr_value);
