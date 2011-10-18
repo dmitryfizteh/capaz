@@ -107,7 +107,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
 #ifdef THREE_PHASE		
-						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * (def.g_const) * (def.hy) * ((def.ro0_n) + (def.ro0_w));
+                                                HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * (def.g_const) * (def.hy) * (def.ro0_n);
 						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = 0.4;
 						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
 #else

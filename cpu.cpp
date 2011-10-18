@@ -222,9 +222,9 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 		{
 			divgrad1 = (def.m[media] * (def.l_w) * (def.c) / 2.) * (HostArraysPtr.ro_w[i+j*localNx+(k+1)*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i+j*localNx+(k+1)*localNx*(def.Ny)]) - 2 * HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]) + HostArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i+j*localNx+(k-1)*localNx*(def.Ny)])) / ((def.hz) * (def.hz));
 			divgrad2 = (def.m[media] * (def.l_n) * (def.c) / 2.) * (HostArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*(def.Ny)] * HostArraysPtr.S_n[i+j*localNx+(k+1)*localNx*(def.Ny)] - 2 * HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] + HostArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*(def.Ny)] * (HostArraysPtr.S_n[i+j*localNx+(k-1)*localNx*(def.Ny)])) / ((def.hz) * (def.hz));
-			Tz1 = (HostArraysPtr.ro_w[i+1+j*localNx+(k+1)*localNx*(def.Ny)] * HostArraysPtr.ux_w[i+1+j*localNx+(k+1)*localNx*(def.Ny)] - HostArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*(def.Ny)] * HostArraysPtr.ux_w[i+j*localNx+(k-1)*localNx*(def.Ny)]) / (2. * (def.hz));
-			Tz2 = (HostArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*(def.Ny)] * HostArraysPtr.uy_n[i+j*localNx+(k+1)*localNx*(def.Ny)] - HostArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*(def.Ny)] * HostArraysPtr.uy_n[i+j*localNx+(k-1)*localNx*(def.Ny)]) / (2. * (def.hz));
-		}
+                        Tz1 = (HostArraysPtr.ro_w[i+j*localNx+(k+1)*localNx*(def.Ny)] * HostArraysPtr.uz_w[i+j*localNx+(k+1)*localNx*(def.Ny)] - HostArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*(def.Ny)] * HostArraysPtr.uz_w[i+j*localNx+(k-1)*localNx*(def.Ny)]) / (2. * (def.hz));
+                        Tz2 = (HostArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*(def.Ny)] * HostArraysPtr.uz_n[i+j*localNx+(k+1)*localNx*(def.Ny)] - HostArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*(def.Ny)] * HostArraysPtr.uz_n[i+j*localNx+(k-1)*localNx*(def.Ny)]) / (2. * (def.hz));
+                }
 
 		divgrad1 += (def.m[media] * (def.l_w) * (def.c) / 2.) *
 			((HostArraysPtr.ro_w[i+1+j*localNx+k*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i+1+j*localNx+k*localNx*(def.Ny)]) - 2 * HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]) + HostArraysPtr.ro_w[i-1+j*localNx+k*localNx*(def.Ny)] * (1. - HostArraysPtr.S_n[i-1+j*localNx+k*localNx*(def.Ny)])) / ((def.hx) * (def.hx)) +
