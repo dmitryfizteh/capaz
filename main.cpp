@@ -82,13 +82,13 @@ int main(int argc, char* argv[])
 // 8. Обмен между процессорами пограничными значениями P1 и S2
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t, int localNx, int localNy, int rank,int size, int blocksX, int blocksY, int blocksZ)
 {
-	Pw_Sn_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (8)
-	ro_Pn_Xi_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (1)
-	Pn_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (2)
+	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (8)
+	ro_P_Xi_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (1)
+	P_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (2)
 	u_calculation(HostArraysPtr,DevArraysPtr,localNx,rank,size,blocksX,blocksY, blocksZ, def); // (3)
 	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, localNx,blocksY, blocksZ, rank, size, def); // (4)
 	roS_calculation(HostArraysPtr,DevArraysPtr,def,t,localNx,rank,size,blocksX,blocksY, blocksZ); // (5)
-	Pw_Sn_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (6)
+	P_S_calculation(HostArraysPtr,DevArraysPtr,def,localNx,rank,size,blocksX,blocksY, blocksZ); // (6)
 	boundary_conditions(HostArraysPtr,DevArraysPtr,localNx,rank,size,blocksX,blocksY, blocksZ, def); // (7)
 	
 }
@@ -106,19 +106,23 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						int I=i_to_I(i,rank,size,def);
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
-#ifndef THREE_PHASE					
+#ifdef THREE_PHASE		
+						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * (def.g_const) * (def.hy) * ((def.ro0_n) + (def.ro0_w));
+						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = 0.4;
+						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
+#else
 						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
 							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=def.S_n_gr;
 						else
 							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=0;
 
 						HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_w) * (def.g_const)*(def.hy);
+#endif
 						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
 						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
-#endif
 
 					
 						/*
@@ -225,7 +229,12 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 	else
 		data_initialization (*HostArraysPtr, j, *localNx, *localNy, *rank, *size, def); // (4)
 
-#ifndef THREE_PHASE
+#ifdef THREE_PHASE
+	load_data_to_device((*HostArraysPtr).P_n, (*DevArraysPtr).P_n, *localNx, def);
+	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *localNx, def);
+	load_data_to_device((*HostArraysPtr).S_g, (*DevArraysPtr).S_g, *localNx, def);
+	load_data_to_device((*HostArraysPtr).roS_g_old, (*DevArraysPtr).roS_g_old, *localNx, def);
+#else
 	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *localNx, def);
 	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *localNx, def);
 #endif
@@ -349,7 +358,11 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, int size, int rank, int localNx, consts def)
 {
 	// Загрузка в память хоста результатов расчета
-#ifndef THREE_PHASE
+#ifdef THREE_PHASE
+	load_data_to_host(HostArraysPtr.P_n, DevArraysPtr.P_n , localNx, def);
+	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , localNx, def);
+	load_data_to_host(HostArraysPtr.S_g, DevArraysPtr.S_g , localNx, def);
+#else
 	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , localNx, def);
 	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , localNx, def);
 #endif
@@ -358,9 +371,11 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , localNx, def);
 	//load_data_to_host(HostArraysPtr.roS1, DevArraysPtr.roS1 , localNx, def);
 
+#ifndef THREE_PHASE
 	// Проверка на выход из допустимого диапазона значений P1/P2 и S2
 #ifdef TEST
 	test_correct_Pw_Sn(HostArraysPtr, localNx, rank, def);
+#endif
 #endif
 	
 	// Нулевой процессор создает директории, файлы и прописывает заголовки файлов
@@ -379,6 +394,7 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 }
 
 // Функция создания директорий, файлов для графиков и сохранения заголовков в них (!3D)
+#ifndef THREE_PHASE
 void print_plots_top (double t, consts def)
 {
 	char fname_S2[30],fname_P1[30],fname_u[30],fname_S2y[30],fname_S2x[30];
@@ -389,7 +405,6 @@ void print_plots_top (double t, consts def)
 	sprintf(fname_u,"plot_u/u=%012.4f.dat",t);
 	sprintf(fname_S2y,"plot_S2_y/S2=%012.4f.dat",t);
 	sprintf(fname_S2x,"plot_S2_x/S2=%012.4f.dat",t);
-
 #ifdef _WIN32
 	_mkdir("plot_P1");
 	_mkdir("plot_S2");
@@ -449,7 +464,9 @@ void print_plots_top (double t, consts def)
 	fclose(fp_S2x);
 	fclose(fp_media);
 }
+#endif
 
+#ifndef THREE_PHASE
 // Функция сохранения данных в файлы графиков (!3D)
 void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int localNx, consts def)
 {
@@ -478,7 +495,6 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 			for(int k=0; k<(def.Nz); k++)
 				if(is_active_point(i, localNx, rank, size))
 				{
-#ifndef THREE_PHASE
 					local=i+j*localNx+k*localNx*(def.Ny);
 					//fprintf(fp_S2,"%d %d %d\n", i, j, rank); // TEST
 					//fprintf(fp_S2,"%.2e %.2e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.h2)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S2[i+j*localNx+k*localNx*(def.Ny)]); // (1)
@@ -486,7 +502,6 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 					fprintf(fp_P1,"%d %d %d %.3e %.3e %.3e %.3e %.3e\n", i, j, k, HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
 					fprintf(fp_media,"%.2e %.2e %d\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)], (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]);	// (6)
 					fprintf(fp_u,"%.2e %.2e %.3e %.3e\n", HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)],  (def.Ny)*(def.hy)-HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], (-1)*HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]); // (3)
-#endif
 				}
 
 	for(int i=1; i<localNx-1; i++)
@@ -500,16 +515,12 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 		for(int k=0; k<(def.Nz); k++)
 			if ((i_to_I(i,rank,size, def)==(def.Nx)/2) && is_active_point(i,localNx,rank,size))
 				for(int j=0; j<(def.Ny); j++)
-#ifndef THREE_PHASE
 					fprintf(fp_S2y,"%.2e %.3e\n", HostArraysPtr.y[localNx/2+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.S_n[localNx/2+j*localNx+k*localNx*(def.Ny)]); // (4)
-#endif
 	
 
 	for(int i=0; i<localNx; i++)
 		for(int k=0; k<(def.Nz); k++)
-#ifndef THREE_PHASE
 			fprintf(fp_S2x,"%.2e %.3e\n", HostArraysPtr.x[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)], HostArraysPtr.S_n[i+localNx*(def.Ny)/2+k*localNx*(def.Ny)]); // (5)
-#endif
 		
 	fclose(fp_S2);
 	fclose(fp_P1);
@@ -518,6 +529,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 	fclose(fp_S2x);
 	fclose(fp_media);
 }
+#endif
 
 // Сохранение состояния в файл
 void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, int size, int localNx, consts def)
@@ -529,6 +541,9 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 	//load_data_to_host(HostArraysPtr.S2, DevArraysPtr.S2 , localNx);
 	load_data_to_host(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old , localNx, def);
 	load_data_to_host(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old , localNx, def);
+#ifdef THREE_PHASE
+	load_data_to_host(HostArraysPtr.roS_g_old, DevArraysPtr.roS_n_old , localNx, def);
+#endif
 
 	FILE *f_save;
 
@@ -560,10 +575,13 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 				printf("\nError: Not open file \"save.dat\"!\n");
 				exit(0);
 			}
-
 			fwrite(&j, sizeof(int), 1, f_save);
+#ifdef THREE_PHASE
+			fwrite(HostArraysPtr.P_n, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.S_w, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+			fwrite(HostArraysPtr.S_g, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+#else
 			fwrite(HostArraysPtr.P_w, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
-#ifndef THREE_PHASE
 			fwrite(HostArraysPtr.S_n, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 #endif
 			fwrite(HostArraysPtr.x, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
@@ -571,6 +589,9 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, in
 			fwrite(HostArraysPtr.z, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.roS_w_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
 			fwrite(HostArraysPtr.roS_n_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+#ifdef THREE_PHASE
+			fwrite(HostArraysPtr.roS_g_old, sizeof(double), localNx * (def.Ny) * (def.Nz), f_save);
+#endif
 			fwrite(HostArraysPtr.media, sizeof(int), localNx * (def.Ny) * (def.Nz), f_save);
 			fclose(f_save);
 		}
@@ -597,8 +618,12 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 			{
 				global_to_local_vars(&lNx,&lNy,size,queue, def);
 				fread(j, sizeof(int), 1, f_save);
+#ifdef THREE_PHASE
+				fread(HostArraysPtr.P_n, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.S_w, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+				fread(HostArraysPtr.S_g, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+#else
 				fread(HostArraysPtr.P_w, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
-#ifndef THREE_PHASE
 				fread(HostArraysPtr.S_n, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 #endif
 				fread(HostArraysPtr.x, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
@@ -606,6 +631,9 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 				fread(HostArraysPtr.z, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.roS_w_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
 				fread(HostArraysPtr.roS_n_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+#ifdef THREE_PHASE
+				fread(HostArraysPtr.roS_g_old, sizeof(double), lNx * (def.Ny) * (def.Nz), f_save);
+#endif
 				fread(HostArraysPtr.media, sizeof(int), lNx * (def.Ny) * (def.Nz), f_save);
 			}
 			fclose(f_save);
@@ -620,20 +648,20 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 
 // Функция проверки на выход из допустимого диапазона значений P1/P2 и S2
 // во всех точках расчетной области процессора
+#ifndef THREE_PHASE
 void test_correct_Pw_Sn(ptr_Arrays HostArraysPtr, int localNx, int rank, consts def)
 {
 	for(int i=0;i<localNx;i++)
 		for(int j=0;j<(def.Ny);j++)
 			for(int k=0;k<(def.Nz);k++)
 			{
-#ifndef THREE_PHASE
 				if (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]<0)
 					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-#endif
 			}
 }
+#endif
 
 // Запуск unit-тестов
 void Unit_tests(void)
@@ -739,7 +767,7 @@ void read_defines(int argc, char *argv[], consts* def)
 				(*def).P_atm = atof(attr_value);
 #ifdef THREE_PHASE
 			if(!strcmp(attr_name,"L_C")) 
-				(*def).l_c = atof(attr_value);
+				(*def).l_g = atof(attr_value);
 			if(!strcmp(attr_name,"BETA_G")) 
 				(*def).beta_g = atof(attr_value);
 			if(!strcmp(attr_name,"RO_G")) 
