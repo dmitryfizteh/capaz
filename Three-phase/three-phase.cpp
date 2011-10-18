@@ -1,4 +1,5 @@
 #include "../defines.h"
+#include "three-phase.h"
 
 //Вычисление значений давлений, плотностей и коэффициентов в законе Дарси в точке (i,j,k) среды media,
 //исходя из известных значений основных параметров (Pn,Sw,Sg)
@@ -76,6 +77,14 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 			HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] - (1. / det) * (F3P * F1Sw * F2 - F3P * F2Sw * F1 + (F1P*F2Sw - F2P * F1Sw) * F3);
 		}  
 	}
+}
+
+void Border(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
+{
+	Border_Sw(HostArraysPtr, i, j, k, localNx, rank, size, def);
+	Border_Sg(HostArraysPtr, i, j, k, localNx, rank, size, def);
+	Border_Pn(HostArraysPtr, i, j, k, localNx, def);
+	return;
 }
 
 void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
@@ -205,85 +214,48 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 		return;
 	}
 }
-//Сохранение результатов, подлежит радикальному исправлению!!!
-void print_plots_top (double t, consts def)
+
+// Применение начальных данных во всех точках
+void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def)
 {
-	char fname_Sn[30],fname_Sw[30],fname_Sg[30];
-	FILE *fp_Sn,*fp_Sw,*fp_Sg;
+	*t=0;
+	for(int i=0;i<localNx;i++)
+		for(int j=0;j<localNy;j++)
+			for(int k=0;k<(def.Nz);k++)
+				if(is_active_point(i, localNx, rank, size))
+					{
+						// Преобразование локальных координат процессора к глобальным
+						int I=i_to_I(i,rank,size,def);
+						// Если точка на верхней границе, не далее (def.source) точек от центра,
+						// то в ней начальная насыщенность. Иначе, нулевая
+/*
+						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+						{
+							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=def.S_w_gr;
+							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=def.S_g_gr;
+						}
+						else
+						{
+							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0;
+							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0;
+						}
+*/
+						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_n) * (def.g_const)*(def.hy);
+						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
+						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
+						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
-	sprintf(fname_Sn,"plot_Sn/Sn=%012.4f.dat",t);
-	sprintf(fname_Sw,"plot_Sw/Sw=%012.4f.dat",t);
-	sprintf(fname_Sg,"plot_Sg/Sg=%012.4f.dat",t);
-
-#ifdef _WIN32
-	_mkdir("plot_Sn");
-	_mkdir("plot_Sw");
-	_mkdir("plot_Sg");
-#else
-	mkdir("plot_Sn",0000777);
-	mkdir("plot_Sw",0000777);
-	mkdir("plot_Sg",0000777);
-#endif
-	// Создание (или перезапись файлов) с графиками
-	// 1. Для распределения насыщенностей NAPL S2
-	// 2. Для распределения давлений воды P1
-	// 3. Для распределения скоростей {u_x, u_y}
-	// 4. Для среза насыщенностей S2 по оси Y
-	// 5. Для среза насыщенностей S2 по оси X
-	// 6. Для распределения типов грунтов
-	if(!(fp_Sn=fopen(fname_Sn,"wt")) || !(fp_Sw=fopen(fname_Sw,"wt")) || !(fp_Sg=fopen(fname_Sg,"wt")))
-		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
-
-	//fprintf(fp_Sn,"TITLE =  \"Saturation of DNALP in time=%5.2f\" \n", t); // (1)
-	//fprintf(fp_Sn,"VARIABLES = \"X\",\"Y\",\"Sn\" \n");
-	//fprintf(fp_Sn,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.NX), (def.Ny));
-
-	fprintf(fp_Sn,"TITLE =  \"Saturation of DNALP in time=%5.2f\" \n", t); // (1)
-	fprintf(fp_Sn,"VARIABLES = \"X\",\"Y\",\"Z\",\"Sn\",\"Sw\",\"Sg\"\n");
-	fprintf(fp_Sn,"ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Nz), (def.Ny));
-
-	fprintf(fp_Sw,"TITLE =  \"Saturation of water in time=%5.2f\" \n", t); // (2)
-	fprintf(fp_Sw,"VARIABLES = \"X\",\"Y\",\"Z\",\"Sn\",\"Sw\",\"Sg\"\n");
-	fprintf(fp_Sw,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.Nx), (def.Nz), (def.Ny)); 
-
-	fprintf(fp_Sg,"TITLE =  \"Saturation of gas in time=%5.2f\" \n", t); // (3)
-	fprintf(fp_Sg,"VARIABLES = \"X\",\"Y\",\"Z\",\"Sn\",\"Sw\",\"Sg\"\n");
-	fprintf(fp_Sg,"ZONE T = \"BIG ZONE\", J=%d,I=%d, F = POINT\n", (def.Nx), (def.Nz), (def.Ny));
-
-	fclose(fp_Sn);
-	fclose(fp_Sw);
-	fclose(fp_Sg);
+						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
+					}
 }
 
-// Функция сохранения данных в файлы графиков (!3D)
+//Вывод результатов
+void print_plots_top (double t, consts def)
+{
+	return;
+}
+
 void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int localNx, consts def)
 {
-	char fname_Sn[30],fname_Sw[30],fname_Sg[30];
-	FILE *fp_Sn,*fp_Sw,*fp_Sg;
-	int local;
-
-	sprintf(fname_Sn,"plot_Sn/Sn=%012.4f.dat",t);
-	sprintf(fname_Sw,"plot_Sw/Sw=%012.4f.dat",t);
-	sprintf(fname_Sg,"plot_Sg/Sg=%012.4f.dat",t);
-	
-	// Открытие на дозапись и сохранение графиков
-
-	if(!(fp_Sn=fopen(fname_Sn,"wt")) || !(fp_Sw=fopen(fname_Sw,"wt")) || !(fp_Sg=fopen(fname_Sg,"wt")))
-		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
-
-	for(int i=0; i<localNx; i++)
-		for(int j=0; j<(def.Ny); j++)
-			for(int k=0; k<(def.Nz); k++)
-				if(is_active_point(i, localNx, rank, size))
-				{
-					local=i+j*localNx+k*localNx*(def.Ny);
-
-                    fprintf(fp_Sn,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], 1.-HostArraysPtr.S_w[local]-HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]);
-                    fprintf(fp_Sw,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_w[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local]);
-                    fprintf(fp_Sg,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_g[local], HostArraysPtr.P_g[local], HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local]);
-				}
-
-	fclose(fp_Sn);
-	fclose(fp_Sw);
-	fclose(fp_Sg);
+	return;
 }

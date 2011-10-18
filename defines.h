@@ -3,6 +3,7 @@
 
 #define THREE_PHASE
 //#define TWO_PHASE
+//#define B_L
 
 
 // Считать направленными разностями (если не определена NR, то считается без них)
@@ -125,14 +126,7 @@ extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx,
 extern void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int localNx, consts def);
 extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int localNx, consts def);
 extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
-#ifdef THREE_PHASE
-extern void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
-extern void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
-extern void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
-#else
-extern void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
-extern void Border_Pw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
-#endif
+extern void Border(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def);
 
 extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
 extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
