@@ -84,7 +84,7 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int
 }
 
 // Расчет плотностей, давления NAPL P2 и Xi во всех точках сетки
-void ro_Pn_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
+void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
 	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pn, Xi, ro");
@@ -379,7 +379,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, int localNx)
 }
 
 // Расчет давления воды P1 и насыщенности NAPL S2 во всех точках сетки
-void Pw_Sn_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
+void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
 	Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
 	checkErrors("assign Pw and Sn");

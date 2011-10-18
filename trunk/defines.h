@@ -2,6 +2,7 @@
 #define DEFINES_H 
 
 #define THREE_PHASE
+//#define TWO_PHASE
 
 
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
@@ -28,14 +29,14 @@
 #endif
 
 #ifdef THREE_PHASE
-	const double S_wr[2]={0.02,0.12};
-	const double S_nr[2]={0.01,0.12};
-	const double S_gr[2]={0.01,0.12};
+	const double S_wr[2]={0.02,0.02};
+	const double S_nr[2]={0.01,0.01};
+	const double S_gr[2]={0.01,0.01};
 	const double K[2]={6.64e-11,7.15e-12};
 	const double m[2]={0.4,0.39};
 	const double lambda[2]={3.25,3.25};
-	const double P_d_nw[2]={755,2060};
-	const double P_d_gn[2]={755,2060};
+	const double P_d_nw[2]={3125,3125};
+	const double P_d_gn[2]={1042,1042};
 #else
 	const double K[2]={6.64e-11,7.15e-12};
 	const double lambda[2]={2.7,2.0};
@@ -75,7 +76,7 @@ struct consts_tag
 	double S_gr[2];
 	double P_d_nw[2];
 	double P_d_gn[2];
-	double l_c, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
+	double l_g, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
 #else
 	double S_n_gr;
 #endif
@@ -112,11 +113,13 @@ extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int r
 extern void read_defines(int argc, char *argv[], consts* def);
 
 // Unit-тесты
+#ifndef THREE_PHASE
 extern void test_correct_Pw_Sn(ptr_Arrays HostArraysPtr, int nX, int rank, consts def);
+#endif
 
 // –асчеты в каждой точке
 extern int i_to_I(int i, int rank, int size, consts def);
-extern void assign_Pn_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
+extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
 extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
 extern void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int localNx, consts def);
@@ -131,14 +134,14 @@ extern void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx
 extern void Border_Pw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
 #endif
 
-extern void ro_Pn_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
-extern void Pn_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
+extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
+extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
 extern void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def);
 extern void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
 extern void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, double t, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
-extern void Pw_Sn_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
+extern void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ);
 extern void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def);
-extern void Pw_Sn_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
+extern void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
 
 extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);
 extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def);

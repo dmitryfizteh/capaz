@@ -1,6 +1,6 @@
 #include "../defines.h"
 
-void assign_Pn_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	int media = HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)];
 	double S_e = (1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media]);
