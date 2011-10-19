@@ -1,8 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
+//#define THREE_PHASE
 #define TWO_PHASE
-//#define TWO_PHASE
 //#define B_L
 
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
@@ -103,6 +103,7 @@ extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, int l
 extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, int localNx, consts def);
 
 extern void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, int localNx, consts def);
+extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def);
 
 // —лужебные
 extern void print_plots_top (double t, consts def);

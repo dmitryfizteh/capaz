@@ -1,7 +1,7 @@
 #include "defines.h"
-#include <cuda.h>
+//#include <cuda.h>
+#include "gpu.h"
 
-__constant__ consts gpu_def [1];
 
 // Проверка ошибок GPU
 void checkErrors(char *label) 
