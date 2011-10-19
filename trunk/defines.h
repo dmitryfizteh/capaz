@@ -1,10 +1,9 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
-#define THREE_PHASE
+#define TWO_PHASE
 //#define TWO_PHASE
 //#define B_L
-
 
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
 //#define NR 
@@ -115,7 +114,7 @@ extern void read_defines(int argc, char *argv[], consts* def);
 
 // Unit-тесты
 #ifndef THREE_PHASE
-extern void test_correct_Pw_Sn(ptr_Arrays HostArraysPtr, int nX, int rank, consts def);
+extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts def);
 #endif
 
 // –асчеты в каждой точке
