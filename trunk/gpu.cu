@@ -1,5 +1,4 @@
 #include "defines.h"
-//#include <cuda.h>
 #include "gpu.h"
 
 
@@ -334,13 +333,12 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, int localNx, double t
 // Расчет ro*S во всех точках сетки
 void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, double t, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
-
 	#ifdef NR
-	assign_roS_kernel_nr<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t); 
+		assign_roS_kernel_nr<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t); 
 	#else
-	assign_roS_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
+		assign_roS_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
 	#endif
-	checkErrors("assign roS");
+		checkErrors("assign roS");
 }
 
 // Метод Ньютона для каждой точки сетки (независимо от остальных точек)
