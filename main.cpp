@@ -152,6 +152,56 @@ int is_active_point(int i, int localNx, int rank, int size)
 	else
 		return 1;
 }
+
+// Применение начальных данных во всех точках
+void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def)
+{
+	*t=0;
+	for(int i=0;i<localNx;i++)
+		for(int j=0;j<localNy;j++)
+			for(int k=0;k<(def.Nz);k++)
+				if(is_active_point(i, localNx, rank, size))
+					{
+						// Преобразование локальных координат процессора к глобальным
+						int I=i_to_I(i,rank,size,def);
+
+						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
+						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
+						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
+
+#ifdef THREE_PHASE 
+						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_n) * (def.g_const)*(def.hy);
+						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
+#else
+						// Если точка на верхней границе, не далее (def.source) точек от центра,
+						// то в ней начальная насыщенность. Иначе, нулевая
+						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=def.S_n_gr;
+						else
+							HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]=0;
+
+						HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_w) * (def.g_const)*(def.hy);
+						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
+#endif
+					
+						/*
+						if ((HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]<=4.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]<=2./5.*(def.Ny)*(def.h2)) && (HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]>=(-1.)*HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]/4.+2./5.*(def.Ny)*(def.h2)))
+								HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=1;
+
+						if ((HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]>=(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]<=2.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]<=4./5.*(def.Ny)*(def.h2)) && (HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]>=3./5.*(def.Ny)*(def.h2)))
+								HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=1;
+								*/
+					
+						/*
+						if ((HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]>=2.*(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]<=3.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]>=1./10.*(def.Ny)*(def.h2)) && (HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]<=3./10.*(def.Ny)*(def.h2)))
+								HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=1;
+						*/
+					}
+}
+
 //----------------------------------------------------------------------------------------------------
 // Служебные функции
 
@@ -548,12 +598,6 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 			}
 }
 #endif
-
-// Запуск unit-тестов
-void Unit_tests(void)
-{
-
-}
 
 // Считывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)

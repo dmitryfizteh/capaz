@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\defines.h" />
+    <ClInclude Include="..\..\gpu.h" />
     <ClInclude Include="..\two-phase.h" />
   </ItemGroup>
   <ItemGroup>

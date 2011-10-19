@@ -215,40 +215,6 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 	}
 }
 
-// Применение начальных данных во всех точках
-void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def)
-{
-	*t=0;
-	for(int i=0;i<localNx;i++)
-		for(int j=0;j<localNy;j++)
-			for(int k=0;k<(def.Nz);k++)
-				if(is_active_point(i, localNx, rank, size))
-					{
-						// Преобразование локальных координат процессора к глобальным
-						int I=i_to_I(i,rank,size,def);
-						// Если точка на верхней границе, не далее (def.source) точек от центра,
-						// то в ней начальная насыщенность. Иначе, нулевая
-/*
-						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-						{
-							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=def.S_w_gr;
-							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=def.S_g_gr;
-						}
-						else
-						{
-							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0;
-							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0;
-						}
-*/
-						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_n) * (def.g_const)*(def.hy);
-						HostArraysPtr.x[i+j*localNx+k*localNx*(def.Ny)]=I*(def.hx);
-						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
-						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
-
-						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
-					}
-}
-
 //Вывод результатов
 void print_plots_top (double t, consts def)
 {
