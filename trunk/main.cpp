@@ -393,7 +393,6 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 }
 
 // Функция создания директорий, файлов для графиков и сохранения заголовков в них 
-#ifndef THREE_PHASE
 void print_plots_top (double t, consts def)
 {
 	char fname[30];
@@ -415,15 +414,18 @@ void print_plots_top (double t, consts def)
 	if(!(fp=fopen(fname,"wt")))
 		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
 
-	fprintf(fp,"TITLE =  \"Filtration in time=%5.2f\" \n", t); // (1)
+	fprintf(fp,"TITLE =  \"Filtration in time=%5.2f\" \n", t); 
+#ifdef THREE_PHASE
+	fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
+#else
 	fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
+#endif
 	fprintf(fp,"ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Nz), (def.Ny));
 
 	fclose(fp);
 }
-#endif
 
-#ifndef THREE_PHASE
+
 // Функция сохранения данных в файлы графиков (!3D)
 void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int localNx, consts def)
 {
@@ -447,7 +449,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 				if(is_active_point(i, localNx, rank, size))
 				{
 					local=i+j*localNx+k*localNx*(def.Ny);
+#ifdef THREE_PHASE
+					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]);
+#else
 					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
+#endif
 				}
 
 	/* Не очень хорошо, так как запуск функции, условный оператор в цикле
@@ -465,7 +471,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 		
 	fclose(fp);
 }
-#endif
+
 
 // Сохранение состояния в файл
 void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, int size, int localNx, consts def)
