@@ -214,14 +214,3 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 		return;
 	}
 }
-
-//Вывод результатов
-void print_plots_top (double t, consts def)
-{
-	return;
-}
-
-void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int localNx, consts def)
-{
-	return;
-}
