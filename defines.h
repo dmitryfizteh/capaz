@@ -15,6 +15,7 @@
 #define BlockNY 4
 #define BlockNZ 4
 
+#include <float.h>
 #include <stdio.h>
 #include <iostream>
 #include <time.h>
