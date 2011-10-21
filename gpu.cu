@@ -132,8 +132,11 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, int localNx)
 // Расчет давления воды P1 и насыщенности NAPL S2 во всех точках сетки
 void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
-	Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
-	checkErrors("assign Pw and Sn");
+	for (int w=1;w<=def.newton_iterations;w++)
+	{
+		Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
+		checkErrors("assign Pw and Sn");
+	}
 }
 
 //========================================================================================================================
