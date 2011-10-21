@@ -603,6 +603,16 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 			}
 }
 #endif

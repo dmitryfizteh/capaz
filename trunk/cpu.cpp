@@ -8,8 +8,8 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 			{
 				if(is_active_point(i, localNx, rank, size))
 				{
-					assign_ro(HostArraysPtr,i,j,k,localNx,def);
 					assign_P_Xi(HostArraysPtr,i,j,k,localNx,def);
+					assign_ro(HostArraysPtr,i,j,k,localNx,def);		
 				}
 			}
 }
@@ -68,10 +68,9 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 #endif
 }
 
-// (!3D)
+
 void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
-	//std::cout << i << " " << j << " " << k << "\n";
 	if ((def.Nx)>2)
 	{
 		if (i == 0)
