@@ -450,11 +450,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 				{
 					local=i+j*localNx+k*localNx*(def.Ny);
 #ifdef THREE_PHASE
-					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], 
+					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], 
 						HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1 - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
-						HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]);
+						HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 #else
-					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local]); // (1)
+					fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 #endif
 				}
 
@@ -604,15 +604,21 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (_isnan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+					printf ("\nWarning! S_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (_isnan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+					printf ("\nWarning! P_w is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (_isnan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+					printf ("\nWarning! ux_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (_isnan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+					printf ("\nWarning! uy_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (_isnan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+					printf ("\nWarning! uz_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.P_n [i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! P_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.ro_n [i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! ro_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
+				if (_isnan(HostArraysPtr.Xi_n  [i+j*localNx+k*localNx*(def.Ny)]))
+					printf ("\nWarning! Xi_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 			}
 }
 #endif
