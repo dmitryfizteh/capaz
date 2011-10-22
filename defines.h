@@ -1,10 +1,6 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
-//#define THREE_PHASE
-//#define TWO_PHASE
-//#define B_L
-
 // Считать направленными разностями (если не определена NR, то считается без них)
 //#define NR 
 #define DEFINES_FILE "..//defines.ini"

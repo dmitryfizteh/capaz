@@ -7,9 +7,9 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, con
 	double S_e = (1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media]);
 	double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
 	double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
-	double P_k = def.P_d[media] * pow((1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media]), -1. / def.lambda[media]);
+	
 
-	HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] + P_k;
+	HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)];
 	HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] = -1. * (def.K[media]) * k_w / def.mu_w;
 	HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] = -1. * (def.K[media]) * k_n / def.mu_n;
 
@@ -25,12 +25,10 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 		for (int w=1;w<=def.newton_iterations;w++)
 		{
 			S_e = (1 - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - def.S_wr[media]) / (1 - def.S_wr[media]);
-			P_k = def.P_d[media] * pow(S_e, (-1.) / def.lambda[media]);
 			P_k=0;
 			AAA = pow(S_e, (((-1.) / def.lambda[media]) - 1.));
 			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] - def.P_atm)) * (1. - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]) - HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)];
 			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] + P_k - def.P_atm)) * HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)];
-			PkS = AAA * (def.P_d[media]) / (def.lambda[media] * (1 - def.S_wr[media]));
 			PkS=0;
 			F1P = def.ro0_w * (def.beta_w) * (1 - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]);
 			F2P = def.ro0_n * (def.beta_n) * HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)];

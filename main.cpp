@@ -43,9 +43,8 @@ int main(int argc, char* argv[])
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
-
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 
@@ -432,7 +431,7 @@ void print_plots_top (double t, consts def)
 
 	fprintf(fp,"TITLE =  \"Filtration in time=%5.2f\" \n", t); 
 #ifdef THREE_PHASE
-	fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
+	fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
 #else
 	fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
 #endif
