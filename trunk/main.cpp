@@ -8,6 +8,11 @@ double *DevBuffer;
 
 int main(int argc, char* argv[])
 {
+#ifdef MY_TEST
+	::testing::InitGoogleTest(&argc, argv);
+	RUN_ALL_TESTS();
+#endif
+
 	consts def;
 	read_defines(argc, argv, &def);
 
@@ -372,7 +377,7 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 
 #ifndef THREE_PHASE
 	// Проверка на выход из допустимого диапазона значений P и S
-#ifdef TEST
+#ifdef MY_TEST
 	test_correct_P_S(HostArraysPtr, localNx, rank, def);
 #endif
 #endif
