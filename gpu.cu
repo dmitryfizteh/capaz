@@ -7,7 +7,7 @@ __constant__ consts gpu_def [1];
 // Проверка ошибок GPU
 void checkErrors(char *label) 
 {
-#ifdef TEST
+#ifdef MY_TEST
 	cudaError_t err;
 
 	err = cudaThreadSynchronize();

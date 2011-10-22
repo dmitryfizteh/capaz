@@ -7,7 +7,6 @@
 
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
 //#define NR 
-#define TEST
 #define DEFINES_FILE "..//defines.ini"
 
 // Ќитей в блоке ускорител€
@@ -22,6 +21,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+
+#ifdef MY_TEST
+#include <gtest/gtest.h>
+#endif
 
 #ifdef _WIN32
 #include <direct.h>
