@@ -4,13 +4,8 @@ if [ -z "$2" ]; then
     exit
 fi
 #
-for i in $( ls | grep machines. )
+for i in $( ls | grep .img )
 do
- rm $i
-done;
-#
-for i in $( ls | grep result. )
-do 
  rm $i
 done;
 #
@@ -20,6 +15,6 @@ done;
   done;
   ARCH='20'
 #
-nvcc -c -arch sm_$ARCH ../Debug/gpu.o ../../gpu.cu
-mpiCC  -L/common/cuda/lib64 -lcudart ../../main.cpp ../../mpi.cpp ../Debug/gpu.o -o ../Debug/mpi_cuda.px
+nvcc -D TWO_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
+mpiCC  -D TWO_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../mpi.cpp gpu.o -o ../Debug/mpi_cuda.px
 mpirun -ppn 3 -np $1 -maxtime $2 ../Debug/mpi_cuda.px
