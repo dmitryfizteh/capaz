@@ -2,7 +2,7 @@
 #define DEFINES_H 
 
 //#define THREE_PHASE
-#define TWO_PHASE
+//#define TWO_PHASE
 //#define B_L
 
 // Считать направленными разностями (если не определена NR, то считается без них)
@@ -27,6 +27,7 @@
 #endif
 
 #ifdef _WIN32
+#define isnan _isnan
 #include <direct.h>
 #else
 #include <sys/stat.h>

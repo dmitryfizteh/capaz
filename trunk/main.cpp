@@ -9,8 +9,19 @@ double *DevBuffer;
 int main(int argc, char* argv[])
 {
 #ifdef MY_TEST
+	std::cout << "Start tests:\n"; 
 	::testing::InitGoogleTest(&argc, argv);
 	RUN_ALL_TESTS();
+#endif
+
+#ifdef TWO_PHASE
+	std::cout << "\nTwo phase filtration by CAPAZ\n";
+#endif
+#ifdef THREE_PHASE
+	std::cout << "\nThree phase filtration by CAPAZ\n";
+#endif
+#ifdef B_L
+	std::cout << "\nBackley-Leverett filtration by CAPAZ\n";
 #endif
 
 	consts def;
@@ -608,21 +619,21 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
 					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! S_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! P_w is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! ux_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! uy_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! uz_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.P_n [i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.P_n [i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! P_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.ro_n [i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.ro_n [i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! ro_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (_isnan(HostArraysPtr.Xi_n  [i+j*localNx+k*localNx*(def.Ny)]))
+				if (isnan(HostArraysPtr.Xi_n  [i+j*localNx+k*localNx*(def.Ny)]))
 					printf ("\nWarning! Xi_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
 			}
 }

@@ -126,6 +126,7 @@ copy "$(CudaToolkitBinDir)\cudart32_*.dll" "$(TargetDir)"
     <CudaCompile>
       <Runtime>MDd</Runtime>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
+      <Defines>TWO_PHASE</Defines>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
