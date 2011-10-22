@@ -20,6 +20,6 @@ done;
   done;
   ARCH='20'
 #
-nvcc -c -arch sm_$ARCH ../Debug/gpu.o ../../gpu.cu
-mpiCC  -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp ../Debug/gpu.o -o ../Debug/cuda.px
+nvcc -D THREE_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
+mpiCC  -D THREE_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp gpu.o -o ../Debug/cuda.px
 mpirun -np 1 -maxtime $1 ../Debug/cuda.px
