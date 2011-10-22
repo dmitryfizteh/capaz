@@ -78,6 +78,7 @@ void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = def.S_n_gr;
 		else
 			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
+		return;
 	}
 
 	if ((k == 0) && ((def.Nz)>2))
