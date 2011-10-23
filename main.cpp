@@ -603,40 +603,6 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 
 
 //------------------------------------------------------------------------------------------
-// Тестирование
-
-// Функция проверки на выход из допустимого диапазона значений P1/P2 и S2
-// во всех точках расчетной области процессора
-#ifndef THREE_PHASE
-void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts def)
-{
-	for(int i=0;i<localNx;i++)
-		for(int j=0;j<(def.Ny);j++)
-			for(int k=0;k<(def.Nz);k++)
-			{
-				if (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]<0)
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
-					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! S_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! P_w is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! ux_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! uy_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! uz_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.P_n [i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! P_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.ro_n [i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! ro_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (isnan(HostArraysPtr.Xi_n  [i+j*localNx+k*localNx*(def.Ny)]))
-					printf ("\nWarning! Xi_n is Nan in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-			}
-}
-#endif
 
 // Считывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)
@@ -680,96 +646,93 @@ void read_defines(int argc, char *argv[], consts* def)
 			return;
 		}
 	}
-	//else
-	//{
-		while (!feof(defs))
+
+	while (!feof(defs))
+	{
+		unsigned int i,j,a;
+		fgets(str,250,defs);
+		if(str[0]=='#')
+			continue;
+		for (i=0;str[i]!='=';i++)
 		{
-			unsigned int i,j,a;
-			fgets(str,250,defs);
-			if(str[0]=='#')
+			if (i>=strlen(str))
 				continue;
-			for (i=0;str[i]!='=';i++)
-			{
-				if (i>=strlen(str))
-					continue;
-				attr_name[i]=str[i];
-			}
-
-			attr_name[i]='\0';
-			a=strlen(str);
-			for(j=i+1;str[j]!=' ' && (j < a);j++)
-				attr_value[j-i-1]=str[j];
-			attr_value[j-i-1]='\0';
-
-
-			if(!strcmp(attr_name,"HX")) 
-				(*def).hx = atof(attr_value);
-			if(!strcmp(attr_name,"HY")) 
-				(*def).hy = atof(attr_value);
-			if(!strcmp(attr_name,"HZ")) 
-				(*def).hz = atof(attr_value);
-			if(!strcmp(attr_name,"TAU")) 
-				(*def).tau = atof(attr_value);
-			if(!strcmp(attr_name,"DT")) 
-				(*def).dt = atof(attr_value);
-			if(!strcmp(attr_name,"L_W")) 
-				(*def).l_w = atof(attr_value);
-			if(!strcmp(attr_name,"L_N")) 
-				(*def).l_n = atof(attr_value);
-			if(!strcmp(attr_name,"C")) 
-				(*def).c = atof(attr_value);
-			if(!strcmp(attr_name,"BETA_W")) 
-				(*def).beta_w = atof(attr_value);
-			if(!strcmp(attr_name,"BETA_N")) 
-				(*def).beta_n = atof(attr_value);
-			if(!strcmp(attr_name,"RO_W")) 
-				(*def).ro0_w = atof(attr_value);
-			if(!strcmp(attr_name,"RO_N")) 
-				(*def).ro0_n = atof(attr_value);
-			if(!strcmp(attr_name,"MU_W")) 
-				(*def).mu_w = atof(attr_value);
-			if(!strcmp(attr_name,"MU_N")) 
-				(*def).mu_n = atof(attr_value);
-			if(!strcmp(attr_name,"G_CONST")) 
-				(*def).g_const = atof(attr_value);
-			if(!strcmp(attr_name,"P_ATM")) 
-				(*def).P_atm = atof(attr_value);
-#ifdef THREE_PHASE
-			if(!strcmp(attr_name,"L_G")) 
-				(*def).l_g = atof(attr_value);
-			if(!strcmp(attr_name,"BETA_G")) 
-				(*def).beta_g = atof(attr_value);
-			if(!strcmp(attr_name,"RO_G")) 
-				(*def).ro0_g = atof(attr_value);
-			if(!strcmp(attr_name,"MU_G")) 
-				(*def).mu_g = atof(attr_value);
-			if(!strcmp(attr_name,"S_W_GR")) 
-				(*def).S_w_gr = atof(attr_value);
-			if(!strcmp(attr_name,"S_G_GR")) 
-				(*def).S_g_gr = atof(attr_value);
-#else
-			if(!strcmp(attr_name,"S_N_GR")) 
-				(*def).S_n_gr = atof(attr_value);
-#endif
-
-			if(!strcmp(attr_name,"SOURCE"))
-				(*def).source = atoi(attr_value);
-			if(!strcmp(attr_name,"ITERATIONS"))
-				(*def).newton_iterations = atoi(attr_value);
-			if(!strcmp(attr_name,"TIMEX"))
-				(*def).timeX = atoi(attr_value);
-			if(!strcmp(attr_name,"SAVE_PLOTS"))
-				(*def).save_plots = atoi(attr_value);
-			if(!strcmp(attr_name,"PRINT_SCREEN"))
-				(*def).print_screen = atoi(attr_value);
-			if(!strcmp(attr_name,"NX"))
-				(*def).Nx = atoi(attr_value);
-			if(!strcmp(attr_name,"NY"))
-				(*def).Ny = atoi(attr_value);
-			if(!strcmp(attr_name,"NZ"))
-				(*def).Nz = atoi(attr_value);
+			attr_name[i]=str[i];
 		}
 
-		fclose(defs);
-	//}
+		attr_name[i]='\0';
+		a=strlen(str);
+		for(j=i+1;str[j]!=' ' && (j < a);j++)
+			attr_value[j-i-1]=str[j];
+		attr_value[j-i-1]='\0';
+
+		if(!strcmp(attr_name,"HX")) 
+		{(*def).hx = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"HY")) 
+		{(*def).hy = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"HZ")) 
+		{(*def).hz = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"TAU")) 
+		{(*def).tau = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"DT")) 
+		{(*def).dt = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"L_W")) 
+		{(*def).l_w = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"L_N")) 
+		{(*def).l_n = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"C")) 
+		{(*def).c = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"BETA_W")) 
+		{(*def).beta_w = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"BETA_N")) 
+		{(*def).beta_n = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"RO_W")) 
+		{(*def).ro0_w = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"RO_N")) 
+		{(*def).ro0_n = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"MU_W")) 
+		{(*def).mu_w = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"MU_N")) 
+		{(*def).mu_n = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"G_CONST")) 
+		{(*def).g_const = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"P_ATM")) 
+		{(*def).P_atm = atof(attr_value); continue;}
+#ifdef THREE_PHASE
+		if(!strcmp(attr_name,"L_G")) 
+		{(*def).l_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"BETA_G")) 
+		{(*def).beta_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"RO_G")) 
+		{(*def).ro0_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"MU_G")) 
+		{(*def).mu_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_W_GR")) 
+		{(*def).S_w_gr = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_G_GR")) 
+		{(*def).S_g_gr = atof(attr_value); continue;}
+#else
+		if(!strcmp(attr_name,"S_N_GR")) 
+		{(*def).S_n_gr = atof(attr_value); continue;}
+#endif
+
+		if(!strcmp(attr_name,"SOURCE"))
+		{(*def).source = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"ITERATIONS"))
+		{(*def).newton_iterations = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"TIMEX"))
+		{(*def).timeX = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"SAVE_PLOTS"))
+		{(*def).save_plots = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"PRINT_SCREEN"))
+		{(*def).print_screen = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"NX"))
+		{(*def).Nx = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"NY"))
+		{(*def).Ny = atoi(attr_value); continue;}
+		if(!strcmp(attr_name,"NZ"))
+		{(*def).Nz = atoi(attr_value); continue;}
+	}
+
+	fclose(defs);
 }
