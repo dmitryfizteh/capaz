@@ -187,6 +187,18 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 		HostArraysPtr.uz_g[i+j*localNx+k*localNx*(def.Ny)] = 0;
 #endif
 	}
+
+	test_nan(HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uy_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uz_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+#ifdef THREE_PHASE
+	test_nan(HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uy_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.uz_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+#endif
 }
 
 void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int localNx, consts def)
@@ -194,20 +206,21 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 	if ((i!=0) && (i!=localNx-1) && (j!=0) && (j!=(def.Ny)-1) && (((k!=0) && (k!=(def.Nz)-1)) || ((def.Nz)<2)))
 	{
 		int media = HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)];
-#ifdef THREE_PHASE
-		double S_n = (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]);
-
-		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * S_n;
-		HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)];
-		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)];
-#else
-		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * (1 - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]);
-		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)];
-#endif
-
 		double divgrad1, divgrad2, Tx1, Ty1, Tz1, Tx2, Ty2, Tz2, A1=0, A2=0;
+		
 #ifdef THREE_PHASE
 		double divgrad3, Tx3, Ty3, Tz3, A3=0;
+
+		double S_n = (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]);
+		double S_w = HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)];
+#else
+		double S_n = HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)];
+		double S_w = 1 - S_n;
+#endif
+		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * S_w;
+		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * S_n;
+#ifdef THREE_PHASE
+		HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)];	
 #endif
 
 		if ((def.Nz)<2)
@@ -285,9 +298,14 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 		HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)]= HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)];
 		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = A1;
 		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = A2;
+
+		test_nan(HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		test_nan(HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+
 #ifdef THREE_PHASE
 		HostArraysPtr.roS_g_old[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)];
 		HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] = A3;
+		test_nan(HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 #endif
 	}
 }
@@ -365,6 +383,9 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int 
 		HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)]= HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)];
 		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = A1;
 		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = A2;
+
+		test_nan(HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		test_nan(HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 	}
 }
 #endif
@@ -407,6 +428,9 @@ void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 		{
 			HostBuffer[j+(def.Ny)*k]=HostArrayPtr[1+localNx*j+localNx*(def.Ny)*k];
 			HostBuffer[j+(def.Ny)*k+(def.Ny)*(def.Nz)]=HostArrayPtr[localNx-2+localNx*j+localNx*(def.Ny)*k];
+
+			test_nan(HostBuffer[j+(def.Ny)*k], __FILE__, __LINE__);
+			test_nan(HostBuffer[j+(def.Ny)*k+(def.Ny)*(def.Nz)], __FILE__, __LINE__);
 		}
 
 	/*for(int j=0;j<(def.Ny);j++)
@@ -426,8 +450,14 @@ void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 		for(int k=0;k<(def.Nz);k++)
 		{
 			if(rank!=size-1)
+			{
 				HostArrayPtr[localNx-1+localNx*j+localNx*(def.Ny)*k]=HostBuffer[j+(def.Ny)*k+(def.Ny)*(def.Nz)];
+				test_nan(HostArrayPtr[localNx-1+localNx*j+localNx*(def.Ny)*k], __FILE__, __LINE__);
+			}
 			if (rank!=0)
+			{
 				HostArrayPtr[localNx*j+localNx*(def.Ny)*k]=HostBuffer[j+(def.Ny)*k];
+				test_nan(HostArrayPtr[localNx*j+localNx*(def.Ny)*k], __FILE__, __LINE__);
+			}
 		}
 }

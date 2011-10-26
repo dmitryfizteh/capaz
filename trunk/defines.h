@@ -18,10 +18,6 @@
 #include <math.h>
 #include <string.h>
 
-#ifdef MY_TEST
-#include <gtest/gtest.h>
-#endif
-
 #ifdef _WIN32
 #define isnan _isnan
 #include <direct.h>
@@ -117,6 +113,11 @@ extern void read_defines(int argc, char *argv[], consts* def);
 // Unit-тесты
 #ifndef THREE_PHASE
 extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts def);
+#endif
+
+#ifdef MY_TEST
+void test_nan (double x, char *file, int line);
+void test_pint (int x, char *file, int line);
 #endif
 
 // Расчеты в каждой точке

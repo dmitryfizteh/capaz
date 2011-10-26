@@ -8,20 +8,14 @@ double *DevBuffer;
 
 int main(int argc, char* argv[])
 {
-#ifdef MY_TEST
-	std::cout << "Start tests:\n"; 
-	::testing::InitGoogleTest(&argc, argv);
-	RUN_ALL_TESTS();
-#endif
-
 #ifdef TWO_PHASE
-	std::cout << "\nTwo phase filtration by CAPAZ\n";
+	std::cout << "Two phase filtration by CAPAZ\n";
 #endif
 #ifdef THREE_PHASE
-	std::cout << "\nThree phase filtration by CAPAZ\n";
+	std::cout << "Three phase filtration by CAPAZ\n";
 #endif
 #ifdef B_L
-	std::cout << "\nBackley-Leverett filtration by CAPAZ\n";
+	std::cout << "Backley-Leverett filtration by CAPAZ\n";
 #endif
 
 	consts def;
@@ -125,6 +119,8 @@ int i_to_I(int i, int rank, int size, consts def)
 	}
 	else
 		I=((def.Nx)/size+1)*rank-(rank-(def.Nx)%size)+i-1;
+
+	test_pint(I, __FILE__, __LINE__);
 	return I;
 }
 
@@ -157,6 +153,8 @@ void global_to_local_vars (int* localNx, int* localNy, int size, int rank, const
 	if (rank < (def.Ny)%size)
 		*localNy++;
 	*/
+	test_pint(*localNx, __FILE__, __LINE__);
+	test_pint(*localNy, __FILE__, __LINE__);
 }
 
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
@@ -222,6 +220,15 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 							if ((HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]>=1./10.*(def.Ny)*(def.h2)) && (HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]<=3./10.*(def.Ny)*(def.h2)))
 								HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=1;
 						*/
+#ifndef THREE_PHASE 
+					test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+#else
+					test_nan(HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+#endif
 					}
 }
 
