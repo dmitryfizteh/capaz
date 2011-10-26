@@ -87,6 +87,7 @@
     <ClCompile Include="..\..\cpu.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\no_communication.cpp" />
+    <ClCompile Include="..\..\shared_test.cpp" />
     <ClCompile Include="..\three-phase.cpp" />
   </ItemGroup>
   <ItemGroup>
