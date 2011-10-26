@@ -199,6 +199,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 
 		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * S_n;
 		HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)];
+		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)];
 #else
 		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * (1 - HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]);
 		HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)];
