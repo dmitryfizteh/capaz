@@ -116,8 +116,8 @@ extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts 
 #endif
 
 #ifdef MY_TEST
-void test_nan (double x, char *file, int line);
-void test_pint (int x, char *file, int line);
+extern void test_nan (double x, char *file, int line);
+extern void test_pint (int x, char *file, int line);
 #endif
 
 // Расчеты в каждой точке
