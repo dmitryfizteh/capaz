@@ -120,7 +120,7 @@ int i_to_I(int i, int rank, int size, consts def)
 	else
 		I=((def.Nx)/size+1)*rank-(rank-(def.Nx)%size)+i-1;
 
-	test_pint(I, __FILE__, __LINE__);
+	test_positive(I, __FILE__, __LINE__);
 	return I;
 }
 
@@ -153,8 +153,8 @@ void global_to_local_vars (int* localNx, int* localNy, int size, int rank, const
 	if (rank < (def.Ny)%size)
 		*localNy++;
 	*/
-	test_pint(*localNx, __FILE__, __LINE__);
-	test_pint(*localNy, __FILE__, __LINE__);
+	test_positive(*localNx, __FILE__, __LINE__);
+	test_positive(*localNy, __FILE__, __LINE__);
 }
 
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
@@ -750,4 +750,6 @@ void read_defines(int argc, char *argv[], consts* def)
 	}
 
 	fclose(defs);
+
+	read_defines_test(*def);
 }
