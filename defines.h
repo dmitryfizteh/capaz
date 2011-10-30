@@ -62,7 +62,7 @@ struct consts_tag
 	double lambda[2];
 	double S_wr[2];
 	double m[2];
-	double hx, hy, hz, dt, tau, l_w, l_n, c, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n;
+	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n;
 	int Nx, Ny, Nz;
 	int source, timeX, save_plots, print_screen, newton_iterations;
 #ifdef TWO_PHASE
@@ -73,7 +73,7 @@ struct consts_tag
 	double S_gr[2];
 	double P_d_nw[2];
 	double P_d_gn[2];
-	double l_g, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
+	double c_g, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
 #else
 	double S_n_gr;
 #endif
@@ -117,7 +117,7 @@ extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts 
 
 #ifdef MY_TEST
 extern void test_nan (double x, char *file, int line);
-extern void test_positive (int x, char *file, int line);
+extern void test_positive (double x, char *file, int line);
 extern void read_defines_test(consts def);
 #endif
 
