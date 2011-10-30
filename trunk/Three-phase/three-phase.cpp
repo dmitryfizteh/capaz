@@ -144,14 +144,21 @@ void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 		return;
 	}
 
+	
 	if ((j == 0) && ((def.Ny) > 2))
 	{
+		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + (j + 1) * localNx + k * localNx * (def.Ny)];
+		return;
+
+	/*
 		int I = i_to_I(i, rank, size, def);
 		if ((I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
-			HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = def.S_w_gr;
+			HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = 0.1;//def.S_w_gr;
 		else
 			HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = 0;
+	*/
 	}
+	
 
 
 	if ((k == 0) && ((def.Nz) > 2))
@@ -190,11 +197,15 @@ void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 
 	if ((j == 0) && ((def.Ny) > 2))
 	{
+		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + (j + 1) * localNx + k * localNx * (def.Ny)];
+		return;
+	/*
 		int I = i_to_I(i, rank, size, def);
 		if ((I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
-			HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = def.S_g_gr;
+			HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = 0.8; //def.S_g_gr;
 		else
 			HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = 0;
+	*/
 	}
 
 
