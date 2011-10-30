@@ -74,10 +74,10 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int
 		double S_n = DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)];
 		double P_w = DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)];
 
-		double S_e = (1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]);
+		double S_e = (1.- S_n - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
 		double k_w = pow(S_e, (2. + 3. * (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]);
-		double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2 + (*gpu_def).lambda[media]) / ((*gpu_def).lambda[media])));
-		double P_k = (*gpu_def).P_d[media] * pow((1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]), -1 / (*gpu_def).lambda[media]);
+		double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
+		double P_k = (*gpu_def).P_d[media] * pow((1. - S_n - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]), -1. / (*gpu_def).lambda[media]);
 
 		DevArraysPtr.P_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = P_w + P_k;
 		DevArraysPtr.Xi_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = -1 * (*gpu_def).K[media] * k_w / (*gpu_def).mu_w;
@@ -92,6 +92,11 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 {
 	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pn, Xi, ro");
+	gpu_test_nan(HostArraysPtr.P_n, DevArraysPtr.P_n, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.Xi_w, DevArraysPtr.Xi_w, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.Xi_n, DevArraysPtr.Xi_n, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.ro_w, DevArraysPtr.ro_w, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.ro_n, DevArraysPtr.ro_n, rank, size, localNx, def, __FILE__, __LINE__);
 }
 
 // Метод Ньютона для каждой точки сетки (независимо от остальных точек)
@@ -136,6 +141,8 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	{
 		Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
 		checkErrors("assign Pw and Sn");
+		gpu_test_nan(HostArraysPtr.P_w, DevArraysPtr.P_w, rank, size, localNx, def, __FILE__, __LINE__);
+		gpu_test_nan(HostArraysPtr.S_n, DevArraysPtr.S_n, rank, size, localNx, def, __FILE__, __LINE__);
 	}
 }
 
@@ -237,7 +244,14 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localN
 {
 	assign_u_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign u");
+	gpu_test_nan(HostArraysPtr.ux_w, DevArraysPtr.ux_w, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.ux_n, DevArraysPtr.ux_n, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.uy_w, DevArraysPtr.uy_w, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.uy_n, DevArraysPtr.uy_n, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.uz_w, DevArraysPtr.uz_w, rank, size, localNx, def, __FILE__, __LINE__);
+	gpu_test_nan(HostArraysPtr.uz_n, DevArraysPtr.uz_n, rank, size, localNx, def, __FILE__, __LINE__);
 }
+
 // Расчет ro*S в каждой точке сетки методом направленных разностей
 __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, int localNx, double t)
 {
@@ -391,6 +405,10 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 		assign_roS_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
 	#endif
 		checkErrors("assign roS");
+		gpu_test_nan(HostArraysPtr.roS_w, DevArraysPtr.roS_w, rank, size, localNx, def, __FILE__, __LINE__);
+		gpu_test_nan(HostArraysPtr.roS_n, DevArraysPtr.roS_n, rank, size, localNx, def, __FILE__, __LINE__);
+		gpu_test_nan(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old, rank, size, localNx, def, __FILE__, __LINE__);
+		gpu_test_nan(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old, rank, size, localNx, def, __FILE__, __LINE__);
 }
 
 // Граничные условия на S2
@@ -460,31 +478,37 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 		if ((i == 0) && (((*gpu_def).Nx)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i+1+j*localNx+k*localNx*((*gpu_def).Ny)]; 
+			return;
 		}
 
 		if ((i == localNx - 1) && (((*gpu_def).Nx)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i-1+j*localNx+k*localNx*((*gpu_def).Ny)];
+			return;
 		}
 
 		if ((j == ((*gpu_def).Ny) - 1) && (((*gpu_def).Ny)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)] + DevArraysPtr.ro_w[i+localNx*1] * (*gpu_def).g_const * ((*gpu_def).hy);
+			return;
 		}
 
 		if ((j==0) && (((*gpu_def).Ny)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = (*gpu_def).P_atm;
+			return;
 		}
 
 		if ((k == 0) && (((*gpu_def).Nz)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)]; 
+			return;
 		}
 
 		if ((k == ((*gpu_def).Nz) - 1) && (((*gpu_def).Nz)>2))
 		{
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)];
+			return;
 		}
 	}
 }
@@ -494,8 +518,11 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int 
 {
 	Sn_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Sn");
+	gpu_test_nan(HostArraysPtr.S_n, DevArraysPtr.S_n, rank, size, localNx, def, __FILE__, __LINE__);
+
 	Pw_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pw");
+	gpu_test_nan(HostArraysPtr.P_w, DevArraysPtr.P_w, rank, size, localNx, def, __FILE__, __LINE__);
 }	
 
 // Функция загрузки данных в память хоста
