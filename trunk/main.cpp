@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 	// Тест
-	save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 

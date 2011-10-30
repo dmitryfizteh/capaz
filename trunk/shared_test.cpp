@@ -32,23 +32,28 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 // Синтаксис вызова test_nan(x, __FILE__, __LINE__);
 void test_nan (double x, char *file, int line)
 {
+#ifdef MY_TEST
 	if ( isnan(x) )
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
 }
 
 // Тест на положительное целое и не NaN
 // Синтаксис вызова test_nan(x, __FILE__, __LINE__);
 void test_positive (double x, char *file, int line)
 {
+#ifdef MY_TEST
 	if ( isnan(x) )
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	if ( x < 0 )
 		printf("Error: x<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
 }
 
 // Тест на корректность параметров задачи
 void read_defines_test(consts def)
 {
+#ifdef MY_TEST
 	test_positive(def.hx, __FILE__, __LINE__);
 	test_positive(def.hy, __FILE__, __LINE__);
 	test_positive(def.hz, __FILE__, __LINE__);
@@ -84,6 +89,8 @@ void read_defines_test(consts def)
 	test_positive(def.S_g_gr, __FILE__, __LINE__);
 #else
 	test_positive(def.S_n_gr, __FILE__, __LINE__);
+#endif
+
 #endif
 	
 }

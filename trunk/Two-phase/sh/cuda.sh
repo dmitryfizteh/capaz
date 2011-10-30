@@ -21,5 +21,6 @@ done;
   ARCH='20'
 #
 nvcc -D TWO_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
-mpiCC  -D TWO_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp gpu.o -o ../Debug/cuda.px
+nvcc -D TWO_PHASE -c -arch sm_$ARCH shared_test.o ../../shared_test.cu
+mpiCC  -D TWO_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp.. /../shared_test.cpp gpu.o shared_test.o -o ../Debug/cuda.px
 mpirun -np 1 -maxtime $1 ../Debug/cuda.px
