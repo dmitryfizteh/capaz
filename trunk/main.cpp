@@ -691,12 +691,12 @@ void read_defines(int argc, char *argv[], consts* def)
 		{(*def).tau = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"DT")) 
 		{(*def).dt = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"L_W")) 
-		{(*def).l_w = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"L_N")) 
-		{(*def).l_n = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"C")) 
-		{(*def).c = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"C_W")) 
+		{(*def).c_w = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"C_N")) 
+		{(*def).c_n = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"L")) 
+		{(*def).l = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"BETA_W")) 
 		{(*def).beta_w = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"BETA_N")) 
@@ -714,8 +714,8 @@ void read_defines(int argc, char *argv[], consts* def)
 		if(!strcmp(attr_name,"P_ATM")) 
 		{(*def).P_atm = atof(attr_value); continue;}
 #ifdef THREE_PHASE
-		if(!strcmp(attr_name,"L_G")) 
-		{(*def).l_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"C_G")) 
+		{(*def).c_g = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"BETA_G")) 
 		{(*def).beta_g = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"RO_G")) 

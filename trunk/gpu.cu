@@ -345,17 +345,17 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, int localNx, double t
 		}
 		else
 		{
-			divgrad1 = ((*gpu_def).m[media] * ((*gpu_def).l_w) * ((*gpu_def).c) / 2.) * (DevArraysPtr.ro_w[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * (1. - DevArraysPtr.S_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)]) - 2 * DevArraysPtr.ro_w[local] * (1. - S_n) + DevArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * (1. - DevArraysPtr.S_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hz) * ((*gpu_def).hz));
-			divgrad2 = ((*gpu_def).m[media] * ((*gpu_def).l_n) * ((*gpu_def).c) / 2.) * (DevArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] - 2 * DevArraysPtr.ro_n[local] * S_n + DevArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * (DevArraysPtr.S_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hz) * ((*gpu_def).hz));
+			divgrad1 = ((*gpu_def).m[media] * ((*gpu_def).l) * ((*gpu_def).c_w) / 2.) * (DevArraysPtr.ro_w[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * (1. - DevArraysPtr.S_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)]) - 2 * DevArraysPtr.ro_w[local] * (1. - S_n) + DevArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * (1. - DevArraysPtr.S_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hz) * ((*gpu_def).hz));
+			divgrad2 = ((*gpu_def).m[media] * ((*gpu_def).l) * ((*gpu_def).c_n) / 2.) * (DevArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] - 2 * DevArraysPtr.ro_n[local] * S_n + DevArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * (DevArraysPtr.S_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hz) * ((*gpu_def).hz));
 			Tz1 = (DevArraysPtr.ro_w[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.uz_w[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] - DevArraysPtr.ro_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.uz_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)]) / (2. * ((*gpu_def).hz));
 			Tz2 = (DevArraysPtr.ro_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.uz_n[i+j*localNx+(k+1)*localNx*((*gpu_def).Ny)] - DevArraysPtr.ro_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)] * DevArraysPtr.uz_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)]) / (2. * ((*gpu_def).hz));
 		}
 
-		divgrad1 += ((*gpu_def).m[media] * ((*gpu_def).l_w) * ((*gpu_def).c) / 2.) *
+		divgrad1 += ((*gpu_def).m[media] * ((*gpu_def).l) * ((*gpu_def).c_w) / 2.) *
 		((DevArraysPtr.ro_w[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] * (1 - DevArraysPtr.S_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)]) - 2 * DevArraysPtr.ro_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] * (1 - S_n) + DevArraysPtr.ro_w[i-1+j*localNx+k*localNx*((*gpu_def).Ny)] * (1 - DevArraysPtr.S_n[i-1+j*localNx+k*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hx) * ((*gpu_def).hx)) +
 		(DevArraysPtr.ro_w[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)] * (1 - DevArraysPtr.S_n[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)]) - 2 * DevArraysPtr.ro_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] * (1 - S_n) + DevArraysPtr.ro_w[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)] * (1 - DevArraysPtr.S_n[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)])) / (((*gpu_def).hy) * ((*gpu_def).hy)));
 
-		divgrad2 += ((*gpu_def).m[media] * ((*gpu_def).l_n) * ((*gpu_def).c) / 2.) *
+		divgrad2 += ((*gpu_def).m[media] * ((*gpu_def).l) * ((*gpu_def).c_n) / 2.) *
 		((DevArraysPtr.ro_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] - 2 * DevArraysPtr.ro_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] * S_n + DevArraysPtr.ro_n[i-1+j*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i-1+j*localNx+k*localNx*((*gpu_def).Ny)]) / (((*gpu_def).hx) * ((*gpu_def).hx)) +
 		(DevArraysPtr.ro_n[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)] - 2 * DevArraysPtr.ro_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] * S_n + DevArraysPtr.ro_n[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.S_n[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)]) / (((*gpu_def).hy) * ((*gpu_def).hy)));
 
