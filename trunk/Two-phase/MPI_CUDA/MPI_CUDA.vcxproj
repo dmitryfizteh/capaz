@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\gpu.cu" />
+    <CudaCompile Include="..\..\shared_test.cu" />
     <CudaCompile Include="..\two-phase.cu" />
   </ItemGroup>
   <ItemGroup>

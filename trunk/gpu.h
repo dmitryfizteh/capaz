@@ -2,8 +2,7 @@
 #include <cuda.h>
 
 #ifdef MY_TEST
-__device__ void test_nan (double x, char *file, int line);
-__device__ void test_positive (int x, char *file, int line);
+void gpu_test_nan(double* HostArrayPtr, double* DevArrayPtr, int rank, int size, int localNx, consts def, char* file, int line);
 void checkErrors(char *label);
 #endif
 
