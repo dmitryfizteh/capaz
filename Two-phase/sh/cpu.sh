@@ -19,5 +19,5 @@ done;
     dos2unix $i;
   done;
 #
-mpiCC -D TWO_PHASE ../../main.cpp ../../no_communication.cpp ../../cpu.cpp ../two-phase.cpp -o ../Debug/cpu.px
+mpiCC -D TWO_PHASE ../../main.cpp ../../no_communication.cpp ../../cpu.cpp ../../shared_test.cpp ../two-phase.cpp -o ../Debug/cpu.px
 mpirun -np 1 -maxtime $1 ../Debug/cpu.px
