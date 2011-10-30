@@ -115,11 +115,9 @@ extern void read_defines(int argc, char *argv[], consts* def);
 extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts def);
 #endif
 
-#ifdef MY_TEST
 extern void test_nan (double x, char *file, int line);
 extern void test_positive (double x, char *file, int line);
 extern void read_defines_test(consts def);
-#endif
 
 // Расчеты в каждой точке
 extern int i_to_I(int i, int rank, int size, consts def);
