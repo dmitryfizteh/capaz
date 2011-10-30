@@ -126,13 +126,13 @@ void Border(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank
 //Задание граничных условий отдельно для Sw,Sg,Pn
 void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
-	if ((i == 0) && ((def.Nx)>2))
+	if ((i == 0) && ((def.Nx)>2) && (j != (def.Ny) - 1) && (j !=0))
 	{
 		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + 1 + j * localNx + k * localNx * (def.Ny)];
 		return;
 	}
 
-	if ((i == localNx - 1) && ((def.Nx) > 2))
+	if ((i == localNx - 1) && ((def.Nx) > 2) && (j != (def.Ny) - 1) && (j !=0))
 	{
 		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i - 1 + j * localNx + k * localNx * (def.Ny)];
 		return;
@@ -161,13 +161,13 @@ void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 	
 
 
-	if ((k == 0) && ((def.Nz) > 2))
+	if ((k == 0) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Nx) - 1) && (i !=0))
 	{
 		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + j * localNx + (k + 1) * localNx * (def.Ny)];
 		return;
 	}
 
-	if ((k == (def.Nz) - 1) && ((def.Nz) > 2))
+	if ((k == (def.Nz) - 1) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Nx) - 1) && (i !=0))
 	{
 		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + j * localNx + (k - 1) * localNx * (def.Ny)];
 		return;
@@ -176,7 +176,7 @@ void Border_Sw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 
 void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
-	if ((i == 0) && ((def.Nx) > 2))
+	if ((i == 0) && ((def.Nx) > 2) && (j != (def.Ny) - 1) && (j !=0))
 	{
 		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + 1 + j * localNx + k * localNx * (def.Ny)];
 		return;
@@ -209,13 +209,13 @@ void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 	}
 
 
-	if ((k == 0) && ((def.Nz) > 2))
+	if ((k == 0) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Nx) - 1) && (i !=0))
 	{
 		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + j * localNx + (k + 1) * localNx * (def.Ny)];
 		return;
 	}
 
-	if ((k == (def.Nz) - 1) && ((def.Nz) > 2))
+	if ((k == (def.Nz) - 1) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Nx) - 1) && (i !=0))
 	{
 		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + j * localNx + (k - 1) * localNx * (def.Ny)];
 		return;
@@ -225,13 +225,13 @@ void Border_Sg(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 
 void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
-	if ((i == 0) && ((def.Nx) > 2))
+	if ((i == 0) && ((def.Nx) > 2) && (j != (def.Ny) - 1) && (j !=0))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + 1 + j * localNx + k * localNx * (def.Ny)]; 
 		return;
 	}
 
-	if ((i == localNx - 1) && ((def.Nx) > 2))
+	if ((i == localNx - 1) && ((def.Nx) > 2) && (j != (def.Ny) - 1) && (j !=0))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i - 1 + j * localNx + k * localNx * (def.Ny)];
 		return;
@@ -240,7 +240,7 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 	if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
                 HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] 
-				+ HostArraysPtr.ro_n[i + localNx * 1] * (def.g_const) * (def.hy);
+				+ HostArraysPtr.ro_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] * (def.g_const) * (def.hy);
 		return;
 	}
 
@@ -250,13 +250,13 @@ void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, const
 		return;
 	}
 
-	if ((k == 0) && ((def.Nz) > 2))
+	if ((k == 0) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Nx) - 1) && (i !=0))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + (k + 1) * localNx*(def.Ny)]; 
 		return;
 	}
 
-	if ((k == (def.Nz) - 1) && ((def.Nz) > 2))
+	if ((k == (def.Nz) - 1) && ((def.Nz) > 2) && (j != (def.Ny) - 1) && (j !=0) && (i != (def.Ny) - 1) && (i !=0))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + (k - 1) * localNx * (def.Ny)];
 		return;
