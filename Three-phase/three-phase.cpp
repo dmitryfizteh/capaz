@@ -71,8 +71,8 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 	if ((i != 0) && (i != localNx - 1) && (j != 0) && (j != (def.Ny) - 1) && (((k != 0) && (k != (def.Nz) - 1)) || ((def.Nz) < 2)))
 	{
 		int media = HostArraysPtr.media[i + j * localNx + k * localNx * (def.Ny)];
-		double S_w_e, S_g_e, P_k_nw = 0, P_k_gn = 0, A, Sn, F1, F2, F3;
-		double PkSw = 0, PkSg = 0, F1P, F2P, F3P, F1Sw, F2Sw, F3Sw, F1Sg, F2Sg, F3Sg, det;
+		double S_w_e, S_g_e, P_k_nw, P_k_gn, A, Sn, F1, F2, F3;
+		double PkSw, PkSg, F1P, F2P, F3P, F1Sw, F2Sw, F3Sw, F1Sg, F2Sg, F3Sg, det;
 
 		for (int w = 1; w <= def.newton_iterations; w++)
 		{
@@ -87,15 +87,25 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 				PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)								/*6*/					
 					/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);		
 			}
+			else
+			{
+				P_k_nw = 0;
+				PkSw = 0;
+			}
 			if((S_g_e < 1.) && (S_g_e > 0.))
 			{	
 				P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);																		/*3*/
 				PkSg = (-1) * def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)				/*6*/
 					/(1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);	
 			}
+			else
+			{
+				P_k_gn = 0;
+				PkSg = 0;
+			}
 			
-			Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);					/*4*/
-        	
+			Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);				/*4*/
+
 			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw - def.P_atm))								/*5*/
 				* HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.roS_w[i + j * localNx + k * localNx * (def.Ny)];			
 			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - def.P_atm)) * Sn									/*5*/
