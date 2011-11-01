@@ -10,7 +10,6 @@
 //5. Вычисление капиллярных давлений в соответствии с приближенной моделью Паркера
 //6. Вычисление фазовых давлений c помощью капиллярных
 //7. Вычисление коэффициентов закона Дарси
-
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 
@@ -24,22 +23,22 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, con
 	double S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);	/*3*/
 
 	if((S_w_e < 1.) && (S_w_e > 0.))
-		double k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)),(def.lambda[media] - 1.) / def.lambda[media]), 2.);/*4*/
+		k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)),(def.lambda[media] - 1.) / def.lambda[media]), 2.);/*4*/
 
 	if((S_g_e < 1.) && (S_g_e > 0.))
-		double k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);	/*4*/
+		k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);	/*4*/
 
 	if((S_w_e > 0.) && (S_w_e < 1.) && (S_n_e > 0.) && (S_n_e < 1.))
 	{
 		double k_n_w = pow(1. - S_w_e, 0.5) * pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);	/*4*/
 		double k_n_g = pow(S_n_e, 0.5) * pow(1. - pow(1. - pow(S_n_e, def.lambda[media] / (def.lambda[media] - 1.)), (def.lambda[media] - 1.) / def.lambda[media]), 2.);/*4*/
-		double k_n = S_n_e * k_n_w * k_n_g / (1 - S_w_e) / (S_w_e + S_n_e);																								/*4*/
+		k_n = S_n_e * k_n_w * k_n_g / (1 - S_w_e) / (S_w_e + S_n_e);																									/*4*/
 	}
 
 	if((S_w_e < 1.) && (S_w_e > 0.))
-		double P_k_nw = def.P_d_nw[media] * pow(pow(S_w_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);								/*5*/
+		P_k_nw = def.P_d_nw[media] * pow(pow(S_w_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);									/*5*/
 	if((S_g_e < 1.) && (S_g_e > 0.))
-		double P_k_gn = def.P_d_nw[media] * pow(pow(1. - S_g_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);						/*5*/
+		P_k_gn = def.P_d_nw[media] * pow(pow(1. - S_g_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);								/*5*/
 
 	HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw;								/*6*/
 	HostArraysPtr.P_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn;								/*6*/
