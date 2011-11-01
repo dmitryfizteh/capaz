@@ -185,7 +185,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 #ifdef THREE_PHASE 
 						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_n) * (def.g_const)*(def.hy);
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
-						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+						
+/*						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
 							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=def.S_w_gr;
 						else
 							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0.3;
@@ -193,6 +194,9 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=def.S_g_gr;
 						else
 							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0.3;
+*/
+						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0.3;
+						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0.3;
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
