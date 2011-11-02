@@ -47,7 +47,6 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 					Newton(HostArraysPtr,i,j,k,localNx,def);
 }
 
-
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
 	for(int k = 0; k < (def.Nz); k++)
@@ -69,15 +68,16 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int 
 		}
 }	
 
-
-
 void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] - def.P_atm));
 	HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] - def.P_atm));
 #ifdef THREE_PHASE
 	HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)] - def.P_atm));
+	test_nan(HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 #endif
+	test_nan(HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 }
 
 
@@ -303,7 +303,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 			A1 = (2. * (def.dt) * (def.dt)) / (def.m[media] * ((def.dt) + 2. * (def.tau))) * (divgrad1 - Tx1 - Ty1 - Tz1 + (2. * HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * (def.tau)) / ((def.dt) * (def.dt)) + HostArraysPtr.roS_w_old[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * ((def.dt) - 2. * (def.tau)) / (2. * (def.dt) * (def.dt)));
 			A2 = (2. * (def.dt) * (def.dt)) / (def.m[media] * ((def.dt) + 2. * (def.tau))) * (divgrad2 - Tx2 - Ty2 - Tz2 + (2. * HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * (def.tau)) / ((def.dt) * (def.dt)) + HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * ((def.dt) - 2. * (def.tau)) / (2. * (def.dt) * (def.dt)));
 #ifdef THREE_PHASE
-			A3 = (2. * (def.dt) * (def.dt)) / (def.m[media] * ((def.dt) + 2. * (def.tau))) * (divgrad1 - Tx3 - Ty3 - Tz3 + (2. * HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * (def.tau)) / ((def.dt) * (def.dt)) + HostArraysPtr.roS_g_old[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * ((def.dt) - 2. * (def.tau)) / (2. * (def.dt) * (def.dt)));
+			A3 = (2. * (def.dt) * (def.dt)) / (def.m[media] * ((def.dt) + 2. * (def.tau))) * (divgrad3 - Tx3 - Ty3 - Tz3 + (2. * HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * (def.tau)) / ((def.dt) * (def.dt)) + HostArraysPtr.roS_g_old[i+j*localNx+k*localNx*(def.Ny)] * (def.m[media]) * ((def.dt) - 2. * (def.tau)) / (2. * (def.dt) * (def.dt)));
 #endif
 		}
 		HostArraysPtr.roS_w_old[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)];
