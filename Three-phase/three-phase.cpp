@@ -22,22 +22,22 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, con
 	double S_n_e = (Sn - def.S_nr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);                                                                                                                            
 	double S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);   
 
-	if((S_w_e < 1.) && (S_w_e > 0.))
+	//if((S_w_e < 1.) && (S_w_e > 0.))
 		k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)),(def.lambda[media] - 1.) / def.lambda[media]), 2.);
 
-	if((S_g_e < 1.) && (S_g_e > 0.))
+	//if((S_g_e < 1.) && (S_g_e > 0.))
 		k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);    
 
-	if((S_w_e > 0.) && (S_w_e < 1.) && (S_n_e > 0.) && (S_n_e < 1.))
-	{
+	//if((S_w_e > 0.) && (S_w_e < 1.) && (S_n_e > 0.) && (S_n_e < 1.))
+	//{
 		double k_n_w = pow(1. - S_w_e, 0.5) * pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);    
 		double k_n_g = pow(S_n_e, 0.5) * pow(1. - pow(1. - pow(S_n_e, def.lambda[media] / (def.lambda[media] - 1.)), (def.lambda[media] - 1.) / def.lambda[media]), 2.);
 		k_n = S_n_e * k_n_w * k_n_g / (1 - S_w_e) / (S_w_e + S_n_e);                                                                                                                                                                                                    
-	}
+	//}
 
-	if((S_w_e < 1.) && (S_w_e > 0.))
+	//if((S_w_e < 1.) && (S_w_e > 0.))
 		P_k_nw = def.P_d_nw[media] * pow(pow(S_w_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);                                                                        
-	if((S_g_e < 1.) && (S_g_e > 0.))
+	//if((S_g_e < 1.) && (S_g_e > 0.))
 		P_k_gn = def.P_d_nw[media] * pow(pow(1. - S_g_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);                                                          
 
 	HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw;                                                             
@@ -79,28 +79,28 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 
 			A = def.lambda[media];                                                                                                                                                                                                                                                                  /*2*/
 
-			if((S_w_e < 1.) && (S_w_e > 0.))
-			{
+			//if((S_w_e < 1.) && (S_w_e > 0.))
+			//{
 				P_k_nw = def.P_d_nw[media] * pow((pow(S_w_e, A / (1. - A)) - 1.), 1. / A);                                                                                                                                                     
 				PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)                                                                    
 					/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);           
-			}
-			else
+			//}
+			/*else
 			{
 				P_k_nw = 0;
 				PkSw = 0;
-			}
-			if((S_g_e < 1.) && (S_g_e > 0.))
-			{       
+			}*/
+			//if((S_g_e < 1.) && (S_g_e > 0.))
+			//{       
 				P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);                                                                                         
 				PkSg = (-1) * def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)           
 					/(1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);    
-			}
-			else
+			//}
+			/*else
 			{
 				P_k_gn = 0;
 				PkSg = 0;
-			}
+			}*/
 
 			Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);                        
 
