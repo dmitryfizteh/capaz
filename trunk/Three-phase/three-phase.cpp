@@ -202,7 +202,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 	if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] 
-		- (HostArraysPtr.ro_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] * (1. - HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) 
+		+ (HostArraysPtr.ro_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] * (1. - HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) 
 			+ HostArraysPtr.ro_w[i + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)]
 		+ HostArraysPtr.ro_g[i + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) * (def.g_const) * (def.hy);
 		return;
