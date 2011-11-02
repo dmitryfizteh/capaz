@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 
@@ -182,21 +182,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.y[i+j*localNx+k*localNx*(def.Ny)]=j*(def.hy);
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
-#ifdef THREE_PHASE 
-						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]=def.P_atm+j * (def.ro0_n) * (def.g_const)*(def.hy);
-						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)]=0;
+#ifdef THREE_PHASE
+						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
+						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
+						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * ((def.ro0_n) * (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)])
+							+ (def.ro0_w) * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] + (def.ro0_g) * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]) * (def.g_const)*(def.hy);
+						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)] = 0;
 						
-/*						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=def.S_w_gr;
-						else
-							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0.3;
-						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=def.S_g_gr;
-						else
-							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0.3;
-*/
-						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)]=0.3;
-						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]=0.3;
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
