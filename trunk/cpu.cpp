@@ -56,10 +56,16 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int 
 			int j;
 			for(j = 1; j < (def.Ny); j++)
 				if(is_active_point(i, localNx, rank, size))
-					Border(HostArraysPtr,i,j,k,localNx,rank,size,def);
+				{
+					Border_S(HostArraysPtr,i,j,k,localNx,rank,size,def);
+					Border_P(HostArraysPtr,i,j,k,localNx,def);
+				}
 			j = 0;
 			if(is_active_point(i, localNx, rank, size))
-				Border(HostArraysPtr,i,j,k,localNx,rank,size,def);
+			{
+				Border_S(HostArraysPtr,i,j,k,localNx,rank,size,def);
+				Border_P(HostArraysPtr,i,j,k,localNx,def);				
+			}
 		}
 }	
 
