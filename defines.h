@@ -69,6 +69,7 @@ struct consts_tag
 	double P_d[2];
 #endif
 #ifdef THREE_PHASE
+	double S_w_init, S_g_init;
 	double S_nr[2];
 	double S_gr[2];
 	double P_d_nw[2];

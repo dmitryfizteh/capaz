@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 	// Тест
-	save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 
@@ -183,8 +183,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 #ifdef THREE_PHASE
-						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
-						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = 0.3;
+						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_init;
+						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_init;
 						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * ((def.ro0_n) * (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)])
 							+ (def.ro0_w) * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] + (def.ro0_g) * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]) * (def.g_const)*(def.hy);
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)] = 0;
@@ -759,6 +759,10 @@ void read_defines(int argc, char *argv[], consts* def)
 		{(*def).S_w_gr = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_GR")) 
 		{(*def).S_g_gr = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_W_INIT")) 
+		{(*def).S_w_init = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_G_INIT")) 
+		{(*def).S_g_init = atof(attr_value); continue;}
 #else
 		if(!strcmp(attr_name,"S_N_GR")) 
 		{(*def).S_n_gr = atof(attr_value); continue;}

@@ -12,29 +12,40 @@
 //7. Вычисление коэффициентов закона Дарси
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
-	int media = HostArraysPtr.media[i + j * localNx + k * localNx * (def.Ny)];																						
-	double k_w, k_g, k_n_w, k_n_g, k_n, P_k_nw, P_k_gn;
-	double A = def.lambda[media];	
 
-	double S_w_e = (HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);								
-	double S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);																																																				
-	double S_n_e = 1. - S_w_e - S_g_e;	
+	int media = HostArraysPtr.media[i + j * localNx + k * localNx * (def.Ny)];                                                                                                                                                                            
+	double k_w = 0, k_g = 0, k_n = 0, P_k_nw = 0, P_k_gn = 0;
 
-	k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, A / (A - 1.)),(A - 1.) / A), 2.);																		
-	k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, A / (A - 1.)), 2. * (A - 1.) / A);																			
-	k_n_w = pow(1. - S_w_e, 0.5) * pow(1. - pow(S_w_e, A / (A - 1.)), 2. * (A - 1.) / A);																
-	k_n_g = pow(S_n_e, 0.5) * pow(1. - pow(1. - pow(S_n_e, A / (A - 1.)), (A - 1.) / A), 2.);															
-	k_n = S_n_e * k_n_w * k_n_g / (1 - S_w_e) / (S_w_e + S_n_e);																								
+	double Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);                                   
 
-	P_k_nw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A);																					
-	P_k_gn = def.P_d_nw[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A);																				
-		
-	HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw;								
-	HostArraysPtr.P_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn;								
-		
-	HostArraysPtr.Xi_w[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_w / def.mu_w;															
-	HostArraysPtr.Xi_n[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_n / def.mu_n;															
-	HostArraysPtr.Xi_g[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_g / def.mu_g;															
+	double S_w_e = (HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);   
+	double S_n_e = (Sn - def.S_nr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);                                                                                                                            
+	double S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);   
+
+	if((S_w_e < 1.) && (S_w_e > 0.))
+		k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)),(def.lambda[media] - 1.) / def.lambda[media]), 2.);
+
+	if((S_g_e < 1.) && (S_g_e > 0.))
+		k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);    
+
+	if((S_w_e > 0.) && (S_w_e < 1.) && (S_n_e > 0.) && (S_n_e < 1.))
+	{
+		double k_n_w = pow(1. - S_w_e, 0.5) * pow(1. - pow(S_w_e, def.lambda[media] / (def.lambda[media] - 1.)), 2. * (def.lambda[media] - 1.) / def.lambda[media]);    
+		double k_n_g = pow(S_n_e, 0.5) * pow(1. - pow(1. - pow(S_n_e, def.lambda[media] / (def.lambda[media] - 1.)), (def.lambda[media] - 1.) / def.lambda[media]), 2.);
+		k_n = S_n_e * k_n_w * k_n_g / (1 - S_w_e) / (S_w_e + S_n_e);                                                                                                                                                                                                    
+	}
+
+	if((S_w_e < 1.) && (S_w_e > 0.))
+		P_k_nw = def.P_d_nw[media] * pow(pow(S_w_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);                                                                        
+	if((S_g_e < 1.) && (S_g_e > 0.))
+		P_k_gn = def.P_d_nw[media] * pow(pow(1. - S_g_e, def.lambda[media] / (1. - def.lambda[media])) - 1., 1. / def.lambda[media]);                                                          
+
+	HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw;                                                             
+	HostArraysPtr.P_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn;                                                             
+
+	HostArraysPtr.Xi_w[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_w / def.mu_w;                                                                                                                 
+	HostArraysPtr.Xi_n[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_n / def.mu_n;                                                                                                                 
+	HostArraysPtr.Xi_g[i + j * localNx + k * localNx * (def.Ny)] = (-1.) * (def.K[media]) * k_g / def.mu_g;                                                                                                                 
 
 	test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
@@ -53,7 +64,6 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, con
 //7. Вычисление матрицы частных производных
 //8. Вычисление детерминанта матрицы частных производных
 //9. Получение решения системы методом Крамера в явном виде
-
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	if ((i != 0) && (i != localNx - 1) && (j != 0) && (j != (def.Ny) - 1) && (((k != 0) && (k != (def.Nz) - 1)) || ((def.Nz) < 2)))
@@ -64,44 +74,60 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 
 		for (int w = 1; w <= def.newton_iterations; w++)
 		{
-        	S_w_e = (HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);	
-			S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);	
+			S_w_e = (HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);   
+			S_g_e = (HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - def.S_gr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);   
 
-        	A = def.lambda[media];																																
+			A = def.lambda[media];                                                                                                                                                                                                                                                                  /*2*/
 
-			P_k_nw = def.P_d_nw[media] * pow((pow(S_w_e, A / (1. - A)) - 1.), 1. / A);	
-			PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)							
-				/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);							
-			P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);		
-			PkSg = (-1) * def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)				
-				/(1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);		
-			
-			Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);
+			if((S_w_e < 1.) && (S_w_e > 0.))
+			{
+				P_k_nw = def.P_d_nw[media] * pow((pow(S_w_e, A / (1. - A)) - 1.), 1. / A);                                                                                                                                                     
+				PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)                                                                    
+					/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);           
+			}
+			else
+			{
+				P_k_nw = 0;
+				PkSw = 0;
+			}
+			if((S_g_e < 1.) && (S_g_e > 0.))
+			{       
+				P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);                                                                                         
+				PkSg = (-1) * def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)           
+					/(1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);    
+			}
+			else
+			{
+				P_k_gn = 0;
+				PkSg = 0;
+			}
 
-			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw - def.P_atm))								
-				* HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.roS_w[i + j * localNx + k * localNx * (def.Ny)];			
-			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - def.P_atm)) * Sn									
+			Sn = (1. - HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]);                        
+
+			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw - def.P_atm))                                                               
+				* HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.roS_w[i + j * localNx + k * localNx * (def.Ny)];                  
+			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - def.P_atm)) * Sn                                                                  
 				- HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)];
-			F3 = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn - def.P_atm))								
+			F3 = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn - def.P_atm))                                                              
 				* HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] - HostArraysPtr.roS_g[i + j * localNx + k * localNx * (def.Ny)];
-        	
-			F1P = def.ro0_w * def.beta_w * HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)];		
-			F2P = def.ro0_n * def.beta_n * Sn;																												
-			F3P = def.ro0_g * def.beta_g * HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)];																				
+
+			F1P = def.ro0_w * def.beta_w * HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)];                                                                                                                             
+			F2P = def.ro0_n * def.beta_n * Sn;                                                                                                                                                                                                                                    
+			F3P = def.ro0_g * def.beta_g * HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)];                                                                                                                                                
 			F1Sw = def.ro0_w * (1 + def.beta_w * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - P_k_nw - def.P_atm
-				- HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] * PkSw));																				
-			F2Sw = F2Sg = (-1) * def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - def.P_atm));				     		
-			F3Sw = F1Sg = 0;																																	
-			F3Sg = def.ro0_g * (1 + def.beta_g * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn - def.P_atm									
+				- HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] * PkSw));                                                                                                                                                         
+			F2Sw = F2Sg = (-1) * def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] - def.P_atm));                                         
+			F3Sw = F1Sg = 0;                                                                                                                                                                                                                                                                     
+			F3Sg = def.ro0_g * (1 + def.beta_g * (HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] + P_k_gn - def.P_atm                                                                  
 				+ HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] * PkSg));
-        	
-			det = F1P * F2Sw * F3Sg - F1Sw * (F2P * F3Sg - F2Sg * F3P);																							
-        	
-			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)]								
+
+			det = F1P * F2Sw * F3Sg - F1Sw * (F2P * F3Sg - F2Sg * F3P);                                                                                                                                                                                         
+
+			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)]                                                              
 			- (1. / det) * (F2Sw * F3Sg * F1 - F1Sw * F3Sg * F2 + F1Sw * F2Sg * F3);
-			HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)]								
+			HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)]                                                              
 			- (1. / det) * ((F2Sg * F3P - F2P * F3Sg) * F1 + F1P * F3Sg * F2 - F1P * F2Sg * F3);
-			HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]								
+			HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)]                                                              
 			- (1. / det) * (F3P * F1Sw * F2 - F3P * F2Sw * F1 + (F1P*F2Sw - F2P * F1Sw) * F3);
 
 			test_nan(HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
