@@ -12,7 +12,6 @@
 //7. Вычисление коэффициентов закона Дарси
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
-
 	int media = HostArraysPtr.media[i + j * localNx + k * localNx * (def.Ny)];																						/*1*/
 	
 	double k_w = 0, k_g = 0, k_n = 0, P_k_nw = 0, P_k_gn = 0;
@@ -139,15 +138,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 	}
 }
 
-//Вызов "персональных" граничных условий
-void Border(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
-{
-	Border_S(HostArraysPtr, i, j, k, localNx, rank, size, def);
-	Border_Pn(HostArraysPtr, i, j, k, localNx, def);
-	return;
-}
-
-//Задание граничных условий отдельно для Sw,Sg,Pn
+//Задание граничных условий отдельно для (Sw,Sg),Pn
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
 	if ((j == 0) && ((def.Ny) > 2))
@@ -193,23 +184,27 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 	}
 }
 
-void Border_Pn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	if ((j==0) && ((def.Ny) > 2))
 	{
 		//Если верхний слой - это открытая поверхность
 		//HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = def.P_atm;
 
-		//Если рассматриваемая область лежит внутри
+		//Если ставим условие на градиент давления, а не на значение.
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j + 1) * localNx + k * localNx *(def.Ny)] 
-		- HostArraysPtr.ro_n[i + (j + 1) * localNx + k * localNx *(def.Ny)] * (def.g_const) * (def.hy);
+		- (HostArraysPtr.ro_n[i + (j + 1) * localNx + k * localNx *(def.Ny)] * (1. - HostArraysPtr.S_w[i + (j + 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + (j + 1) * localNx + k * localNx * (def.Ny)]) 
+		+ HostArraysPtr.ro_w[i + (j + 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_w[i + (j + 1) * localNx + k * localNx * (def.Ny)]
+		+ HostArraysPtr.ro_g[i + (j + 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_g[i + (j + 1) * localNx + k * localNx * (def.Ny)]) * (def.g_const) * (def.hy);
 		return;
 	}
 
 	if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] 
-		+ HostArraysPtr.ro_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] * (def.g_const) * (def.hy);
+		- (HostArraysPtr.ro_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] * (1. - HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) 
+			+ HostArraysPtr.ro_w[i + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)]
+		+ HostArraysPtr.ro_g[i + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) * (def.g_const) * (def.hy);
 		return;
 	}
 	if ((i == 0) && ((def.Nx) > 2))

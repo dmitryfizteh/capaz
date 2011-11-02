@@ -49,14 +49,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 	}
 }
 
-void Border(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
-{
-	Border_Sn(HostArraysPtr, i, j, k, localNx, rank, size, def);
-	Border_Pw(HostArraysPtr, i, j, k, localNx, def);
-	return;
-}
-
-void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
+void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
 	if ((i == 0) && ((def.Nx)>2))
 	{
@@ -104,7 +97,7 @@ void Border_Sn(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int r
 	}
 }
 
-void Border_Pw(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	if ((i == 0) && ((def.Nx)>2))
 	{
