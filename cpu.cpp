@@ -50,11 +50,17 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
-	for(int i=0;i<localNx;i++)
-		for(int j=0;j<(def.Ny);j++)
-			for(int k=0;k<(def.Nz);k++)
+	for(int k = 0; k < (def.Nz); k++)
+		for(int i = 0; i < localNx; i++)
+		{
+			int j;
+			for(j = 1; j < (def.Ny); j++)
 				if(is_active_point(i, localNx, rank, size))
 					Border(HostArraysPtr,i,j,k,localNx,rank,size,def);
+			j = 0;
+			if(is_active_point(i, localNx, rank, size))
+				Border(HostArraysPtr,i,j,k,localNx,rank,size,def);
+		}
 }	
 
 
