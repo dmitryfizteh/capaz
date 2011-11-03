@@ -9,13 +9,13 @@ double *DevBuffer;
 int main(int argc, char* argv[])
 {
 #ifdef TWO_PHASE
-	std::cout << "Two phase filtration by CAPAZ\n";
+	std::cout << "Two phase filtration by CAPAZ\n\n";
 #endif
 #ifdef THREE_PHASE
-	std::cout << "Three phase filtration by CAPAZ\n";
+	std::cout << "Three phase filtration by CAPAZ\n\n";
 #endif
 #ifdef B_L
-	std::cout << "Backley-Leverett filtration by CAPAZ\n";
+	std::cout << "Backley-Leverett filtration by CAPAZ\n\n";
 #endif
 
 	consts def;

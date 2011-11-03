@@ -81,7 +81,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\defines.h" />
     <ClInclude Include="..\two-phase.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cpu.cpp" />
@@ -92,9 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\defines.ini" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CPU.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
