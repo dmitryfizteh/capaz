@@ -656,11 +656,18 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
         printf ( "Registers per block : %d\n", devProp.regsPerBlock );
         printf ( "Warp size : %d\n", devProp.warpSize );
         printf ( "Max threads per block : %d\n", devProp.maxThreadsPerBlock );
-        printf ( "Total constant memory : %d\n\n", devProp.totalConstMem );
+        printf ( "Total constant memory : %d\n", devProp.totalConstMem );
+		printf ( "Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
+		printf ( "Kernel execution timeout: %s\n\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
+		for (int i = 0; i < 3; ++i)
+			printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
+		for (int i = 0; i < 3; ++i)
+			printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
+
 
 		// Максимальный размер расчетной сетки для ускорителя
 		// 21 - количество параметров в точке
-		printf ( "Total NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(21*sizeof(double)) );
+		printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(21*sizeof(double)) );
 
 		// localNX+2 потому что 2NyNz на буфер обмена выделяется
 		if ((localNx+2)*(def.Ny)*(def.Nz) > (devProp.totalGlobalMem/(21*sizeof(double))))
