@@ -78,7 +78,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 		if ((I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
 			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = def.S_n_gr;
 		else
-			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
+			//HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
+			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+(j+1)*localNx+k*localNx*(def.Ny)];
 		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 		return;
 	}
