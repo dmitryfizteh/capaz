@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 
@@ -187,8 +187,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_init;
 						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * ((def.ro0_n) * (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)])
 							+ (def.ro0_w) * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] + (def.ro0_g) * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]) * (def.g_const)*(def.hy);
-						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)] = 0;
-						
+						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)] = 0;						
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
@@ -672,6 +671,10 @@ void read_defines(int argc, char *argv[], consts* def)
 	(*def).S_nr[1]=S_nr[1];
 	(*def).S_gr[0]=S_gr[0];
 	(*def).S_gr[1]=S_gr[1];
+	(*def).S_w_range[0]=S_w_range[0];
+	(*def).S_w_range[1]=S_w_range[1];
+	(*def).S_g_range[0]=S_g_range[0];
+	(*def).S_g_range[1]=S_g_range[1];
 	(*def).P_d_nw[0]=P_d_nw[0];
 	(*def).P_d_nw[1]=P_d_nw[1];
 	(*def).P_d_gn[0]=P_d_gn[0];
