@@ -25,23 +25,7 @@
 #include <sys/stat.h>
 #endif
 
-#ifdef THREE_PHASE
-//	const double S_wr[2]={0.02,0.02};
-//	const double S_nr[2]={0.01,0.01};
-//	const double S_gr[2]={0.01,0.01};
-	const double S_wr[2]={0.0,0.0};
-	const double S_nr[2]={0.0,0.0};
-	const double S_gr[2]={0.0,0.0};
-	const double S_w_range[2]={0.5,0.85};
-	const double S_g_range[2]={0.1,0.45};
-	const double K[2]={6.64e-11,7.15e-12};
-	const double m[2]={0.4,0.39};
-	const double lambda[2]={3.25,3.25};
-//	const double P_d_nw[2]={3125,3125};
-//	const double P_d_gn[2]={1042,1042};
-	const double P_d_nw[2]={0,0};
-	const double P_d_gn[2]={0,0};
-#else
+#ifndef THREE_PHASE
 	const double K[2]={6.64e-11,7.15e-12};
 	const double lambda[2]={2.7,2.0};
 	const double S_wr[2]={0.09,0.12};

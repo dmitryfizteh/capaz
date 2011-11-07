@@ -654,6 +654,11 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, int size, int localNx,
 // —читывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)
 {
+#ifdef TWO_PHASE
+	(*def).P_d[0]=P_d[0];
+	(*def).P_d[1]=P_d[1];
+#endif
+#ifndef THREE_PHASE
 	(*def).K[0]=K[0];
 	(*def).K[1]=K[1];
 	(*def).lambda[0]=lambda[0];
@@ -662,23 +667,6 @@ void read_defines(int argc, char *argv[], consts* def)
 	(*def).S_wr[1]=S_wr[1];
 	(*def).m[0]=m[0];
 	(*def).m[1]=m[1];
-#ifdef TWO_PHASE
-	(*def).P_d[0]=P_d[0];
-	(*def).P_d[1]=P_d[1];
-#endif
-#ifdef THREE_PHASE
-	(*def).S_nr[0]=S_nr[0];
-	(*def).S_nr[1]=S_nr[1];
-	(*def).S_gr[0]=S_gr[0];
-	(*def).S_gr[1]=S_gr[1];
-	(*def).S_w_range[0]=S_w_range[0];
-	(*def).S_w_range[1]=S_w_range[1];
-	(*def).S_g_range[0]=S_g_range[0];
-	(*def).S_g_range[1]=S_g_range[1];
-	(*def).P_d_nw[0]=P_d_nw[0];
-	(*def).P_d_nw[1]=P_d_nw[1];
-	(*def).P_d_gn[0]=P_d_gn[0];
-	(*def).P_d_gn[1]=P_d_gn[1];
 #endif
 
 	FILE *defs;
@@ -750,6 +738,19 @@ void read_defines(int argc, char *argv[], consts* def)
 		if(!strcmp(attr_name,"P_ATM")) 
 		{(*def).P_atm = atof(attr_value); continue;}
 #ifdef THREE_PHASE
+		if(!strcmp(attr_name,"LAMBDA_0")) 
+		{(*def).lambda[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"LAMBDA_1")) 
+		{(*def).lambda[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"K_0")) 
+		{(*def).K[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"K_1")) 
+		{(*def).K[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"M_0")) 
+		{(*def).m[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"M_1")) 
+		{(*def).m[1] = atof(attr_value); continue;}
+
 		if(!strcmp(attr_name,"C_G")) 
 		{(*def).c_g = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"BETA_G")) 
@@ -758,6 +759,14 @@ void read_defines(int argc, char *argv[], consts* def)
 		{(*def).ro0_g = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"MU_G")) 
 		{(*def).mu_g = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"P_D_NW_0")) 
+		{(*def).P_d_nw[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"P_D_NW_1")) 
+		{(*def).P_d_nw[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"P_D_GN_0")) 
+		{(*def).P_d_gn[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"P_D_GN_1")) 
+		{(*def).P_d_gn[1] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_GR")) 
 		{(*def).S_w_gr = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_GR")) 
@@ -766,6 +775,26 @@ void read_defines(int argc, char *argv[], consts* def)
 		{(*def).S_w_init = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_INIT")) 
 		{(*def).S_g_init = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_WR_0")) 
+		{(*def).S_wr[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_WR_1")) 
+		{(*def).S_wr[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_NR_0")) 
+		{(*def).S_nr[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_NR_1")) 
+		{(*def).S_nr[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_GR_0")) 
+		{(*def).S_gr[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_GR_1")) 
+		{(*def).S_gr[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_W_RANGE_0")) 
+		{(*def).S_w_range[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_W_RANGE_1")) 
+		{(*def).S_w_range[1] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_G_RANGE_0")) 
+		{(*def).S_g_range[0] = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_G_RANGE_1")) 
+		{(*def).S_g_range[1] = atof(attr_value); continue;}
 #else
 		if(!strcmp(attr_name,"S_N_GR")) 
 		{(*def).S_n_gr = atof(attr_value); continue;}
