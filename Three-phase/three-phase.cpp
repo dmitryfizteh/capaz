@@ -320,6 +320,18 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 
 	if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
+		// ≈сли на нижнем слое давление фиксированное
+//		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = 1.054e+5;
+		//HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = (def.P_atm) * ((def.ro0_w) * (def.S_w_init) + (def.ro0_n) * (1. - (def.S_w_init) - (def.S_g_init)) + (def.ro0_g) * (def.S_g_init)) * (def.g_const) * (def.hy) * (def.Ny);
+		// ≈сли на нижних двух сло€х давление одинаковое
+/*		if ((i != 0) && (i != localNx - 1))
+			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx *(def.Ny)];
+		else if(i == 0)
+			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + 1 + (j - 1) * localNx + k * localNx *(def.Ny)]; 
+		else
+			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i - 1 + (j - 1) * localNx + k * localNx *(def.Ny)];
+*/
+		// ≈сли на нижней границе есть градиент давлени€
 		if ((i != 0) && (i != localNx - 1))
 		{
 			HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx *(def.Ny)] 
@@ -340,7 +352,8 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 			+ (HostArraysPtr.ro_n[i - 1 + (j - 1) * localNx + k * localNx *(def.Ny)] * (1. - HostArraysPtr.S_w[i - 1 + (j - 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i - 1 + (j - 1) * localNx + k * localNx * (def.Ny)]) 
 				+ HostArraysPtr.ro_w[i - 1 + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_w[i - 1 + (j - 1) * localNx + k * localNx * (def.Ny)]
 			+ HostArraysPtr.ro_g[i - 1 + (j - 1) * localNx + k * localNx *(def.Ny)] * HostArraysPtr.S_g[i - 1 + (j - 1) * localNx + k * localNx * (def.Ny)]) * (def.g_const) * (def.hy);
-		}	
+		}
+
 		return;
 	}
 	
