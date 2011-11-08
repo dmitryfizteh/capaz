@@ -31,6 +31,13 @@
 	const double S_wr[2]={0.09,0.12};
 	const double m[2]={0.4,0.39};
 	const double P_d[2]={755,2060};
+#else
+	const double aw[2] = {-15250, -12810};
+	const double bw[2] = {9241, 13630};
+	const double ag[2] = {4270, 13210};
+	const double bg[2] = {273, -9025};
+	const double S_w_range[3] = {0.001, 0.2, 0.97};
+	const double S_g_range[3] = {0.001, 0.03, 0.9};
 #endif
 
 struct ptr_Arrays_tag 
@@ -63,11 +70,12 @@ struct consts_tag
 	double S_w_init, S_g_init;
 	double S_nr[2];
 	double S_gr[2];
-	double S_w_range[2];
-	double S_g_range[2];
 	double P_d_nw[2];
 	double P_d_gn[2];
 	double c_g, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
+	double aw[2], bw[2], ag[2], bg[2];
+	double S_w_range[3];
+	double S_g_range[3];
 #else
 	double S_n_gr;
 #endif

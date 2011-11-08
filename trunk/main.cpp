@@ -667,6 +667,21 @@ void read_defines(int argc, char *argv[], consts* def)
 	(*def).S_wr[1]=S_wr[1];
 	(*def).m[0]=m[0];
 	(*def).m[1]=m[1];
+#else
+	(*def).aw[0]=aw[0];
+	(*def).aw[1]=aw[1];
+	(*def).bw[0]=bw[0];
+	(*def).bw[1]=bw[1];
+	(*def).ag[0]=ag[0];
+	(*def).ag[1]=ag[1];
+	(*def).bg[0]=bg[0];
+	(*def).bg[1]=bg[1];
+	(*def).S_w_range[0]=S_w_range[0];
+	(*def).S_w_range[1]=S_w_range[1];
+	(*def).S_w_range[2]=S_w_range[2];
+	(*def).S_g_range[0]=S_g_range[0];
+	(*def).S_g_range[1]=S_g_range[1];
+	(*def).S_g_range[2]=S_g_range[2];
 #endif
 
 	FILE *defs;
@@ -788,13 +803,14 @@ void read_defines(int argc, char *argv[], consts* def)
 		if(!strcmp(attr_name,"S_GR_1")) 
 		{(*def).S_gr[1] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_RANGE_0")) 
-		{(*def).S_w_range[0] = atof(attr_value); continue;}
+/*		{(*def).S_w_range[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_RANGE_1")) 
 		{(*def).S_w_range[1] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_RANGE_0")) 
 		{(*def).S_g_range[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_RANGE_1")) 
 		{(*def).S_g_range[1] = atof(attr_value); continue;}
+*/
 #else
 		if(!strcmp(attr_name,"S_N_GR")) 
 		{(*def).S_n_gr = atof(attr_value); continue;}
