@@ -89,14 +89,14 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 		{
 #ifdef THREE_PHASE
 			// Если границы области непроницаемые
-			HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
+/*			HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
 			HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
 			HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)] = 0;
-			// Если границы области "прозрачные"
-/*			HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_w[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
+*/			// Если границы области "прозрачные"
+			HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_w[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 			HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_n[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 			HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_g[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
-*/
+
 #else
 			HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_w[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 			HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_n[i+1+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
@@ -108,14 +108,14 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 			{
 #ifdef THREE_PHASE
 				// Если границы области непроницаемые
-				HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
+/*				HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
 				HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
 				HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)] = 0;
-				// Если границы области "прозрачные"
-/*				HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_g[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
+*/				// Если границы области "прозрачные"
+				HostArraysPtr.ux_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_g[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 				HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_w[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 				HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_n[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
-*/
+
 #else
 				HostArraysPtr.ux_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_w[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
 				HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] * (HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.P_n[i-1+j*localNx+k*localNx*(def.Ny)]) / (def.hx);
@@ -175,11 +175,11 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 			{
 #ifdef THREE_PHASE
 				// Если границы области непроницаемые
-				HostArraysPtr.uy_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
+/*				HostArraysPtr.uy_w[i+j*localNx+k*localNx*(def.Ny)] = 0;
 				HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
 				HostArraysPtr.uy_g[i+j*localNx+k*localNx*(def.Ny)] = 0;
-				// Если границы области "прозрачные"
-/*				HostArraysPtr.uy_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] * 
+*/				// Если границы области "прозрачные"
+				HostArraysPtr.uy_g[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_g[i+j*localNx+k*localNx*(def.Ny)] * 
 					((HostArraysPtr.P_g[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.ro_g[i+j*localNx+k*localNx*(def.Ny)] * (def.g_const) * j * (def.hy)) 
 					- (HostArraysPtr.P_g[i+(j-1)*localNx+k*localNx*(def.Ny)] - HostArraysPtr.ro_g[i+(j-1)*localNx+k*localNx*(def.Ny)] * (def.g_const) * (j-1) * (def.hy)))/ def.hy;
 				HostArraysPtr.uy_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * 
@@ -188,7 +188,7 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 				HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)] * 
 					((HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)] * (def.g_const) * j * (def.hy)) 
 					- (HostArraysPtr.P_n[i+(j-1)*localNx+k*localNx*(def.Ny)] - HostArraysPtr.ro_n[i+(j-1)*localNx+k*localNx*(def.Ny)] * (def.g_const) * (j-1) * (def.hy)))/ def.hy;
-*/
+
 #else
 				HostArraysPtr.uy_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.Xi_w[i+j*localNx+k*localNx*(def.Ny)] * 
 				((HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.ro_w[i+j*localNx+k*localNx*(def.Ny)] * (def.g_const) * j * (def.hy)) 
