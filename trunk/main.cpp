@@ -513,7 +513,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */					
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.ux_n[local], 
 							(-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
