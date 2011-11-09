@@ -417,7 +417,10 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 		Ty2 = (HostArraysPtr.ro_n[i+(j+1)*localNx+k*localNx*(def.Ny)] * HostArraysPtr.uy_n[i+(j+1)*localNx+k*localNx*(def.Ny)]
 			- HostArraysPtr.ro_n[i+(j-1)*localNx+k*localNx*(def.Ny)] * HostArraysPtr.uy_n[i+(j-1)*localNx+k*localNx*(def.Ny)]) / (2. * (def.hy));
 
-		if (t < 2 * (def.dt))
+			test_arrowhead(Tx1+Ty1+Tz1, divgrad1, __FILE__, __LINE__);
+			test_arrowhead(Tx2+Ty2+Tz2, divgrad2, __FILE__, __LINE__);
+
+		if ((t < 2 * (def.dt)) || TWO_LAYERS)
 		{
 			A1 = HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] + ((def.dt) / def.m[media]) * (divgrad1 - Tx1 - Ty1 - Tz1);
 			A2 = HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)] + ((def.dt) / def.m[media]) * (divgrad2 - Tx2 - Ty2 - Tz2);
