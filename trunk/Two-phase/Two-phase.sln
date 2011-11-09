@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDA", "CUDA\CUDA.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPI_CUDA", "MPI_CUDA\MPI_CUDA.vcxproj", "{540A134D-A775-4002-BDDE-3DB171870FB7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "INPUT", "INPUT\INPUT.vcxproj", "{7091D5D7-2D95-44AB-86C7-795853816C74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +32,10 @@ Global
 		{540A134D-A775-4002-BDDE-3DB171870FB7}.Debug|Win32.Build.0 = Debug|Win32
 		{540A134D-A775-4002-BDDE-3DB171870FB7}.Release|Win32.ActiveCfg = Release|Win32
 		{540A134D-A775-4002-BDDE-3DB171870FB7}.Release|Win32.Build.0 = Release|Win32
+		{7091D5D7-2D95-44AB-86C7-795853816C74}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7091D5D7-2D95-44AB-86C7-795853816C74}.Debug|Win32.Build.0 = Debug|Win32
+		{7091D5D7-2D95-44AB-86C7-795853816C74}.Release|Win32.ActiveCfg = Release|Win32
+		{7091D5D7-2D95-44AB-86C7-795853816C74}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -51,20 +51,6 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
-	if ((i == 0) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
-	{
-		HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+1+j*localNx+k*localNx*(def.Ny)];
-		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-		return;
-	}
-
-	if ((i == localNx - 1) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
-	{
-		HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i-1+j*localNx+k*localNx*(def.Ny)];
-		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-		return;
-	}
-
 	if ((j == (def.Ny) - 1) && ((def.Ny)>2))
 	{
 		HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+(j-1)*localNx+k*localNx*(def.Ny)];
@@ -80,6 +66,20 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 		else
 			//HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
 			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+(j+1)*localNx+k*localNx*(def.Ny)];
+		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		return;
+	}
+
+	if ((i == 0) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
+	{
+		HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+1+j*localNx+k*localNx*(def.Ny)];
+		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		return;
+	}
+
+	if ((i == localNx - 1) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
+	{
+		HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i-1+j*localNx+k*localNx*(def.Ny)];
 		test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 		return;
 	}
@@ -101,20 +101,6 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
-	if ((i == 0) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
-	{
-		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i+1+j*localNx+k*localNx*(def.Ny)]; 
-		test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-		return;
-	}
-
-	if ((i == localNx - 1) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
-	{
-		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i-1+j*localNx+k*localNx*(def.Ny)];
-		test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-		return;
-	}
-
 	if ((j == (def.Ny) - 1) && ((def.Ny)>2))
 	{
 		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i+(j-1)*localNx+k*localNx*(def.Ny)] + HostArraysPtr.ro_w[i+(j-1)*localNx+k*localNx*(def.Ny)] * (def.g_const) * (def.hy); 
@@ -125,6 +111,20 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 	if ((j==0) && ((def.Ny)>2))
 	{
 		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm;
+		test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		return;
+	}
+
+	if ((i == 0) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
+	{
+		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i+1+j*localNx+k*localNx*(def.Ny)]; 
+		test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+		return;
+	}
+
+	if ((i == localNx - 1) && ((def.Nx)>2) && (j>0) && (j<def.Ny - 1))
+	{
+		HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_w[i-1+j*localNx+k*localNx*(def.Ny)];
 		test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 		return;
 	}
