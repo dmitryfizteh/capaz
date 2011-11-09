@@ -3,6 +3,12 @@
 
 // Считать направленными разностями (если не определена NR, то считается без них)
 //#define NR 
+
+#ifdef TWO_PHASE
+//Если 1, то считать двухслойной РС
+#define TWO_LAYERS 1
+#endif
+
 #define DEFINES_FILE "..//defines.ini"
 
 // Нитей в блоке ускорителя
@@ -121,6 +127,7 @@ extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts 
 
 extern void test_nan (double x, char *file, int line);
 extern void test_positive (double x, char *file, int line);
+extern void test_arrowhead(double big, double small, char *file, int line);
 extern void read_defines_test(consts def);
 
 // Расчеты в каждой точке

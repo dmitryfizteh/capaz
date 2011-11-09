@@ -392,7 +392,7 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, int localNx, double t
 		Tx2 = (DevArraysPtr.ro_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.ux_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] - DevArraysPtr.ro_n[i-1+j*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.ux_n[i-1+j*localNx+k*localNx*((*gpu_def).Ny)]) / (2 * ((*gpu_def).hx));
 		Ty2 = (DevArraysPtr.ro_n[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.uy_n[i+(j+1)*localNx+k*localNx*((*gpu_def).Ny)] - DevArraysPtr.ro_n[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)] * DevArraysPtr.uy_n[i+(j-1)*localNx+k*localNx*((*gpu_def).Ny)]) / (2 * ((*gpu_def).hy));
 
-		if (t < 2 * ((*gpu_def).dt))
+		if ((t < 2 * ((*gpu_def).dt)) || TWO_LAYERS)
 		{
 			A1 = roS_w + (((*gpu_def).dt) / (*gpu_def).m[media]) * (divgrad1 - Tx1 - Ty1 - Tz1);
 			A2 = roS_n + (((*gpu_def).dt) / (*gpu_def).m[media]) * (divgrad2 - Tx2 - Ty2 - Tz2);

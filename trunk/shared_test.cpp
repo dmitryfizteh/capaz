@@ -50,6 +50,16 @@ void test_positive (double x, char *file, int line)
 #endif
 }
 
+// Функция проверяет, что первый аргумент много больше (по модулю) второго
+// Если это не так, печатается предупреждение
+void test_arrowhead(double big, double small, char *file, int line)
+{
+#ifdef MY_TEST_1
+	if (abs(big/30) < abs(small))
+		printf("Warning: See task parameters\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
+}
+
 // Тест на корректность параметров задачи
 void read_defines_test(consts def)
 {
