@@ -461,8 +461,8 @@ void print_plots_top (double t, consts def)
 	if((def.Nz) < 2)
 	{
 #ifdef THREE_PHASE
-//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\", \"u_y\", \"media\" \n");
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_w\",\"P_g\",\"P_n\",\"uw_x\", \"uw_y\",\"ug_x\", \"ug_y\",\"un_x\", \"un_y\", \"media\" \n");
+//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\",\"u_y\",\"media\" \n");
+		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"uw_x\",\"uw_y\",\"ug_x\",\"ug_y\",\"un_x\",\"un_y\",\"media\" \n");
 #else
 		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"media\" \n");
 #endif
@@ -471,7 +471,8 @@ void print_plots_top (double t, consts def)
 	else
 	{
 #ifdef THREE_PHASE
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\", \"u_y\",\"u_z\",\"media\" \n");
+//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\", \"u_y\",\"u_z\",\"media\" \n");
+		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"uw_x\",\"uw_y\",\"uw_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"un_x\",\"un_y\",\"un_z\",\"media\" \n");
 #else
 		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
 #endif
@@ -513,16 +514,24 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, int size, int loc
 							HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */					
 						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], HostArraysPtr.P_g[local], HostArraysPtr.P_n[local], 
-							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
+							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.ux_n[local], 
+							(-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 		
 					}
 
 					else
 					{
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+*/
+						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
+							HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
+							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local],
+							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+
 					}
 #else
 					if((def.Nz) < 2)
