@@ -2,7 +2,7 @@
 #define DEFINES_H 
 
 // —читать направленными разност€ми (если не определена NR, то считаетс€ без них)
-#define NR 
+//#define NR 
 #define DEFINES_FILE "..//defines.ini"
 
 // Ќитей в блоке ускорител€

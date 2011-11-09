@@ -404,6 +404,12 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	load_data_to_host(HostArraysPtr.P_n, DevArraysPtr.P_n , localNx, def);
 	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , localNx, def);
 	load_data_to_host(HostArraysPtr.S_g, DevArraysPtr.S_g , localNx, def);
+	load_data_to_host(HostArraysPtr.ux_w, DevArraysPtr.ux_w , localNx, def);
+	load_data_to_host(HostArraysPtr.uy_w, DevArraysPtr.uy_w , localNx, def);
+	load_data_to_host(HostArraysPtr.uz_w, DevArraysPtr.uz_w , localNx, def);
+	load_data_to_host(HostArraysPtr.ux_g, DevArraysPtr.ux_g , localNx, def);
+	load_data_to_host(HostArraysPtr.uy_g, DevArraysPtr.uy_g , localNx, def);
+	load_data_to_host(HostArraysPtr.uz_g, DevArraysPtr.uz_g , localNx, def);
 #else
 	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , localNx, def);
 	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , localNx, def);
