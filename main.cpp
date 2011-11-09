@@ -802,8 +802,8 @@ void read_defines(int argc, char *argv[], consts* def)
 		{(*def).S_gr[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_GR_1")) 
 		{(*def).S_gr[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_W_RANGE_0")) 
-/*		{(*def).S_w_range[0] = atof(attr_value); continue;}
+/*		if(!strcmp(attr_name,"S_W_RANGE_0")) 
+		{(*def).S_w_range[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_RANGE_1")) 
 		{(*def).S_w_range[1] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_G_RANGE_0")) 
