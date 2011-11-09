@@ -32,12 +32,14 @@
 	const double m[2]={0.4,0.39};
 	const double P_d[2]={755,2060};
 #else
-	const double aw[2] = {-15250, -12810};
-	const double bw[2] = {9241, 13630};
-	const double ag[2] = {4270, 13210};
-	const double bg[2] = {273, -9025};
-	const double S_w_range[3] = {0.001, 0.2, 0.97};
-	const double S_g_range[3] = {0.001, 0.03, 0.9};
+	//  оэффициенты пр€мых, продолжающих функции капилл€рных давлений на границах интервала изменени€ насыщенностей [0,1]
+	const double aw[2] = {-39640, -26530};
+	const double bw[2] = {12560, 27110};
+	const double ag[2] = {14170, 35380};
+	const double bg[2] = {158, -2969};
+	//  лючевые точки интервала изменени€ насыщенностей дл€ вычислени€ проницаемостей и капилл€рных давлений
+	const double S_w_range[3] = {0.001, 0.1, 0.99};
+	const double S_g_range[3] = {0.001, 0.005, 0.95};
 #endif
 
 struct ptr_Arrays_tag 

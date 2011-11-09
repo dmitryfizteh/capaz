@@ -183,10 +183,27 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 #ifdef THREE_PHASE
-						HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_init;
-						HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_init;
-						HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm + j * ((def.ro0_n) * (1. - HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] - HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)])
-							+ (def.ro0_w) * HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] + (def.ro0_g) * HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)]) * (def.g_const)*(def.hy);
+						int j1 = (def.Ny);
+
+						if(j < j1)
+						{
+							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
+							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_gr + (def.S_g_init - def.S_g_gr) * j / j1;
+						}
+						else
+						{
+							HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_init;
+							HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_init;
+						}
+
+						if(j == 0)
+							HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = def.P_atm;
+						else
+							HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.P_n[i + (j - 1) * localNx + k * localNx * (def.Ny)]
+								+ (def.ro0_n * (1. - HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)] - HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) 
+								+ def.ro0_w * HostArraysPtr.S_w[i + (j - 1) * localNx + k * localNx * (def.Ny)]
+								+ def.ro0_g * HostArraysPtr.S_g[i + (j - 1) * localNx + k * localNx * (def.Ny)]) * (def.g_const) * (def.hy);
+
 						HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)] = 0;						
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
