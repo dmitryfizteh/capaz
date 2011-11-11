@@ -7,6 +7,8 @@
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
 #define TWO_LAYERS 1
+#else
+#define TWO_LAYERS 0
 #endif
 
 #define DEFINES_FILE "..//defines.ini"
