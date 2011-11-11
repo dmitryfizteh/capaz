@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 	// Тест
-	save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
 	start_time=clock();
 
@@ -290,6 +290,7 @@ void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* Dev
 {
 	memory_free(HostArraysPtr, DevArraysPtr); // (2)
 	communication_finalization(); // (1)
+	device__finalization(); // (1)
 }
 
 // Выделение памяти хоста (1) и ускорителя (2) под массив точек расчетной области

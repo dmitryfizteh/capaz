@@ -612,6 +612,11 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
 {
 }
 
+// Финализация ускорителя
+void device__finalization(void)
+{
+}
+
 // Загрузка на хост данных для обмена на границе
 void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {

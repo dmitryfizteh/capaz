@@ -112,6 +112,7 @@ extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, int l
 extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, int localNx, consts def);
 
 extern void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, int localNx, consts def);
+extern void device__finalization(void);
 extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def);
 
 // Служебные
