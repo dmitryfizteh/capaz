@@ -38,7 +38,7 @@ void test_nan (double x, char *file, int line)
 #endif
 }
 
-// Тест на положительное целое и не NaN
+// Тест на положительное и не NaN
 // Синтаксис вызова test_nan(x, __FILE__, __LINE__);
 void test_positive (double x, char *file, int line)
 {

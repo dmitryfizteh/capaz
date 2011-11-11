@@ -1,6 +1,5 @@
-//#include "defines.h"
 #include "gpu.h"
-//#include <cuda.h>
+#include "cuPrintf.cu"
 
 __constant__ consts gpu_def [1];
 
@@ -26,6 +25,27 @@ void checkErrors(char *label)
 	}
 #endif
 }
+
+// Тест на NaN
+// Синтаксис вызова test_nan(x, __FILE__, __LINE__);
+__device__ void device_test_nan (double x, char *file, int line)
+{
+#ifdef MY_TEST
+	if ( (x>1e+30) || (x<-1*1e+40))
+		CUPRINTF("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
+}
+
+// Тест на положительное и не NaN
+// Синтаксис вызова test_nan(x, __FILE__, __LINE__);
+__device__ void device_test_positive (double x, char *file, int line)
+{
+#ifdef MY_TEST
+	if ( (x>1e+30) || (x<0))
+		CUPRINTF("Error: NaN or X<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
+}
+
 
 // Преобразование локальных координат процессора к глобальным
 // Каждый процессор содержит дополнительную точку в массиве для
@@ -84,6 +104,12 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int
 		DevArraysPtr.Xi_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = -1 * (*gpu_def).K[media] * k_n / (*gpu_def).mu_n;
 		DevArraysPtr.ro_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm));
 		DevArraysPtr.ro_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w + P_k - (*gpu_def).P_atm));
+
+		device_test_positive(DevArraysPtr.P_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.ro_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.ro_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.Xi_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.Xi_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -92,11 +118,7 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 {
 	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pn, Xi, ro");
-	gpu_test_nan(HostArraysPtr.P_n, DevArraysPtr.P_n, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.Xi_w, DevArraysPtr.Xi_w, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.Xi_n, DevArraysPtr.Xi_n, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.ro_w, DevArraysPtr.ro_w, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.ro_n, DevArraysPtr.ro_n, rank, size, localNx, def, __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 }
 
 // Метод Ньютона для каждой точки сетки (независимо от остальных точек)
@@ -131,6 +153,9 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, int localNx)
 
 		DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = P_w - (1 / det) * (F2S * F1 - F1S * F2);
 		DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = S_n - (1 / det) * (F1P * F2 - F2P * F1);
+
+		device_test_positive(DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -141,8 +166,7 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	{
 		Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
 		checkErrors("assign Pw and Sn");
-		gpu_test_nan(HostArraysPtr.P_w, DevArraysPtr.P_w, rank, size, localNx, def, __FILE__, __LINE__);
-		gpu_test_nan(HostArraysPtr.S_n, DevArraysPtr.S_n, rank, size, localNx, def, __FILE__, __LINE__);
+		cudaPrintfDisplay(stdout, true);
 	}
 }
 
@@ -251,6 +275,13 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, 
 			DevArraysPtr.uz_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = 0;
 		}
 	}
+
+	device_test_nan(DevArraysPtr.ux_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	device_test_nan(DevArraysPtr.ux_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	device_test_nan(DevArraysPtr.uy_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	device_test_nan(DevArraysPtr.uy_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	device_test_nan(DevArraysPtr.uz_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	device_test_nan(DevArraysPtr.uz_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 }
 
 // Расчет скоростей во всех точках сетки
@@ -258,12 +289,7 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localN
 {
 	assign_u_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign u");
-	gpu_test_nan(HostArraysPtr.ux_w, DevArraysPtr.ux_w, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.ux_n, DevArraysPtr.ux_n, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.uy_w, DevArraysPtr.uy_w, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.uy_n, DevArraysPtr.uy_n, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.uz_w, DevArraysPtr.uz_w, rank, size, localNx, def, __FILE__, __LINE__);
-	gpu_test_nan(HostArraysPtr.uz_n, DevArraysPtr.uz_n, rank, size, localNx, def, __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 }
 
 // Расчет ro*S в каждой точке сетки методом направленных разностей
@@ -342,6 +368,11 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, int localNx, doubl
 		DevArraysPtr.roS_n_old[i+j*localNx+k*localNx*((*gpu_def).Ny)] = roS2;
 		DevArraysPtr.roS_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = roS1 - ((*gpu_def).dt/(*gpu_def).m[media])*(f1 + f2 + f3);
 		DevArraysPtr.roS_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = roS2 - ((*gpu_def).dt/(*gpu_def).m[media])*(g1 + g2 + g3);
+
+		device_test_positive(DevArraysPtr.roS_w_old[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_n_old[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -407,6 +438,11 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, int localNx, double t
 		DevArraysPtr.roS_n_old[local] = roS_n;
 		DevArraysPtr.roS_w[local] = A1;
 		DevArraysPtr.roS_n[local] = A2;
+
+		device_test_positive(DevArraysPtr.roS_w_old[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_n_old[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.roS_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -419,10 +455,7 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 		assign_roS_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
 	#endif
 		checkErrors("assign roS");
-		gpu_test_nan(HostArraysPtr.roS_w, DevArraysPtr.roS_w, rank, size, localNx, def, __FILE__, __LINE__);
-		gpu_test_nan(HostArraysPtr.roS_n, DevArraysPtr.roS_n, rank, size, localNx, def, __FILE__, __LINE__);
-		gpu_test_nan(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old, rank, size, localNx, def, __FILE__, __LINE__);
-		gpu_test_nan(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old, rank, size, localNx, def, __FILE__, __LINE__);
+		cudaPrintfDisplay(stdout, true);
 }
 
 // Граничные условия на S2
@@ -481,6 +514,8 @@ __global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 			return;
 		}
 	}
+
+	device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 }
 
 // Граничные условия на P1
@@ -534,6 +569,7 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 			//return;
 		}
 	}
+	device_test_positive(DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 }
 
 // Применение граничных условий
@@ -541,11 +577,11 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int 
 {
 	Sn_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Sn");
-	gpu_test_nan(HostArraysPtr.S_n, DevArraysPtr.S_n, rank, size, localNx, def, __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 
 	Pw_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pw");
-	gpu_test_nan(HostArraysPtr.P_w, DevArraysPtr.P_w, rank, size, localNx, def, __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 }	
 
 // Функция загрузки данных в память хоста
@@ -686,8 +722,19 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
 		// localNX+2 потому что 2NyNz на буфер обмена выделяется
 		if ((localNx+2)*(def.Ny)*(def.Nz) > (devProp.totalGlobalMem/(21*sizeof(double))))
 			printf ("\nError! Not enough memory at GPU, rank=%d\n",rank);
+
+		// Инициализируем библиотеку cuPrintf для вывода текста на консоль
+		// прямо из kernel
+		cudaPrintfInit();
 }
 
+// Финализация ускорителя
+void device__finalization(void)
+{
+	// Останавливаем библиотеку cuPrintf для вывода текста на консоль
+	// прямо из kernel
+	cudaPrintfEnd();
+}
 
 __global__ void load_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer, int localNx)
 {
@@ -698,6 +745,9 @@ __global__ void load_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 	{
 		DevBuffer[j+((*gpu_def).Ny)*k]=DevArrayPtr[1+localNx*j+localNx*((*gpu_def).Ny)*k];
 		DevBuffer[j+((*gpu_def).Ny)*k+((*gpu_def).Ny)*((*gpu_def).Nz)]=DevArrayPtr[localNx-2+localNx*j+localNx*((*gpu_def).Ny)*k];
+
+		device_test_nan(DevBuffer[j+((*gpu_def).Ny)*k], __FILE__, __LINE__);
+		device_test_nan(DevBuffer[j+((*gpu_def).Ny)*k+((*gpu_def).Ny)*((*gpu_def).Nz)], __FILE__, __LINE__);
 	}
 }
 
@@ -706,8 +756,11 @@ void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 {
 	load_exchange_data_kernel<<<dim3(blocksY,blocksZ), dim3(BlockNY,BlockNZ)>>>(DevArrayPtr, DevBuffer, localNx); 
 	checkErrors("load_exchange_data");
+	cudaPrintfDisplay(stdout, true);
+
 	cudaMemcpy( HostBuffer, DevBuffer, 2*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyDeviceToHost );
 	checkErrors("copy data to host");
+	cudaPrintfDisplay(stdout, true);
 }
 
 __global__ void save_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer, int localNx, int rank, int size)
@@ -718,9 +771,15 @@ __global__ void save_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 	if (j<(*gpu_def).Ny && k<(*gpu_def).Nz)
 	{
 		if (rank!=0)
+		{
 			DevArrayPtr[localNx*j+localNx*((*gpu_def).Ny)*k]=DevBuffer[j+((*gpu_def).Ny)*k];
+			device_test_nan(DevArrayPtr[localNx*j+localNx*((*gpu_def).Ny)*k], __FILE__, __LINE__);
+		}
 		if (rank!=size-1)
+		{
 			DevArrayPtr[localNx-1+localNx*j+localNx*((*gpu_def).Ny)*k]=DevBuffer[j+((*gpu_def).Ny)*k+((*gpu_def).Ny)*((*gpu_def).Nz)];
+			device_test_nan(DevArrayPtr[localNx-1+localNx*j+localNx*((*gpu_def).Ny)*k], __FILE__, __LINE__);
+		}
 	}
 }
 
@@ -728,6 +787,9 @@ void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 {
 	cudaMemcpy( DevBuffer, HostBuffer, 2*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyHostToDevice );
 	checkErrors("copy data to device");
+	cudaPrintfDisplay(stdout, true);
+
 	save_exchange_data_kernel<<<dim3(blocksY,blocksZ), dim3(BlockNY,BlockNZ)>>>(DevArrayPtr, DevBuffer, localNx, rank, size); 
 	checkErrors("save_exchange_data");
+	cudaPrintfDisplay(stdout, true);
 }
