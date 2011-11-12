@@ -14,5 +14,5 @@ done;
     dos2unix $i;
   done;
 #
-mpiCC -D THREE_PHASE ../../shared_test.cpp ../../no_communication.cpp ../../cpu.cpp ../two-phase.cpp ../../main.cpp -o ../Debug/cpu.px
+mpicc -D THREE_PHASE ../../shared_test.cpp ../../no_communication.cpp ../../cpu.cpp ../three-phase.cpp ../../main.cpp -o ../Debug/cpu.px
 mpirun -np 1 -maxtime $1 ../Debug/cpu.px
