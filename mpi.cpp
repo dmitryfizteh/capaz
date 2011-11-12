@@ -7,7 +7,7 @@ void right_send_recv(double* HostBuffer, int destination_rank, int send_recv_id,
 	MPI_Status status;
 
 	if (! MPI_Sendrecv_replace(HostBuffer+(def.Ny)*(def.Nz),(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id,destination_rank,send_recv_id+1,MPI_COMM_WORLD,&status)==MPI_SUCCESS)
-		printf("MPI Error: MPI_Sendrecv_replace returned an error.\n");
+		printf("MPI Error: MPI_Sendrecv_replace returned an error.\nFile:\"%s\"\nLine:\"%d\"\n\n", __FILE__, __LINE__);
 }
 
 // Получение и передача данных на левой границе
@@ -16,7 +16,7 @@ void left_recv_send(double* HostBuffer, int destination_rank, int send_recv_id, 
 	MPI_Status status;
 
 	if (! MPI_Sendrecv_replace(HostBuffer,(def.Ny)*(def.Nz),MPI_DOUBLE,destination_rank,send_recv_id+1,destination_rank,send_recv_id,MPI_COMM_WORLD,&status)==MPI_SUCCESS)
-		printf("MPI Error: MPI_Sendrecv_replace returned an error.\n");
+		printf("MPI Error: MPI_Sendrecv_replace returned an error.\nFile:\"%s\"\nLine:\"%d\"\n\n", __FILE__, __LINE__);
 }
 
 // Обмен данными на границах между всеми процессорами
