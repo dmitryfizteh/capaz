@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\gpu.cu" />
-    <CudaCompile Include="..\..\shared_test.cu" />
+    <CudaCompile Include="..\..\shared_test.cu">
+      <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cuda</NvccCompilation>
+    </CudaCompile>
     <CudaCompile Include="..\two-phase.cu" />
   </ItemGroup>
   <ItemGroup>

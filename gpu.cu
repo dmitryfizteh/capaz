@@ -1,51 +1,7 @@
 #include "gpu.h"
-#include "cuPrintf.cu"
+#include "shared_test.cu"
 
 __constant__ consts gpu_def [1];
-
-// Проверка ошибок GPU
-void checkErrors(char *label) 
-{
-#ifdef MY_TEST
-	cudaError_t err;
-
-	err = cudaThreadSynchronize();
-	if (err != cudaSuccess)
-	{
-		char *e = (char*) cudaGetErrorString(err);
-		printf("CUDA Error: %s (at %s)\n", e, label);
-	}
-
-	err=cudaGetLastError();
-	if (err != cudaSuccess)
-	{
-		char *e = (char*) cudaGetErrorString(err);
-		printf("CUDA Error: %s (at %s)\n", e, label);
-		fflush(stdout);
-	}
-#endif
-}
-
-// Тест на NaN
-// Синтаксис вызова test_nan(x, __FILE__, __LINE__);
-__device__ void device_test_nan (double x, char *file, int line)
-{
-#ifdef MY_TEST
-	if ( (x>1e+30) || (x<-1*1e+40))
-		CUPRINTF("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-#endif
-}
-
-// Тест на положительное и не NaN
-// Синтаксис вызова test_nan(x, __FILE__, __LINE__);
-__device__ void device_test_positive (double x, char *file, int line)
-{
-#ifdef MY_TEST
-	if ( (x>1e+30) || (x<0))
-		CUPRINTF("Error: NaN or X<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-#endif
-}
-
 
 // Преобразование локальных координат процессора к глобальным
 // Каждый процессор содержит дополнительную точку в массиве для
@@ -82,11 +38,9 @@ __device__ int device_is_active_point(int i, int localNx, int rank, int size)
 // Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
 __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, int size) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx) && (j<((*gpu_def).Ny)) && (k<((*gpu_def).Nz)) && (device_is_active_point(i, localNx, rank, size)==1))
 	{
@@ -116,7 +70,7 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int
 // Расчет плотностей, давления NAPL P2 и Xi во всех точках сетки
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
-	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
+	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pn, Xi, ro");
 	cudaPrintfDisplay(stdout, true);
 }
@@ -124,11 +78,9 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 // Метод Ньютона для каждой точки сетки (независимо от остальных точек)
 __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, int localNx) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx-1) && (j<(*gpu_def).Ny-1) && (k<(*gpu_def).Nz) && (i!=0) && (j!=0) && (((k!=0) && (k!=(*gpu_def).Nz-1)) || ((*gpu_def).Nz<2)))
 	{
@@ -164,7 +116,7 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 {
 	for (int w=1;w<=def.newton_iterations;w++)
 	{
-		Newton_method_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
+		Newton_method_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
 		checkErrors("assign Pw and Sn");
 		cudaPrintfDisplay(stdout, true);
 	}
@@ -175,14 +127,13 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 // Расчет скорости в каждой точке сетки
 __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, int size) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx) && (j<((*gpu_def).Ny)) && (k<((*gpu_def).Nz)) && (device_is_active_point(i, localNx, rank, size)==1))
 	{
+		//CUPRINTF("assign u\n");
 		double Xi_w = DevArraysPtr.Xi_w[i+j*localNx+k*localNx*((*gpu_def).Ny)];
 		double Xi_n = DevArraysPtr.Xi_n[i+j*localNx+k*localNx*((*gpu_def).Ny)];
 		double P_w = DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)];
@@ -194,6 +145,7 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, 
 			{
 				DevArraysPtr.ux_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = Xi_w * (DevArraysPtr.P_w[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] - P_w) / ((*gpu_def).hx);
 				DevArraysPtr.ux_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = Xi_n * (DevArraysPtr.P_n[i+1+j*localNx+k*localNx*((*gpu_def).Ny)] - P_n) / ((*gpu_def).hx);
+				//CUPRINTF("assign u=%e\n",DevArraysPtr.ux_w[i+j*localNx+k*localNx*((*gpu_def).Ny)]);
 			}
 			if (i == localNx - 1)
 			{
@@ -274,7 +226,6 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, 
 			DevArraysPtr.uz_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = 0;
 			DevArraysPtr.uz_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = 0;
 		}
-	}
 
 	device_test_nan(DevArraysPtr.ux_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	device_test_nan(DevArraysPtr.ux_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
@@ -282,12 +233,13 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, 
 	device_test_nan(DevArraysPtr.uy_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	device_test_nan(DevArraysPtr.uz_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	device_test_nan(DevArraysPtr.uz_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	}
 }
 
 // Расчет скоростей во всех точках сетки
 void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
-	assign_u_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
+	assign_u_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign u");
 	cudaPrintfDisplay(stdout, true);
 }
@@ -295,11 +247,9 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localN
 // Расчет ro*S в каждой точке сетки методом направленных разностей
 __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, int localNx, double t)
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 	
 	if ((i<localNx-1) && (j<(*gpu_def).Ny-1) && (k<(*gpu_def).Nz) && (i!=0) && (j!=0) && (((k!=0) && (k!=(*gpu_def).Nz-1)) || ((*gpu_def).Nz<2)))
 	{
@@ -379,11 +329,9 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, int localNx, doubl
 // Расчет ro*S в каждой точке сетки
 __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, int localNx, double t) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx-1) && (j<(*gpu_def).Ny-1) && (k<(*gpu_def).Nz) && (i!=0) && (j!=0) && (((k!=0) && (k!=(*gpu_def).Nz-1)) || ((*gpu_def).Nz<2)))
 	{
@@ -452,7 +400,7 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	#ifdef NR
 		assign_roS_kernel_nr<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t); 
 	#else
-		assign_roS_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
+		assign_roS_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
 	#endif
 		checkErrors("assign roS");
 		cudaPrintfDisplay(stdout, true);
@@ -461,11 +409,9 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 // Граничные условия на S2
 __global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, int size) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx) && (j<((*gpu_def).Ny)) && (k<((*gpu_def).Nz)) && (device_is_active_point(i, localNx, rank, size)==1))
 	{
@@ -513,19 +459,17 @@ __global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 			DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.S_n[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)];
 			return;
 		}
-	}
 
-	device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+	}
 }
 
 // Граничные условия на P1
 __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, int size) 
 {
-	int blockIdxz=blockIdx.y / BlockNY;
-	int blockIdxy=blockIdx.y % BlockNY;
 	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int k=threadIdx.z+blockIdxz*blockDim.z;
-	int j=threadIdx.y+blockIdxy*blockDim.y;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
 	if ((i<localNx) && (j<((*gpu_def).Ny)) && (k<((*gpu_def).Nz)) && (device_is_active_point(i, localNx, rank, size)==1))
 	{
@@ -568,18 +512,19 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 			DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)] = DevArraysPtr.P_w[i+j*localNx+(k-1)*localNx*((*gpu_def).Ny)];
 			//return;
 		}
+
+		device_test_positive(DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
-	device_test_positive(DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 }
 
 // Применение граничных условий
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
-	Sn_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
+	Sn_boundary_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Sn");
 	cudaPrintfDisplay(stdout, true);
 
-	Pw_boundary_kernel<<<dim3(blocksX,blocksY*blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
+	Pw_boundary_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
 	checkErrors("assign Pw");
 	cudaPrintfDisplay(stdout, true);
 }	
@@ -722,6 +667,7 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
 		// localNX+2 потому что 2NyNz на буфер обмена выделяется
 		if ((localNx+2)*(def.Ny)*(def.Nz) > (devProp.totalGlobalMem/(21*sizeof(double))))
 			printf ("\nError! Not enough memory at GPU, rank=%d\n",rank);
+		fflush( stdout);
 
 		// Инициализируем библиотеку cuPrintf для вывода текста на консоль
 		// прямо из kernel
