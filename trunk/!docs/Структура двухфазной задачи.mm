@@ -68,6 +68,7 @@
 <node CREATED="1307791733588" ID="ID_692188628" MODIFIED="1319668434942" TEXT="device_memory_free (cpu/gpu)"/>
 </node>
 <node CREATED="1307791697237" ID="ID_671746965" MODIFIED="1319668409000" TEXT="communication_finalization (mpi.cpp)"/>
+<node CREATED="1321045894405" ID="ID_271479106" MODIFIED="1321045920898" TEXT="device_finalization (gpu/cpu)"/>
 </node>
 </node>
 </map>

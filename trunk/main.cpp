@@ -75,6 +75,8 @@ int main(int argc, char* argv[])
 
 	// При запуске в Windows после работы программы оставлять окно консоли
 #ifdef _WIN32
+	printf("\nPress <Enter> to exit...\n");
+	fflush( stdout);
 	getchar();
 #endif
 	return 0;
@@ -854,7 +856,7 @@ void read_defines(int argc, char *argv[], consts* def)
 		if(!strcmp(attr_name,"ITERATIONS"))
 		{(*def).newton_iterations = atoi(attr_value); continue;}
 		if(!strcmp(attr_name,"TIMEX"))
-		{(*def).timeX = atoi(attr_value); continue;}
+		{(*def).timeX = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"SAVE_PLOTS"))
 		{(*def).save_plots = atoi(attr_value); continue;}
 		if(!strcmp(attr_name,"PRINT_SCREEN"))
