@@ -436,12 +436,17 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, int loc
 			A2 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (divgrad1 - Tx1 - Ty1 - Tz1) 
 				+ ((def.m[media]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)] 
 				+ 4 * (def.tau) * HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)]);  
+
+			test_tau(HostArraysPtr.roS_w_old[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)], A1, HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)], def, __FILE__, __LINE__);
+			test_tau(HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)], HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)], A2, HostArraysPtr.media[i+j*localNx+k*localNx*(def.Ny)], def, __FILE__, __LINE__);
+
 #ifdef THREE_PHASE
 			A3 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (divgrad1 - Tx1 - Ty1 - Tz1) 
 				+ ((def.m[media]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_g_old[i+j*localNx+k*localNx*(def.Ny)] 
 				+ 4 * (def.tau) * HostArraysPtr.roS_g[i+j*localNx+k*localNx*(def.Ny)]);  
 #endif
 		}
+
 		HostArraysPtr.roS_w_old[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)];
 		HostArraysPtr.roS_n_old[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.roS_n[i+j*localNx+k*localNx*(def.Ny)];
 		HostArraysPtr.roS_w[i+j*localNx+k*localNx*(def.Ny)] = A1;
