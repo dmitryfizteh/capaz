@@ -4,16 +4,12 @@ if [ -z "$1" ]; then
     exit
 fi
 #
-for i in $( ls | grep machines. )
+for i in $( ls | grep .img )
 do
  rm $i
 done;
 #
-for i in $( ls | grep result. )
-do 
- rm $i
-done;
-#
+
   for i in $( ls |grep -v .sh|grep -v .1 | grep -v .px | grep -v machines. | grep -v result. ); 
   do 
     dos2unix $i;
@@ -21,5 +17,6 @@ done;
   ARCH='20'
 #
 nvcc -D THREE_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
-mpiCC  -D THREE_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp gpu.o -o ../Debug/cuda.px
+#nvcc -D THREE_PHASE -c -arch sm_$ARCH shared_test.o ../../shared_test.cu
+mpiCC  -D THREE_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp ../../shared_test.cpp gpu.o -o ../Debug/cuda.px
 mpirun -np 1 -maxtime $1 ../Debug/cuda.px

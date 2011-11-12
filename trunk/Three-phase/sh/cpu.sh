@@ -4,13 +4,8 @@ if [ -z "$1" ]; then
     exit
 fi
 #
-for i in $( ls | grep machines. )
+for i in $( ls | grep .img )
 do
- rm $i
-done;
-#
-for i in $( ls | grep result. )
-do 
  rm $i
 done;
 #
@@ -19,5 +14,5 @@ done;
     dos2unix $i;
   done;
 #
-mpiCC -D THREE_PHASE ../../main.cpp ../../no_communication.cpp ../../cpu.cpp ../two-phase.cpp -o ../Debug/cpu.px
+mpiCC -D THREE_PHASE ../../shared_test.cpp ../../no_communication.cpp ../../cpu.cpp ../two-phase.cpp ../../main.cpp -o ../Debug/cpu.px
 mpirun -np 1 -maxtime $1 ../Debug/cpu.px
