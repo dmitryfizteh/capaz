@@ -70,9 +70,9 @@ struct consts_tag
 	double lambda[2];
 	double S_wr[2];
 	double m[2];
-	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n;
+	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, timeX;
 	int Nx, Ny, Nz;
-	int source, timeX, save_plots, print_screen, newton_iterations;
+	int source, save_plots, print_screen, newton_iterations;
 #ifdef TWO_PHASE
 	double P_d[2];
 #endif
