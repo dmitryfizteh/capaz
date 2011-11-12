@@ -49,13 +49,14 @@ int main(int argc, char* argv[])
 	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
 	for (j++; j <= def.timeX/(def.dt); j++)
 	{
-		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def,j*(def.dt),localNx,localNy,rank,size,blocksX,blocksY,blocksZ); // (1)
-
 		if ((j % (def.print_screen)) == 0) // (2)
 		{
 			printf ("t=%.3f\n",j*(def.dt)); 
 			fflush(stdout);
 		}
+
+		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def,j*(def.dt),localNx,localNy,rank,size,blocksX,blocksY,blocksZ); // (1)
+
 		if ((j % (def.save_plots)) == 0) // (3)
 		{
 			// Следующие 2 функции вызываются строго в таком порядке,

@@ -65,8 +65,19 @@ void test_arrowhead(double big, double small, char *file, int line)
 {
 #ifdef MY_TEST_1
 	if (abs(big/30) < abs(small))
-		printf("Warning: See task parameters\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+		printf("Warning: See task parameters.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
+}
+
+// ‘ункци€ провер€ет, что первое слагаемое уравнени€ неразрывности много больше (по модулю) второго
+// ≈сли это не так, печатаетс€ предупреждение
+void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line)
+{
+	double L=def.m[media] * (S_new - S_old) / (2 * (def.dt));
+	double R=def.tau * (S_new - 2*S_now + S_old) / ((def.dt)*(def.dt));
+
+	if (abs(L/30) < abs(R))
+		printf("Warning: parameter tau is very much.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 }
 
 // “ест на корректность параметров задачи

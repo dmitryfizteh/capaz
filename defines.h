@@ -6,7 +6,7 @@
 
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
-#define TWO_LAYERS 1
+#define TWO_LAYERS 0
 #else
 #define TWO_LAYERS 0
 #endif
@@ -132,6 +132,7 @@ extern void test_nan (double x, char *file, int line);
 extern void test_positive (double x, char *file, int line);
 extern void test_S (double S, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
+extern void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line);
 extern void read_defines_test(consts def);
 
 // Расчеты в каждой точке
