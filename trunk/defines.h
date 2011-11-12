@@ -130,6 +130,7 @@ extern void test_correct_P_S(ptr_Arrays HostArraysPtr, int nX, int rank, consts 
 
 extern void test_nan (double x, char *file, int line);
 extern void test_positive (double x, char *file, int line);
+extern void test_S (double S, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
 extern void read_defines_test(consts def);
 

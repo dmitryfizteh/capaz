@@ -71,7 +71,7 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, int localNx, int
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ)
 {
 	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
-	checkErrors("assign Pn, Xi, ro");
+	checkErrors("assign Pn, Xi, ro", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
 
@@ -107,7 +107,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, int localNx)
 		DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)] = S_n - (1 / det) * (F1P * F2 - F2P * F1);
 
 		device_test_positive(DevArraysPtr.P_w[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_S(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -117,7 +117,7 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	for (int w=1;w<=def.newton_iterations;w++)
 	{
 		Newton_method_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx); 
-		checkErrors("assign Pw and Sn");
+		checkErrors("assign Pw and Sn", __FILE__, __LINE__);
 		cudaPrintfDisplay(stdout, true);
 	}
 }
@@ -240,7 +240,7 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, int localNx, int rank, 
 void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
 	assign_u_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
-	checkErrors("assign u");
+	checkErrors("assign u", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
 
@@ -402,7 +402,7 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	#else
 		assign_roS_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,t);
 	#endif
-		checkErrors("assign roS");
+		checkErrors("assign roS", __FILE__, __LINE__);
 		cudaPrintfDisplay(stdout, true);
 }
 
@@ -460,7 +460,7 @@ __global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 			return;
 		}
 
-		device_test_positive(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
+		device_test_S(DevArraysPtr.S_n[i+j*localNx+k*localNx*((*gpu_def).Ny)], __FILE__, __LINE__);
 	}
 }
 
@@ -521,11 +521,11 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, int localNx, int ran
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int localNx, int rank, int size, int blocksX, int blocksY, int blocksZ, consts def)
 {
 	Sn_boundary_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
-	checkErrors("assign Sn");
+	checkErrors("assign Sn", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
 	Pw_boundary_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,localNx,rank,size); 
-	checkErrors("assign Pw");
+	checkErrors("assign Pw", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }	
 
@@ -533,21 +533,21 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int 
 void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, int localNx, consts def)
 {
 	cudaMemcpy( HostArrayPtr, DevArrayPtr, localNx*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyDeviceToHost );
-	checkErrors("copy data to host");
+	checkErrors("copy data to host", __FILE__, __LINE__);
 }
 
 // Функция загрузки данных типа double в память ускорителя
 void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, int localNx, consts def)
 {
 	cudaMemcpy( DevArrayPtr, HostArrayPtr, localNx*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyHostToDevice );
-	checkErrors("copy double data to device");
+	checkErrors("copy double data to device", __FILE__, __LINE__);
 }
 
 // Функция загрузки данных типа int в память ускорителя
 void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, int localNx, consts def)
 {
 	cudaMemcpy( DevArrayPtr, HostArrayPtr, localNx*(def.Ny)*(def.Nz)*sizeof(int), cudaMemcpyHostToDevice );
-	checkErrors("copy int data to device");
+	checkErrors("copy int data to device", __FILE__, __LINE__);
 }
 
 // Выделение памяти ускорителя под массив точек расчетной области
@@ -577,7 +577,7 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, int loc
 	cudaMalloc((void**) &((*ArraysPtr).roS_n_old),  localNx * (def.Ny) * (def.Nz) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).media),  localNx * (def.Ny) * (def.Nz) * sizeof(int));
 
-	checkErrors("memory allocation");
+	checkErrors("memory allocation", __FILE__, __LINE__);
 }
 
 // Освобожение памяти ускорителя из под массива точек расчетной области
@@ -606,7 +606,7 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 	cudaFree (DevArraysPtr.roS_n_old);
 	cudaFree (DevArraysPtr.media);
 
-	checkErrors("memory reliase");
+	checkErrors("memory reliase", __FILE__, __LINE__);
 }
 
 // Инициализация ускорителя
@@ -636,7 +636,7 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
 	deff[0]=def;
 
 	cudaMemcpyToSymbol ( gpu_def, deff, sizeof ( consts ));//, 0, cudaMemcpyHostToDevice );
-	checkErrors("constant memory copy");
+	checkErrors("constant memory copy", __FILE__, __LINE__);
 
 	int deviceCount;
     cudaDeviceProp devProp;
@@ -701,11 +701,11 @@ __global__ void load_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {
 	load_exchange_data_kernel<<<dim3(blocksY,blocksZ), dim3(BlockNY,BlockNZ)>>>(DevArrayPtr, DevBuffer, localNx); 
-	checkErrors("load_exchange_data");
+	checkErrors("load_exchange_data", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
 	cudaMemcpy( HostBuffer, DevBuffer, 2*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyDeviceToHost );
-	checkErrors("copy data to host");
+	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
 
@@ -732,10 +732,10 @@ __global__ void save_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, int localNx, int blocksY, int blocksZ, int rank, int size, consts def)
 {
 	cudaMemcpy( DevBuffer, HostBuffer, 2*(def.Ny)*(def.Nz)*sizeof(double), cudaMemcpyHostToDevice );
-	checkErrors("copy data to device");
+	checkErrors("copy data to device", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
 	save_exchange_data_kernel<<<dim3(blocksY,blocksZ), dim3(BlockNY,BlockNZ)>>>(DevArrayPtr, DevBuffer, localNx, rank, size); 
-	checkErrors("save_exchange_data");
+	checkErrors("save_exchange_data", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }

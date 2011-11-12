@@ -11,16 +11,11 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, int localNx, int rank, consts de
 		for(int j=0;j<(def.Ny);j++)
 			for(int k=0;k<(def.Nz);k++)
 			{
-				if (HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)]<0)
-					printf ("\nWarning! S2<0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-				if (HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)]<=0)
-					printf ("\nWarning! P<=0 in point i=%d, j=%d, k=%d, rank=%d\n",i,j,k,rank);
-
-				test_nan(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+				test_S(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+				//test_positive(HostArraysPtr.P_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+				test_positive(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+				//test_nan(HostArraysPtr.Xi_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+				//test_positive(HostArraysPtr.ro_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.ux_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.uy_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.uz_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
@@ -39,7 +34,7 @@ void test_nan (double x, char *file, int line)
 }
 
 // Тест на положительное и не NaN
-// Синтаксис вызова test_nan(x, __FILE__, __LINE__);
+// Синтаксис вызова test_positive(x, __FILE__, __LINE__);
 void test_positive (double x, char *file, int line)
 {
 #ifdef MY_TEST
@@ -47,6 +42,20 @@ void test_positive (double x, char *file, int line)
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	if ( x < 0 )
 		printf("Error: x<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
+}
+
+// Тест на вхождение насыщенностей в [0;1]
+// Синтаксис вызова test_S(x, __FILE__, __LINE__);
+void test_S (double S, char *file, int line)
+{
+#ifdef MY_TEST
+	if ( isnan(S) )
+		printf("Error: S=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	if ( S < 0 )
+		printf("Error: S<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	if ( S > 1 )
+		printf("Error: S>1\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
 }
 
