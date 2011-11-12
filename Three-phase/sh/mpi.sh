@@ -15,5 +15,5 @@ done;
   done;
   ARCH='20'
 #
-mpiCC -D THREE_PHASE ../../main.cpp ../../mpi.cpp ../../cpu.cpp ../two-phase.cpp -o ../Debug/mpi.px
+mpiCC -D THREE_PHASE ../../main.cpp ../../mpi.cpp ../../cpu.cpp ../two-phase.cpp ../../shared_test.cpp -o ../Debug/mpi.px
 mpirun -np $1 -maxtime $2 ../Debug/mpi.px
