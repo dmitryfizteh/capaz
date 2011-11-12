@@ -18,5 +18,5 @@ done;
 #
 nvcc -D THREE_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
 #nvcc -D THREE_PHASE -c -arch sm_$ARCH shared_test.o ../../shared_test.cu
-mpiCC  -D THREE_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp ../../shared_test.cpp gpu.o -o ../Debug/cuda.px
+mpicc  -D THREE_PHASE -L/common/cuda/lib64 -lcudart ../../main.cpp ../../no_communication.cpp ../../shared_test.cpp gpu.o -o ../Debug/cuda.px
 mpirun -np 1 -maxtime $1 ../Debug/cuda.px

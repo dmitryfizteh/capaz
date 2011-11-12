@@ -9,6 +9,7 @@
 #define TWO_LAYERS 0
 #else
 #define TWO_LAYERS 0
+#define NR 
 #endif
 
 #define DEFINES_FILE "..//defines.ini"
