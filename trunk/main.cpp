@@ -8,16 +8,6 @@ double *DevBuffer;
 
 int main(int argc, char* argv[])
 {
-#ifdef TWO_PHASE
-	std::cout << "Two phase filtration by CAPAZ\n\n";
-#endif
-#ifdef THREE_PHASE
-	std::cout << "Three phase filtration by CAPAZ\n\n";
-#endif
-#ifdef B_L
-	std::cout << "Backley-Leverett filtration by CAPAZ\n\n";
-#endif
-
 	consts def;
 	read_defines(argc, argv, &def);
 
@@ -37,6 +27,21 @@ int main(int argc, char* argv[])
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &localNx, &localNy, &size, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
+
+	// Нулевой процессор выводит название запускаемой задачи
+	if (!rank)
+	{
+#ifdef TWO_PHASE
+		std::cout << "Two phase filtration by CAPAZ\n\n";
+#endif
+#ifdef THREE_PHASE
+		std::cout << "Three phase filtration by CAPAZ\n\n";
+#endif
+#ifdef B_L
+		std::cout << "Backley-Leverett filtration by CAPAZ\n\n";
+#endif
+	}
+
 	// Тест
 	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
