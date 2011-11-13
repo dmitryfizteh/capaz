@@ -135,6 +135,7 @@ extern void test_arrowhead(double big, double small, char *file, int line);
 extern void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line);
 extern void read_defines_test(consts def);
 
+
 // Расчеты в каждой точке
 extern int i_to_I(int i, int rank, int size, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def);
