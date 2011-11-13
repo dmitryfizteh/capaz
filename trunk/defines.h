@@ -3,7 +3,7 @@
 
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
-#define TWO_LAYERS 0
+#define TWO_LAYERS 1
 // Считать направленными разностями (если не определена NR, то считается без них)
 //#define NR 
 #else
@@ -14,9 +14,9 @@
 #define DEFINES_FILE "..//defines.ini"
 
 // Нитей в блоке ускорителя
-#define BlockNX 4
-#define BlockNY 4
-#define BlockNZ 4
+#define BlockNX 8
+#define BlockNY 8
+#define BlockNZ 8
 
 #include <float.h>
 #include <stdio.h>
