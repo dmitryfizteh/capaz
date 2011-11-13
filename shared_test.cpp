@@ -73,11 +73,13 @@ void test_arrowhead(double big, double small, char *file, int line)
 // Если это не так, печатается предупреждение
 void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line)
 {
+#ifdef MY_TEST_1
 	double L=def.m[media] * (S_new - S_old) / (2 * (def.dt));
 	double R=def.tau * (S_new - 2*S_now + S_old) / ((def.dt)*(def.dt));
 
 	if (abs(L/30) < abs(R))
 		printf("Warning: parameter tau is very much.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
 }
 
 // Тест на корректность параметров задачи
