@@ -17,6 +17,9 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\gpu.cu" />
+    <CudaCompile Include="..\..\shared_test.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CudaCompile>
     <CudaCompile Include="..\two-phase.cu" />
   </ItemGroup>
   <ItemGroup>
