@@ -617,7 +617,6 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
 	// ≈сли 3 ускорител€ на одном узле с большим количеством €дер
 	int device=rank%3;
 	cudaSetDevice(device);
-	printf("CUDA initialized.\n");
 
 	//  оличество запускаемых блоков
 	// ≈сли число точек сетки не кратно размеру блока,
@@ -645,24 +644,30 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, i
         cudaGetDeviceProperties ( &devProp, device );
         printf ( "Device %d\n", device );
         printf ( "Compute capability : %d.%d\n", devProp.major, devProp.minor );
-        printf ( "Name : %s\n", devProp.name );
-        printf ( "Total Global Memory : %ld\n", devProp.totalGlobalMem );
-        printf ( "Shared memory per block: %d\n", devProp.sharedMemPerBlock );
-        printf ( "Registers per block : %d\n", devProp.regsPerBlock );
-        printf ( "Warp size : %d\n", devProp.warpSize );
-        printf ( "Max threads per block : %d\n", devProp.maxThreadsPerBlock );
-        printf ( "Total constant memory : %d\n", devProp.totalConstMem );
-		printf ( "Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
-		printf ( "Kernel execution timeout: %s\n\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
-		for (int i = 0; i < 3; ++i)
-			printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
-		for (int i = 0; i < 3; ++i)
-			printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
+		printf ( "Name : %s\n", devProp.name );
+		if (devProp.major < 2)
+			printf ("\nError! Compute capability < 2, rank=%d\n",rank);
+        
+		if (!rank)
+		{
+			printf ( "Total Global Memory : %ld\n", devProp.totalGlobalMem );
+			printf ( "Shared memory per block: %d\n", devProp.sharedMemPerBlock );
+			printf ( "Registers per block : %d\n", devProp.regsPerBlock );
+			printf ( "Warp size : %d\n", devProp.warpSize );
+			printf ( "Max threads per block : %d\n", devProp.maxThreadsPerBlock );
+			printf ( "Total constant memory : %d\n", devProp.totalConstMem );
+			printf ( "Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
+			printf ( "Kernel execution timeout: %s\n\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
+			for (int i = 0; i < 3; ++i)
+				printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
+			for (int i = 0; i < 3; ++i)
+				printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
 
 
-		// ћаксимальный размер расчетной сетки дл€ ускорител€
-		// 21 - количество параметров в точке
-		printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(21*sizeof(double)) );
+			// ћаксимальный размер расчетной сетки дл€ ускорител€
+			// 21 - количество параметров в точке
+			printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(21*sizeof(double)) );
+			}
 
 		// localNX+2 потому что 2NyNz на буфер обмена выдел€етс€
 		if ((localNx+2)*(def.Ny)*(def.Nz) > (devProp.totalGlobalMem/(21*sizeof(double))))

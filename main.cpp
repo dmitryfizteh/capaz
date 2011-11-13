@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 	//    сохран€ютс€ в файлы графиков (**), в файл сохран€етс€ состо€ние задачи (***)
 	for (j++; j <= def.timeX/(def.dt); j++)
 	{
-		if ((j % (def.print_screen)) == 0) // (2)
+		if ((j % (def.print_screen) == 0) && rank==0) // (2)
 		{
 			printf ("t=%.3f\n",j*(def.dt)); 
 			fflush(stdout);
