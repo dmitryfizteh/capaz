@@ -1,12 +1,11 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
-// Считать направленными разностями (если не определена NR, то считается без них)
-//#define NR 
-
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
 #define TWO_LAYERS 0
+// Считать направленными разностями (если не определена NR, то считается без них)
+//#define NR 
 #else
 #define TWO_LAYERS 0
 #define NR 
