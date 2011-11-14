@@ -191,7 +191,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int loca
 						HostArraysPtr.z[i+j*localNx+k*localNx*(def.Ny)]=k*(def.hz);
 
 #ifdef THREE_PHASE
-						int j1 = (def.Ny);
+						int j1 = (def.Ny) / 2;
 
 						if(j < j1)
 						{

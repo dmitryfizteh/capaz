@@ -52,6 +52,68 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts d
 	}
 }
 
+// Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
+void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
+{
+	int i1 = i, j1 = j, k1 = k;
+
+	if(i == 0)
+		i1 ++;
+	if(i == localNx - 1)
+		i1 --;
+	if(j == 0)
+		j1 ++;
+	if(j == (def.Ny) - 1)
+		j1 --;
+	if((k == 0) && ((def.Nz) > 2))
+		k1 ++;
+	if((k == (def.Nz) - 1) && ((def.Nz) > 2))
+		k1 --;
+
+	if((j != 0) || ((def.source) <= 0))
+		HostArraysPtr.S_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_n[i1 + j1 * localNx + k1 * localNx * (def.Ny)];
+
+	if((j == 0) && ((def.source) > 0))
+	{
+		int I=i_to_I(i,rank,size, def);
+		if ((I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = def.S_n_gr;
+		else
+			//HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = 0;
+			HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)] = HostArraysPtr.S_n[i+(j+1)*localNx+k*localNx*(def.Ny)];
+	}
+
+	test_S(HostArraysPtr.S_n[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+}
+
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+{
+	int i1 = i, j1 = j, k1 = k;
+
+	if(i == 0)
+		i1 ++;
+	if(i == localNx - 1)
+		i1 --;
+	if(j == 0)
+		j1 ++;
+	if(j == (def.Ny) - 1)
+		j1 --;
+	if((k == 0) && ((def.Nz) > 2))
+		k1 ++;
+	if((k == (def.Nz) - 1) && ((def.Nz) > 2))
+		k1 --;
+
+	if((j != 0) && (j != (def.Ny) - 1))
+		HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_w[i1 + j1 * localNx + k1 * localNx * (def.Ny)];
+	else if(j == 0)
+		HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = def.P_atm;
+	else
+		HostArraysPtr.P_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_w[i1 + j1 * localNx + k1 * localNx * (def.Ny)] + HostArraysPtr.ro_w[i1 + j1 * localNx + k1 * localNx * (def.Ny)] * (def.g_const) * (def.hy);
+
+	test_positive(HostArraysPtr.P_w[i+j*localNx+k*localNx*(def.Ny)], __FILE__, __LINE__);
+}
+
+/*
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
 	if ((j == (def.Ny) - 1) && ((def.Ny)>2))
@@ -146,3 +208,4 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 		return;
 	}
 }
+*/
