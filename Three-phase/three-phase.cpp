@@ -206,8 +206,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 
 	if((j == 0) && ((def.source) > 0))
 	{
-		HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_gr;
-		HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_gr;
+		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = def.S_w_gr;
+		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = def.S_g_gr;
 	}
 }
 
