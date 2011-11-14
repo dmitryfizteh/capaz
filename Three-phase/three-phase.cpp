@@ -179,6 +179,71 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, co
 }
 
 //Задание граничных условий отдельно для (Sw,Sg),Pn
+
+// Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
+void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
+{
+	int i1 = i, j1 = j, k1 = k;
+
+	if(i == 0)
+		i1 ++;
+	if(i == localNx - 1)
+		i1 --;
+	if(j == 0)
+		j1 ++;
+	if(j == (def.Ny) - 1)
+		j1 --;
+	if((k == 0) && ((def.Nz) > 2))
+		k1 ++;
+	if((k == (def.Nz) - 1) && ((def.Nz) > 2))
+		k1 --;
+
+	if((j != 0) || ((def.source) <= 0))
+	{
+		HostArraysPtr.S_w[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_w[i1 + j1 * localNx + k1 * localNx * (def.Ny)];
+		HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i1 + j1 * localNx + k1 * localNx * (def.Ny)];
+	}
+
+	if((j == 0) && ((def.source) > 0))
+	{
+		HostArraysPtr.S_w[i+j*localNx+k*localNx*(def.Ny)] = def.S_w_gr;
+		HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_gr;
+	}
+}
+
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
+{
+	int i1 = i, j1 = j, k1 = k;
+
+	if(i == 0)
+		i1 ++;
+	if(i == localNx - 1)
+		i1 --;
+	if(j == 0)
+		j1 ++;
+	if(j == (def.Ny) - 1)
+		j1 --;
+	if((k == 0) && ((def.Nz) > 2))
+		k1 ++;
+	if((k == (def.Nz) - 1) && ((def.Nz) > 2))
+		k1 --;
+
+	// Вариант, больше подходящий для CPU, но менее выгодный для GPU
+	if((j != 0) && (j != (def.Ny) - 1))
+		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i1 + j1 * localNx + k1 * localNx * (def.Ny)];
+	else if(j == 0)
+		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = def.P_atm;
+	else
+		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i1 + j1 * localNx + k1 * localNx * (def.Ny)] + ro_eff_gdy(HostArraysPtr, i1, j1, k1, localNx, def);
+
+	// Вариант, больше подходящий для GPU, но менее выгодный для CPU
+/*	if(j != 0)
+		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i1 + j1 * localNx + k1 * localNx * (def.Ny)] + ro_eff_gdy(HostArraysPtr, i1, j1, k1, localNx, def) * (j - j1);
+	else
+		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = def.P_atm;
+*/
+}
+/*
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int rank, int size, consts def)
 {
 	if((j != 0) && (j != (def.Ny) - 1))
@@ -240,7 +305,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 		HostArraysPtr.S_g[i+j*localNx+k*localNx*(def.Ny)] = def.S_g_gr;
 
 		// Источников нет
-/*		if((i != 0) && (i != localNx - 1))
+		if((i != 0) && (i != localNx - 1))
 		{
 			if((k != 0) && (k != (def.Nz) - 1) || ((def.Nz) <= 2))
 			{
@@ -294,7 +359,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 				HostArraysPtr.S_g[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.S_g[i - 1 + (j + 1) * localNx + (k - 1) * localNx * (def.Ny)];
 			}
 		}
-*/	}
+	}
 	else if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
 		if((i != 0) && (i != localNx - 1))
@@ -353,7 +418,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, int ra
 		}
 	}
 }
-
+*/
+/*
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts def)
 {
 	if((j != 0) && (j != (def.Ny) - 1))
@@ -406,7 +472,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 		HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = def.P_atm;
 
 		//Если ставим условие только на градиент давления.
-/*		if((i != 0) && (i != localNx - 1))
+		if((i != 0) && (i != localNx - 1))
 		{
 			if((k != 0) && (k != (def.Nz) - 1) || ((def.Nz) <= 2))
 			{
@@ -451,7 +517,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 				HostArraysPtr.P_n[i + j * localNx + k * localNx * (def.Ny)] = HostArraysPtr.P_n[i - 1 + (j + 1) * localNx + (k - 1) * localNx * (def.Ny)] - ro_eff(HostArraysPtr, i - 1, j + 1, k - 1, localNx, def);
 			}
 		}
-*/	}
+	}
 	else if ((j == (def.Ny) - 1) && ((def.Ny) > 2))
 	{
 		if((i != 0) && (i != localNx - 1))
@@ -501,6 +567,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, int localNx, consts
 		}
 	}
 }
+*/
 
 /*
 // Макет функции задания граничных условий, где каждая точка обрабатывается однозначно и в соответствии со здравым смыслом
