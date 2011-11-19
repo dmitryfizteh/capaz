@@ -3,6 +3,17 @@
 
 __constant__ consts gpu_def [1];
 
+#ifdef TWO_PHASE
+#include "Two-phase/two-phase.cu"
+#endif
+#ifdef THREE_PHASE
+#include "Three-phase/three-phase.cu"
+#endif
+#ifdef B_L
+#include "Backley-Leverett/b-l.cu"
+#endif
+
+
 // ѕреобразование локальных координат процессора к глобальным
 //  аждый процессор содержит дополнительную точку в массиве дл€
 // обмена данными, если имеет соседа 
@@ -34,83 +45,12 @@ __device__ int device_is_active_point(int i, int j, int k, localN locN, int rank
 		return 1;
 }
 
-//========================================================================================================================
-// ќчень желательно перенести в отдельные файлы проектов. Ќо пока невозможно.
-
-// –асчет плотностей, давлени€ NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
-__global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, localN locN, int rank, parts_sizes parts) 
-{
-	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int j=threadIdx.y+blockIdx.y*blockDim.y;
-	int k=threadIdx.z+blockIdx.z*blockDim.z;
-
-	if ((i<(locN.x)) && (j<(locN.y)) && (k<(locN.z)) && (device_is_active_point(i, j, k, locN, rank, parts)==1))
-	{
-		int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double S_n = DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double P_w = DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-
-		double S_e = (1.- S_n - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
-		double k_w = pow(S_e, (2. + 3. * (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]);
-		double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
-		double P_k = (*gpu_def).P_d[media] * pow((1. - S_n - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]), -1. / (*gpu_def).lambda[media]);
-
-		DevArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = P_w + P_k;
-		DevArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (*gpu_def).K[media] * k_w / (*gpu_def).mu_w;
-		DevArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (*gpu_def).K[media] * k_n / (*gpu_def).mu_n;
-		DevArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm));
-		DevArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w + P_k - (*gpu_def).P_atm));
-
-		device_test_positive(DevArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-	}
-}
-
 // –асчет плотностей, давлени€ NAPL P2 и Xi во всех точках сетки
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ)
 {
 	assign_ro_Pn_Xi_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr,locN,rank,parts); 
 	checkErrors("assign Pn, Xi, ro", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
-}
-
-// ћетод Ќьютона дл€ каждой точки сетки (независимо от остальных точек)
-__global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, localN locN) 
-{
-	int i=threadIdx.x+blockIdx.x*blockDim.x;
-	int j=threadIdx.y+blockIdx.y*blockDim.y;
-	int k=threadIdx.z+blockIdx.z*blockDim.z;
-
-	if ((i<(locN.x)-1) && (j<locN.y-1) && (k<(locN.z)) && (i!=0) && (j!=0) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
-	{
-		int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double S_e, P_k, AAA, F1, F2, PkS, F1P, F2P, F1S, F2S, det;
-		double S_n=DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double P_w=DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-
-		S_e = (1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]);
-		P_k = (*gpu_def).P_d[media] * pow(S_e, -1 / (*gpu_def).lambda[media]);
-		AAA = pow(S_e, ((-1 / (*gpu_def).lambda[media]) - 1));
-		F1 = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm)) * (1 - S_n) - DevArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		F2 = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w + P_k - (*gpu_def).P_atm)) * S_n - DevArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-
-		PkS = AAA * (*gpu_def).P_d[media] / ((*gpu_def).lambda[media] * (1 - (*gpu_def).S_wr[media]));
-		F1P = (*gpu_def).ro0_w * ((*gpu_def).beta_w) * (1 - S_n);
-		F2P = (*gpu_def).ro0_n * ((*gpu_def).beta_n) * S_n;
-		F1S = (-1) * (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm));
-		F2S = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w + P_k - (*gpu_def).P_atm + (S_n * PkS)));
-
-		det = F1P * F2S - F1S * F2P;
-
-		DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = P_w - (1 / det) * (F2S * F1 - F1S * F2);
-		DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = S_n - (1 / det) * (F1P * F2 - F2P * F1);
-
-		device_test_positive(DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-		device_test_S(DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-	}
 }
 
 // –асчет давлени€ воды P1 и насыщенности NAPL S2 во всех точках сетки
@@ -123,8 +63,6 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 		cudaPrintfDisplay(stdout, true);
 	}
 }
-
-//========================================================================================================================
 
 // –асчет скорости в каждой точке сетки
 __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr, localN locN, int rank, parts_sizes parts) 
@@ -667,12 +605,12 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, l
 
 
 			// ћаксимальный размер расчетной сетки дл€ ускорител€
-			// 21 - количество параметров в точке
-			printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(21*sizeof(double)) );
+			// sizeof(ptr_Arrays)/4 - количество параметров в точке, т.к. 4 -размер одного указател€
+			printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4) );
 			}
 
 		// (locN.x)+2 потому что 2NyNz на буфер обмена выдел€етс€
-		if (((locN.x)+2)*(locN.y)*(locN.z) > (devProp.totalGlobalMem/(21*sizeof(double))))
+		if ( (locN.x+2)*(locN.y)*(locN.z) > (devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4)))
 			printf ("\nError! Not enough memory at GPU, rank=%d\n",rank);
 		fflush( stdout);
 
