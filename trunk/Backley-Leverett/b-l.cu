@@ -44,13 +44,13 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, localN locN)
 	if ((i<(locN.x)-1) && (j<locN.y-1) && (k<(locN.z)) && (i!=0) && (j!=0) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
 	{
 		int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double S_e, AAA, F1, F2, F1P, F2P, F1S, F2S, det;
+		double S_e, F1, F2, F1P, F2P, F1S, F2S, det;
 		double S_n=DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		double P_w=DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 
 		S_e = (1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]);
 
-		AAA = pow(S_e, ((-1 / (*gpu_def).lambda[media]) - 1));
+		//AAA = pow(S_e, ((-1 / (*gpu_def).lambda[media]) - 1));
 		F1 = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm)) * (1 - S_n) - DevArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		F2 = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w - (*gpu_def).P_atm)) * S_n - DevArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 

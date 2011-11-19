@@ -495,9 +495,9 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN 
 {
 	cudaMalloc((void**) DevBuffer,  2 * (locN.y) * (locN.z) * sizeof(double));
 
-	cudaMalloc((void**) &((*ArraysPtr).x),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).y),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).z),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
+	//cudaMalloc((void**) &((*ArraysPtr).x),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
+	//cudaMalloc((void**) &((*ArraysPtr).y),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
+	//cudaMalloc((void**) &((*ArraysPtr).z),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).P_w),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).P_n),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).S_n),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
@@ -524,9 +524,9 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN 
 void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 {
 	cudaFree (DevBuffer);
-	cudaFree (DevArraysPtr.x);
-	cudaFree (DevArraysPtr.y);
-	cudaFree (DevArraysPtr.z);
+	//cudaFree (DevArraysPtr.x);
+	//cudaFree (DevArraysPtr.y);
+	//cudaFree (DevArraysPtr.z);
 	cudaFree (DevArraysPtr.P_w);
 	cudaFree (DevArraysPtr.P_n);
 	cudaFree (DevArraysPtr.S_n);
