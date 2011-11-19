@@ -22,8 +22,11 @@
     <CudaCompile Include="..\..\gpu.cu" />
     <CudaCompile Include="..\..\shared_test.cu">
       <NvccCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cuda</NvccCompilation>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </CudaCompile>
-    <CudaCompile Include="..\two-phase.cu" />
+    <CudaCompile Include="..\two-phase.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\main.cpp" />
