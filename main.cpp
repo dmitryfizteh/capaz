@@ -219,9 +219,9 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						// Преобразование локальных координат процессора к глобальным
 						int I=i_to_I(i,rank,parts,def);
 
-						HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]=I*(def.hx);
-						HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]=j*(def.hy);
-						HostArraysPtr.z[i+j*locN.x+k*locN.x*locN.y]=k*(def.hz);
+						//HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]=I*(def.hx);
+						//HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]=j*(def.hy);
+						//HostArraysPtr.z[i+j*locN.x+k*locN.x*locN.y]=k*(def.hz);
 
 #ifdef THREE_PHASE
 						int j1 = locN.y / 2;
@@ -358,9 +358,9 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)
 
 	try
 	{
-		(*ArraysPtr).x=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).y=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).z=new double [(locN.x)*(locN.y)*(locN.z)];
+		//(*ArraysPtr).x=new double [(locN.x)*(locN.y)*(locN.z)];
+		//(*ArraysPtr).y=new double [(locN.x)*(locN.y)*(locN.z)];
+		//(*ArraysPtr).z=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).P_w=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).P_n=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).ro_w=new double [(locN.x)*(locN.y)*(locN.z)];
@@ -404,9 +404,9 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)
 void host_memory_free(ptr_Arrays ArraysPtr)
 { 
 	delete HostBuffer;
-	delete[] ArraysPtr.x;
-	delete[] ArraysPtr.y;
-	delete[] ArraysPtr.z;
+	//delete[] ArraysPtr.x;
+	//delete[] ArraysPtr.y;
+	//delete[] ArraysPtr.z;
 	delete[] ArraysPtr.P_w;
 	delete[] ArraysPtr.P_n;
 	delete[] ArraysPtr.ro_w;
@@ -556,14 +556,17 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 				if(is_active_point(i, j, k, locN, rank, parts))
 				{
 					local=i+j*locN.x+k*locN.x*locN.y;
+
+					// Преобразование локальных координат процессора к глобальным
+					int I=i_to_I(i,rank,parts,def);
 #ifdef THREE_PHASE
 					if(def.Nz < 2)
 					{
-/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */					
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.ux_n[local], 
 							(-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
@@ -572,11 +575,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 
 					else
 					{
-/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
+						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy),  
 							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
 							HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
 							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local],
@@ -586,12 +589,12 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 #else
 					if(def.Nz < 2)
 					{
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
+						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", HostArraysPtr.x[local], HostArraysPtr.z[local], (def.Ny-1)*(def.hy)-HostArraysPtr.y[local], HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
+						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 					}
 #endif
 				}
@@ -606,7 +609,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 
 	for(int i=0; i<locN.x; i++)
 		for(int k=0; k<locN.z; k++)
-			fprintf(fp_S2x,"%.2e %.3e\n", HostArraysPtr.x[i+locN.x*locN.y/2+k*locN.x*locN.y], HostArraysPtr.S_n[i+locN.x*locN.y/2+k*locN.x*locN.y]); 
+			fprintf(fp_S2x,"%.2e %.3e\n", I*(def.hx), HostArraysPtr.S_n[i+locN.x*locN.y/2+k*locN.x*locN.y]); 
 	*/
 		
 	fclose(fp);
@@ -666,9 +669,9 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, pa
 			fwrite(HostArraysPtr.P_w, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			fwrite(HostArraysPtr.S_n, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 #endif
-			fwrite(HostArraysPtr.x, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.y, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.z, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			//fwrite(HostArraysPtr.x, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			//fwrite(HostArraysPtr.y, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			//fwrite(HostArraysPtr.z, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			fwrite(HostArraysPtr.roS_w_old, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			fwrite(HostArraysPtr.roS_n_old, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 #ifdef THREE_PHASE
@@ -713,9 +716,9 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, loc
 				fread(HostArraysPtr.P_w, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				fread(HostArraysPtr.S_n, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 #endif
-				fread(HostArraysPtr.x, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.y, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.z, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				//fread(HostArraysPtr.x, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				//fread(HostArraysPtr.y, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				//fread(HostArraysPtr.z, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				fread(HostArraysPtr.roS_w_old, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				fread(HostArraysPtr.roS_n_old, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 #ifdef THREE_PHASE

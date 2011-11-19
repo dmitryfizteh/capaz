@@ -52,7 +52,6 @@
 
 struct ptr_Arrays_tag 
 {
-	double *x, *y, *z;
 	double *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n,*roS_w,*roS_w_old,*roS_n,*roS_n_old;
 	int *media;
 #ifdef THREE_PHASE 
