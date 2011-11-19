@@ -33,13 +33,7 @@
 #include <sys/stat.h>
 #endif
 
-#ifndef THREE_PHASE
-	const double K[2]={6.64e-11,7.15e-12};
-	const double lambda[2]={2.7,2.0};
-	const double S_wr[2]={0.09,0.12};
-	const double m[2]={0.4,0.39};
-	const double P_d[2]={755,2060};
-#else
+#ifdef THREE_PHASE	
 	// Коэффициенты прямых, продолжающих функции капиллярных давлений на границах интервала изменения насыщенностей [0,1]
 	const double aw[2] = {-39640, -26530};
 	const double bw[2] = {12560, 27110};
@@ -59,6 +53,9 @@ struct ptr_Arrays_tag
 #else
 	double *S_n;
 #endif
+#ifdef B_L
+	double *K;
+#endif
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
 
@@ -77,13 +74,15 @@ typedef struct localN localN;
 // Структура параметров сред
 struct consts_tag
 {
-	double K[2];
 	double lambda[2];
 	double S_wr[2];
 	double m[2];
 	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, timeX;
 	int Nx, Ny, Nz;
 	int source, save_plots, print_screen, newton_iterations;
+#ifndef B_L
+	double K[2];
+#endif
 #ifdef TWO_PHASE
 	double P_d[2];
 #endif
@@ -105,6 +104,7 @@ typedef struct consts_tag consts;
 
 extern void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t, localN locN, int rank,parts_sizes parts, int blocksX, int blocksY, int blocksZ);
 extern void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, localN* locN, int* size, parts_sizes *parts, int* rank, int* blocksX, int* blocksY, int* blocksZ, int argc, char* argv[], consts def);
+extern void load_permeability(double* K, localN locN);
 extern void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer);
 extern void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, localN locN, consts def);
 extern void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def);
