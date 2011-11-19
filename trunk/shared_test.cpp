@@ -2,6 +2,15 @@
 
 // Тестирование
 
+// Проверка на предопределение макроса задачи
+#ifndef THREE_PHASE
+#ifndef TWO_PHASE
+#ifndef B_L
+#error "Task DEFINE is not found."
+#endif
+#endif
+#endif
+
 // Функция проверки на выход из допустимого диапазона значений
 // во всех точках расчетной области процессора
 #ifndef THREE_PHASE
@@ -12,10 +21,7 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, localN locN, int rank, consts de
 			for(int k=0;k<(locN.z);k++)
 			{
 				test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				//test_positive(HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 				test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				//test_nan(HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				//test_positive(HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.ux_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.uy_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.uz_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);

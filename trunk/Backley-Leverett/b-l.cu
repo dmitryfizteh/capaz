@@ -20,8 +20,8 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, localN locN, int
 		double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
 		
 		DevArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = P_w;
-		DevArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (*gpu_def).K[media] * k_w / (*gpu_def).mu_w;
-		DevArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (*gpu_def).K[media] * k_n / (*gpu_def).mu_n;
+		DevArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (DevArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_w / (*gpu_def).mu_w;
+		DevArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1 * (DevArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_n / (*gpu_def).mu_n;
 		DevArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm));
 		DevArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w - (*gpu_def).P_atm));
 
@@ -48,7 +48,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, localN locN)
 		double S_n=DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		double P_w=DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 
-		S_e = (1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]);
+		//S_e = (1 - S_n - (*gpu_def).S_wr[media]) / (1 - (*gpu_def).S_wr[media]);
 
 		//AAA = pow(S_e, ((-1 / (*gpu_def).lambda[media]) - 1));
 		F1 = (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm)) * (1 - S_n) - DevArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];

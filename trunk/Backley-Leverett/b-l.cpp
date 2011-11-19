@@ -11,8 +11,8 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, con
 	double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
 
 	HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-	HostArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (def.K[media]) * k_w / def.mu_w;
-	HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (def.K[media]) * k_n / def.mu_n;
+	HostArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (HostArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_w / def.mu_w;
+	HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (HostArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_n / def.mu_n;
 
 	test_S(S_e, __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
@@ -26,12 +26,12 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 	if ((i!=0) && (i!=(locN.x)-1) && (j!=0) && (j!=(locN.y)-1) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
 	{
 		int media = HostArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double S_e, AAA, F1, F2, F1P, F2P, F1S, F2S, det;
+		double S_e, F1, F2, F1P, F2P, F1S, F2S, det;
 
 		for (int w=1;w<=def.newton_iterations;w++)
 		{
 			S_e = (1 - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1 - def.S_wr[media]);
-			AAA = pow(S_e, (((-1.) / def.lambda[media]) - 1.));
+
 			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm)) * (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)]) - HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm)) * HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 			

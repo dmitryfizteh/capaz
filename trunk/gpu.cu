@@ -494,10 +494,6 @@ void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, localN locN, c
 void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN locN, consts def)
 {
 	cudaMalloc((void**) DevBuffer,  2 * (locN.y) * (locN.z) * sizeof(double));
-
-	//cudaMalloc((void**) &((*ArraysPtr).x),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
-	//cudaMalloc((void**) &((*ArraysPtr).y),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
-	//cudaMalloc((void**) &((*ArraysPtr).z),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).P_w),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).P_n),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).S_n),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
@@ -517,6 +513,10 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN 
 	cudaMalloc((void**) &((*ArraysPtr).roS_n_old),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
 	cudaMalloc((void**) &((*ArraysPtr).media),  (locN.x) * (locN.y) * (locN.z) * sizeof(int));
 
+#ifdef B_L
+	cudaMalloc((void**) &((*ArraysPtr).K),  (locN.x) * (locN.y) * (locN.z) * sizeof(double));
+#endif
+
 	checkErrors("memory allocation", __FILE__, __LINE__);
 }
 
@@ -524,9 +524,6 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN 
 void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 {
 	cudaFree (DevBuffer);
-	//cudaFree (DevArraysPtr.x);
-	//cudaFree (DevArraysPtr.y);
-	//cudaFree (DevArraysPtr.z);
 	cudaFree (DevArraysPtr.P_w);
 	cudaFree (DevArraysPtr.P_n);
 	cudaFree (DevArraysPtr.S_n);
@@ -545,6 +542,10 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 	cudaFree (DevArraysPtr.roS_w_old);
 	cudaFree (DevArraysPtr.roS_n_old);
 	cudaFree (DevArraysPtr.media);
+
+#ifdef B_L
+	cudaFree (DevArraysPtr.K);
+#endif
 
 	checkErrors("memory reliase", __FILE__, __LINE__);
 }
