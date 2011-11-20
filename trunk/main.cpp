@@ -34,13 +34,13 @@ int main(int argc, char* argv[])
 	if (!rank)
 	{
 #ifdef TWO_PHASE
-		std::cout << "Two phase filtration by CAPAZ\n\n";
+		std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
 #endif
 #ifdef THREE_PHASE
-		std::cout << "Three phase filtration by CAPAZ\n\n";
+		std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
 #endif
 #ifdef B_L
-		std::cout << "Backley-Leverett filtration by CAPAZ\n\n";
+		std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n\n";
 #endif
 	}
 
@@ -638,7 +638,7 @@ void load_permeability(double* K, localN locN)
 
 	if((Nx!=locN.x) || (Ny!=locN.y))
 	{
-		printf("Nx/Ny from noise.dat not equal ",__FILE__,__LINE__);
+		printf("Nx/Ny from noise.dat not equal\nError in file \"%s\" at line %d\n",__FILE__,__LINE__);
 		fflush(stdout);
 	}
 
