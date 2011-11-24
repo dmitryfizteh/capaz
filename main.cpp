@@ -1,7 +1,5 @@
 #include "defines.h"
 
-// Счетчики времени
-clock_t start_time, finish_time;  
 // Буферные массивы для обмена между процессорами
 double *HostBuffer;
 double *DevBuffer;
@@ -25,7 +23,9 @@ int main(int argc, char* argv[])
 	int j=0;
 	// Количество частей, на которые делим область
 	parts_sizes parts;
-	
+	// Счетчик времени исполнения вычислительной части программы
+	clock_t task_time; 
+
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &locN, &size, &parts, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 	// Тест
 	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
-	start_time=clock();
+	task_time=clock();
 
 	// Цикл шагов по времени (каждая итерация - новый слой по времени)
 	// 1. Проводятся расчеты P1 и S2 на следующем временном слое
@@ -73,10 +73,12 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// Ждем пока все процессоры закончат расчеты
+	barrier();
 	// Вывод информации о времени работы программы в секундах
-	finish_time=clock();
-	finish_time-=start_time;
-	printf( "Task time in seconds:\t%.2f\n", (double) finish_time/CLOCKS_PER_SEC);
+	task_time=clock()-task_time;
+	if(!rank)
+		printf( "Task time in seconds:\t%.2f\n", (double) task_time/CLOCKS_PER_SEC);
 
 	// Завершение работы и освобождение памяти
 	finalization(HostArraysPtr, DevArraysPtr, DevBuffer);
