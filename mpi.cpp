@@ -100,7 +100,7 @@ void communication_initialization(int argc, char* argv[], int* size, int* rank, 
 	MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD,size); // The amount of processors
     MPI_Comm_rank(MPI_COMM_WORLD,rank); // The number of processor
-	std::cout << "size=" <<*size<<"  "<<"rank= "<<*rank<<"\n";
+	//std::cout << "size=" <<*size<<"  "<<"rank= "<<*rank<<"\n";
 }
 
 void communication_finalization(void)

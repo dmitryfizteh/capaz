@@ -555,8 +555,12 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 // номеру запускающего процессора
 void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, localN locN, consts def)
 {
-	// ≈сли 3 ускорител€ на одном узле с большим количеством €дер
-	int device=rank%3;
+	// Ѕыло бы очень неплохо вместо GPU_PER_NODE использовать cudaGetDeviceCount
+	//int deviceCount;
+	//cudaGetDeviceCount ( &deviceCount );
+
+	// —читаем, что €дер на узле не меньше, чем ускорителей
+	int device=rank % GPU_PER_NODE;
 	cudaSetDevice(device);
 
 	//  оличество запускаемых блоков
@@ -574,50 +578,47 @@ void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, l
 
 	consts* deff=new consts[1];
 	deff[0]=def;
-
-	cudaMemcpyToSymbol ( gpu_def, deff, sizeof ( consts ));//, 0, cudaMemcpyHostToDevice );
+	cudaMemcpyToSymbol ( gpu_def, deff, sizeof ( consts ));
 	checkErrors("constant memory copy", __FILE__, __LINE__);
 
-	int deviceCount;
-    cudaDeviceProp devProp;
-    cudaGetDeviceCount ( &deviceCount );
-
-        cudaGetDeviceProperties ( &devProp, device );
-        printf ( "Device %d\n", device );
-        printf ( "Compute capability : %d.%d\n", devProp.major, devProp.minor );
-		printf ( "Name : %s\n", devProp.name );
-		if (devProp.major < 2)
-			printf ("\nError! Compute capability < 2, rank=%d\n",rank);
+	cudaDeviceProp devProp;
+    cudaGetDeviceProperties ( &devProp, device );
         
-		if (!rank)
-		{
-			printf ( "Total Global Memory : %ld\n", devProp.totalGlobalMem );
-			printf ( "Shared memory per block: %d\n", devProp.sharedMemPerBlock );
-			printf ( "Registers per block : %d\n", devProp.regsPerBlock );
-			printf ( "Warp size : %d\n", devProp.warpSize );
-			printf ( "Max threads per block : %d\n", devProp.maxThreadsPerBlock );
-			printf ( "Total constant memory : %d\n", devProp.totalConstMem );
-			printf ( "Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
-			printf ( "Kernel execution timeout: %s\n\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
-			for (int i = 0; i < 3; ++i)
-				printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
-			for (int i = 0; i < 3; ++i)
-				printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
+	if (devProp.major < 2)
+		printf ("\nError! Compute capability < 2, rank=%d\n",rank);
+        
+	if (!rank)
+	{
+		//printf ( "Device %d\n", device );
+		printf ( "Name : %s\n", devProp.name );
+		printf ( "Compute capability : %d.%d\n", devProp.major, devProp.minor );
+		printf ( "Total Global Memory : %ld\n", devProp.totalGlobalMem );
+		printf ( "Shared memory per block: %d\n", devProp.sharedMemPerBlock );
+		printf ( "Registers per block : %d\n", devProp.regsPerBlock );
+		printf ( "Warp size : %d\n", devProp.warpSize );
+		printf ( "Max threads per block : %d\n", devProp.maxThreadsPerBlock );
+		printf ( "Total constant memory : %d\n", devProp.totalConstMem );
+		printf ( "Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
+		printf ( "Kernel execution timeout: %s\n\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
+		for (int i = 0; i < 3; ++i)
+			printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
+		for (int i = 0; i < 3; ++i)
+			printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
 
 
-			// ћаксимальный размер расчетной сетки дл€ ускорител€
-			// sizeof(ptr_Arrays)/4 - количество параметров в точке, т.к. 4 -размер одного указател€
-			printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4) );
-			}
+		// ћаксимальный размер расчетной сетки дл€ ускорител€
+		// sizeof(ptr_Arrays)/4 - количество параметров в точке, т.к. 4 -размер одного указател€
+		printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4) );
+	}
 
 		// (locN.x)+2 потому что 2NyNz на буфер обмена выдел€етс€
-		if ( (locN.x+2)*(locN.y)*(locN.z) > (devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4)))
-			printf ("\nError! Not enough memory at GPU, rank=%d\n",rank);
-		fflush( stdout);
+	if ( (locN.x+2)*(locN.y)*(locN.z) > (devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4)))
+		printf ("\nError! Not enough memory at GPU, rank=%d\n",rank);
+	fflush( stdout);
 
-		// »нициализируем библиотеку cuPrintf дл€ вывода текста на консоль
-		// пр€мо из kernel
-		cudaPrintfInit();
+	// »нициализируем библиотеку cuPrintf дл€ вывода текста на консоль
+	// пр€мо из kernel
+	cudaPrintfInit();
 }
 
 // ‘инализаци€ ускорител€
