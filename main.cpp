@@ -30,20 +30,6 @@ int main(int argc, char* argv[])
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &j, &locN, &size, &parts, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
 
-	// Нулевой процессор выводит название запускаемой задачи
-	if (!rank)
-	{
-#ifdef TWO_PHASE
-		std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
-#endif
-#ifdef THREE_PHASE
-		std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
-#endif
-#ifdef B_L
-		std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n\n";
-#endif
-	}
-
 	// Тест
 	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
 	
@@ -286,6 +272,25 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 //----------------------------------------------------------------------------------------------------
 // Служебные функции
 
+// Вывод запускаемой задачи
+void print_task_name(int rank, int size)
+{
+	// Нулевой процессор выводит название запускаемой задачи
+	if (!rank)
+	{
+		#ifdef TWO_PHASE
+				std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
+		#endif
+		#ifdef THREE_PHASE
+				std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
+		#endif
+		#ifdef B_L
+				std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n\n";
+		#endif
+	    fflush(stdout);
+	}
+}
+
 // Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2), 
 // инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
 // Для задачи Б-Л загрузка проницаемостей из файла.
@@ -294,6 +299,8 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 	FILE *f_save;
 
 	communication_initialization(argc, argv, size, rank, def); // (1)
+
+	print_task_name(*rank, *size);
 
 	parts_initialization(*size, parts);
 
