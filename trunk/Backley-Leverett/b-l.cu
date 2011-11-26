@@ -1,6 +1,5 @@
 //#include "../defines.h"
 #include "../gpu.h"
-//#include "two-phase.h"
 
 // Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
 __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, localN locN, int rank, parts_sizes parts) 
@@ -43,8 +42,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, localN locN)
 
 	if ((i<(locN.x)-1) && (j<locN.y-1) && (k<(locN.z)) && (i!=0) && (j!=0) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
 	{
-		int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-		double S_e, F1, F2, F1P, F2P, F1S, F2S, det;
+		double F1, F2, F1P, F2P, F1S, F2S, det;
 		double S_n=DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		double P_w=DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 
@@ -57,7 +55,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr, localN locN)
 		F1P = (*gpu_def).ro0_w * ((*gpu_def).beta_w) * (1 - S_n);
 		F2P = (*gpu_def).ro0_n * ((*gpu_def).beta_n) * S_n;
 		F1S = (-1) * (*gpu_def).ro0_w * (1 + ((*gpu_def).beta_w) * (P_w - (*gpu_def).P_atm));
-		F2S = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w - (*gpu_def).P_atm + (S_n )));
+		F2S = (*gpu_def).ro0_n * (1 + ((*gpu_def).beta_n) * (P_w - (*gpu_def).P_atm));
 
 		det = F1P * F2S - F1S * F2P;
 
