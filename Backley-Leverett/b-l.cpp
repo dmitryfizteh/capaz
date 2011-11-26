@@ -20,7 +20,6 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, con
 	test_nan(HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 }
 
-// Переписать!
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def)
 {
 	if ((i!=0) && (i!=(locN.x)-1) && (j!=0) && (j!=(locN.y)-1) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
@@ -38,7 +37,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 			F1P = def.ro0_w * (def.beta_w) * (1 - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)]);
 			F2P = def.ro0_n * (def.beta_n) * HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 			F1S = (-1) * (def.ro0_w) * (1 + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
-			F2S = def.ro0_n * (1 + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm + (HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] )));
+			F2S = def.ro0_n * (1 + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 
 			det = F1P * F2S - F1S * F2P;
 
@@ -69,18 +68,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, int ra
 	if((k == (locN.z) - 1) && ((locN.z) > 2))
 		k1 --;
 
-	if((j != 0) || ((def.source) <= 0))
+	if(j != 0) 
 		HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.S_n[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
-
-	if((j == 0) && ((def.source) > 0))
-	{
-		int I=i_to_I(i, rank, parts, def);
-		if ((I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-			HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.S_n_gr;
-		else
-			//HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = 0;
-			HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.S_n[i+(j+1)*(locN.x)+k*(locN.x)*(locN.y)];
-	}
 
 	test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 }
