@@ -208,6 +208,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						int I=i_to_I(i,rank,parts,def);
 
 #ifdef THREE_PHASE
+						int media = HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y] = 0;	
 						int j1 = locN.y / 2;
 
 						if(j < j1)
@@ -227,9 +228,9 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_n[i + (j - 1) * locN.x + k * locN.x * locN.y]
 								+ (def.ro0_n * (1. - HostArraysPtr.S_w[i + (j - 1) * locN.x + k * locN.x * locN.y] - HostArraysPtr.S_g[i + (j - 1) * locN.x + k * locN.x * locN.y]) 
 								+ def.ro0_w * HostArraysPtr.S_w[i + (j - 1) * locN.x + k * locN.x * locN.y]
-								+ def.ro0_g * HostArraysPtr.S_g[i + (j - 1) * locN.x + k * locN.x * locN.y]) * (def.g_const) * (def.hy);
+								+ def.ro0_g * HostArraysPtr.S_g[i + (j - 1) * locN.x + k * locN.x * locN.y]) * (def.m[media]) * (def.g_const) * (def.hy);
 
-						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y] = 0;						
+											
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая

@@ -172,9 +172,10 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 // Функция вычисления "эффективной" плотности
 double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def)
 {
+	int media = HostArraysPtr.media[i + j * (locN.x) + k * (locN.x) * (locN.y)];
 	double ro = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
 		+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)]
-	+ HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.g_const) * (def.hy);
+	+ HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.m[media]) * (def.g_const) * (def.hy);
 	return ro;
 }
 
