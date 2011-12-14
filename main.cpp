@@ -280,14 +280,15 @@ void print_task_name(int rank, int size)
 	if (!rank)
 	{
 		#ifdef TWO_PHASE
-				std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
+				std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n";
 		#endif
 		#ifdef THREE_PHASE
-				std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n\n";
+				std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n";
 		#endif
 		#ifdef B_L
-				std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n\n";
+				std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n";
 		#endif
+		read_version();
 	    fflush(stdout);
 	}
 }
@@ -798,9 +799,31 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, loc
 
 //------------------------------------------------------------------------------------------
 
+// —обирает и печатает версию запускаемой программы
+void read_version(void)
+{
+
+	FILE *rev;
+	char *file;
+	char str[250]="";
+	int revision;
+
+	if(!(rev=fopen("../.svn/entries","rt")))
+		revision=0;
+	else
+	{
+		for(int i=0;i<4;i++)
+			fgets(str,250,rev);
+		revision=atoi(str);
+	}
+
+	printf("Version %s.%d compiled %s %s.\n\n", VERSION, revision, __DATE__, __TIME__);
+}
+
 // —читывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)
 {
+
 #ifdef THREE_PHASE
 	(*def).aw[0]=aw[0];
 	(*def).aw[1]=aw[1];
