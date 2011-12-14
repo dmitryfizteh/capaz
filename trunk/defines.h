@@ -1,11 +1,13 @@
 #ifndef DEFINES_H
 #define DEFINES_H 
 
+#define VERSION "0.4"
+
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
-#define TWO_LAYERS 1
+#define TWO_LAYERS 0
 // Считать направленными разностями (если не определена NR, то считается без них)
-//#define NR 
+#define NR 
 #else
 #define TWO_LAYERS 0
 #define NR 
@@ -137,6 +139,7 @@ extern void barrier(void);
 extern void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, localN locN, consts def);
 extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, parts_sizes parts, localN locN, consts def);
 extern void read_defines(int argc, char *argv[], consts* def);
+extern void read_version(void);
 
 // Unit-тесты
 #ifndef THREE_PHASE
