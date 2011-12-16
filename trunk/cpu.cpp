@@ -371,20 +371,39 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN 
 			test_arrowhead(Tx1+Ty1+Tz1, divgrad1, __FILE__, __LINE__);
 			test_arrowhead(Tx2+Ty2+Tz2, divgrad2, __FILE__, __LINE__);
 
+		double q_w=0;
+		double q_n=0;
+
+#ifdef B_L
+		// ¬ левом нижнем углу нагнетающа€ скважина
+		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		{
+			q_w=0;
+			//q_n=def.Q;
+		}
+
+		// ¬ правом верхнем углу добывающа€ скважина
+		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		{
+			//q_w=def.Q * F_bl(S);
+			//q_n=def.Q * (1-F_bl(S));
+		}
+#endif
+
 		if ((t < 2 * (def.dt)) || TWO_LAYERS)
 		{
-			A1 = HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] + ((def.dt) / def.m[media]) * (divgrad1 - Tx1 - Ty1 - Tz1);
-			A2 = HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] + ((def.dt) / def.m[media]) * (divgrad2 - Tx2 - Ty2 - Tz2);
+			A1 = HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] + ((def.dt) / def.m[media]) * (q_w + divgrad1 - Tx1 - Ty1 - Tz1);
+			A2 = HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] + ((def.dt) / def.m[media]) * (q_n + divgrad2 - Tx2 - Ty2 - Tz2);
 #ifdef THREE_PHASE
 			A3 = HostArraysPtr.roS_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] + ((def.dt) / def.m[media]) * (divgrad3 - Tx3 - Ty3 - Tz3);
 #endif
 		}
 		else
 		{
-			A1 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (divgrad1 - Tx1 - Ty1 - Tz1) 
+			A1 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_w + divgrad1 - Tx1 - Ty1 - Tz1) 
 				+ ((def.m[media]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_w_old[i+j*(locN.x)+k*(locN.x)*(locN.y)] 
 				+ 4 * (def.tau) * HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)]);  
-			A2 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (divgrad1 - Tx1 - Ty1 - Tz1) 
+			A2 = (1. / ((def.m[media]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_n + divgrad1 - Tx1 - Ty1 - Tz1) 
 				+ ((def.m[media]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_n_old[i+j*(locN.x)+k*(locN.x)*(locN.y)] 
 				+ 4 * (def.tau) * HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)]);  
 
