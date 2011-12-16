@@ -804,7 +804,6 @@ void read_version(void)
 {
 
 	FILE *rev;
-	char *file;
 	char str[250]="";
 	int revision;
 
