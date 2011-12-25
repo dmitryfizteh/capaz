@@ -51,12 +51,10 @@
 
 struct ptr_Arrays_tag 
 {
-	double *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n,*roS_w,*roS_w_old,*roS_n,*roS_n_old;
+	double *S_n, *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n,*roS_w,*roS_w_old,*roS_n,*roS_n_old;
 	int *media;
 #ifdef THREE_PHASE 
-	double *P_g, *S_w, *S_g, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
-#else
-	double *S_n;
+	double *P_g, *S_w, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
 #endif
 #ifdef B_L
 	double *K;
@@ -83,6 +81,7 @@ struct consts_tag
 	double S_wr[2];
 	double m[2];
 	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, timeX;
+	double S_n_gr;
 	int Nx, Ny, Nz;
 	int source, save_plots, print_screen, newton_iterations;
 #ifndef B_L
@@ -92,7 +91,7 @@ struct consts_tag
 	double P_d[2];
 #endif
 #ifdef THREE_PHASE
-	double S_w_init, S_g_init;
+	double S_w_init, S_n_init;
 	double S_nr[2];
 	double S_gr[2];
 	double P_d_nw[2];
@@ -101,8 +100,6 @@ struct consts_tag
 	double aw[2], bw[2], ag[2], bg[2];
 	double S_w_range[3];
 	double S_g_range[3];
-#else
-	double S_n_gr;
 #endif
 };
 typedef struct consts_tag consts;

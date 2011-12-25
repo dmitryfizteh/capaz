@@ -58,11 +58,9 @@ void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double*
 #ifdef THREE_PHASE
 	exchange(HostArraysPtr.ro_g, DevArraysPtr.ro_g, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.Xi_g, DevArraysPtr.Xi_g, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
-	exchange(HostArraysPtr.P_w, DevArraysPtr.P_w, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.P_g, DevArraysPtr.P_g, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
-#else
-	exchange(HostArraysPtr.P_n, DevArraysPtr.P_n, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 #endif
+	exchange(HostArraysPtr.P_n, DevArraysPtr.P_n, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.ro_w, DevArraysPtr.ro_w, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.ro_n, DevArraysPtr.ro_n, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.Xi_w, DevArraysPtr.Xi_w, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
@@ -86,13 +84,10 @@ void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostB
 void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def)
 {
 #ifdef THREE_PHASE
-	exchange(HostArraysPtr.P_n, DevArraysPtr.P_n, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.S_w, DevArraysPtr.S_w, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
-	exchange(HostArraysPtr.S_g, DevArraysPtr.S_g, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
-#else
+#endif
 	exchange(HostArraysPtr.P_w, DevArraysPtr.P_w, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
 	exchange(HostArraysPtr.S_n, DevArraysPtr.S_n, HostBuffer, DevBuffer, locN, blocksY, blocksZ, rank, parts, def);
-#endif
 }
 
 void communication_initialization(int argc, char* argv[], int* size, int* rank, consts def)

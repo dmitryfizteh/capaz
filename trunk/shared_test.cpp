@@ -124,11 +124,8 @@ void read_defines_test(consts def)
 	test_positive(def.ro0_g, __FILE__, __LINE__);
 	test_positive(def.mu_g, __FILE__, __LINE__);
 	test_positive(def.S_w_gr, __FILE__, __LINE__);
-	test_positive(def.S_g_gr, __FILE__, __LINE__);
-#else
-	test_positive(def.S_n_gr, __FILE__, __LINE__);
 #endif
-
+	test_positive(def.S_n_gr, __FILE__, __LINE__);
 #endif
 	
 }
