@@ -202,9 +202,9 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, co
 	int media = HostArraysPtr.media[i + j * (locN.x) + k * (locN.x) * (locN.y)];
 
 #ifdef THREE_PHASE
-	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
+	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
 		+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)]
-	+ HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.m[media]) * (def.g_const) * (def.hy);
+	+ HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.m[media]) * (def.g_const) * (def.hy);
 #else
 	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] 
 	+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1 - HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)])) * (def.m[media]) * (def.g_const) * (def.hy);
@@ -230,24 +230,24 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						if(j < j1)
 						{
 							HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-							HostArraysPtr.S_g[i+j*locN.x+k*locN.x*locN.y] = def.S_g_gr + (def.S_g_init - def.S_g_gr) * j / j1;
+							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
 						}
 						else
 						{
 							HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y] = def.S_w_init;
-							HostArraysPtr.S_g[i+j*locN.x+k*locN.x*locN.y] = def.S_g_init;
+							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y] = def.S_n_init;
 						}
 
 						if(j == 0)
-							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = def.P_atm;
+							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y] = def.P_atm;
 						else
-							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_n[i + (j - 1) * locN.x + k * locN.x * locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
+							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_w[i + (j - 1) * locN.x + k * locN.x * locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
 	
-						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 
 						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
-						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
-						HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));	
+						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));	
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
@@ -284,13 +284,11 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 							if ((HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]>=1./10.*locN.y*(def.h2)) && (HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]<=3./10.*locN.y*(def.h2)))
 								HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=1;
 						*/
-#ifndef THREE_PHASE 
+
 					test_nan(HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
-#else
-					test_nan(HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.S_g[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
+#ifdef THREE_PHASE 
 					test_nan(HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
 #endif
 					}
@@ -354,14 +352,11 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 		data_initialization (*HostArraysPtr, j, *locN, *rank, *parts, def); // (4)
 
 #ifdef THREE_PHASE
-	load_data_to_device((*HostArraysPtr).P_n, (*DevArraysPtr).P_n, *locN, def);
 	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *locN, def);
-	load_data_to_device((*HostArraysPtr).S_g, (*DevArraysPtr).S_g, *locN, def);
 	load_data_to_device((*HostArraysPtr).roS_g_old, (*DevArraysPtr).roS_g_old, *locN, def);
-#else
+#endif
 	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *locN, def);
 	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *locN, def);
-#endif
 	load_data_to_device((*HostArraysPtr).roS_w_old, (*DevArraysPtr).roS_w_old, *locN, def);
 	load_data_to_device((*HostArraysPtr).roS_n_old, (*DevArraysPtr).roS_n_old, *locN, def);
 	load_data_to_device_int((*HostArraysPtr).media, (*DevArraysPtr).media, *locN, def);
@@ -397,6 +392,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)
 
 	try
 	{
+		(*ArraysPtr).S_n=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).P_w=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).P_n=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).ro_w=new double [(locN.x)*(locN.y)*(locN.z)];
@@ -420,7 +416,6 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)
 #ifdef THREE_PHASE
 		(*ArraysPtr).P_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).S_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).S_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).ro_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).ux_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).uy_g=new double [(locN.x)*(locN.y)*(locN.z)];
@@ -428,8 +423,6 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)
 		(*ArraysPtr).Xi_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).roS_g=new double [(locN.x)*(locN.y)*(locN.z)];
 		(*ArraysPtr).roS_g_old=new double [(locN.x)*(locN.y)*(locN.z)];
-#else
-		(*ArraysPtr).S_n=new double [(locN.x)*(locN.y)*(locN.z)];
 #endif
 	}
 	catch(...)
@@ -466,7 +459,6 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 #ifdef THREE_PHASE
 	delete[] ArraysPtr.P_g;
 	delete[] ArraysPtr.S_w;
-	delete[] ArraysPtr.S_g;
 	delete[] ArraysPtr.ro_g;
 	delete[] ArraysPtr.ux_g;
 	delete[] ArraysPtr.uy_g;
@@ -474,9 +466,8 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.Xi_g;
 	delete[] ArraysPtr.roS_g;
 	delete[] ArraysPtr.roS_g_old;
-#else
-	delete[] ArraysPtr.S_n;
 #endif
+	delete[] ArraysPtr.S_n;
 }
 
 // Функция сохранения графиков в файлы
@@ -484,19 +475,16 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 {
 	// Загрузка в память хоста результатов расчета
 #ifdef THREE_PHASE
-	load_data_to_host(HostArraysPtr.P_n, DevArraysPtr.P_n , locN, def);
 	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , locN, def);
-	load_data_to_host(HostArraysPtr.S_g, DevArraysPtr.S_g , locN, def);
 	load_data_to_host(HostArraysPtr.ux_w, DevArraysPtr.ux_w , locN, def);
 	load_data_to_host(HostArraysPtr.uy_w, DevArraysPtr.uy_w , locN, def);
 	load_data_to_host(HostArraysPtr.uz_w, DevArraysPtr.uz_w , locN, def);
 	load_data_to_host(HostArraysPtr.ux_g, DevArraysPtr.ux_g , locN, def);
 	load_data_to_host(HostArraysPtr.uy_g, DevArraysPtr.uy_g , locN, def);
 	load_data_to_host(HostArraysPtr.uz_g, DevArraysPtr.uz_g , locN, def);
-#else
+#endif
 	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , locN, def);
 	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , locN, def);
-#endif
 	load_data_to_host(HostArraysPtr.ux_n, DevArraysPtr.ux_n , locN, def);
 	load_data_to_host(HostArraysPtr.uy_n, DevArraysPtr.uy_n , locN, def);
 	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , locN, def);
@@ -551,7 +539,7 @@ void print_plots_top (double t, consts def)
 	{
 #ifdef THREE_PHASE
 //		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\",\"u_y\",\"media\" \n");
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"uw_x\",\"uw_y\",\"ug_x\",\"ug_y\",\"un_x\",\"un_y\",\"media\" \n");
+		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_n\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"media\" \n");
 #else
 		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"media\" \n");
 #endif
@@ -561,7 +549,7 @@ void print_plots_top (double t, consts def)
 	{
 #ifdef THREE_PHASE
 //		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"u_x\", \"u_y\",\"u_z\",\"media\" \n");
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_g\",\"S_n\",\"P_n\",\"uw_x\",\"uw_y\",\"uw_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"un_x\",\"un_y\",\"un_z\",\"media\" \n");
+		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_n\",\"uw_x\",\"uw_y\",\"uw_z\",\"un_x\",\"un_y\",\"un_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"media\" \n");
 #else
 		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
 #endif
@@ -606,9 +594,9 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 							HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */					
 						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
-							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.ux_n[local], 
-							(-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
+							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local], 
+							(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
 		
 					}
 
@@ -619,10 +607,10 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
 */
 						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy),  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_g[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_g[local], HostArraysPtr.P_n[local], 
+							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
 							HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
-							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local],
-							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
+							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
 
 					}
 #else
@@ -752,13 +740,10 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, pa
 			}
 			fwrite(&j, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
-			fwrite(HostArraysPtr.P_n, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			fwrite(HostArraysPtr.S_w, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.S_g, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-#else
+#endif
 			fwrite(HostArraysPtr.P_w, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			fwrite(HostArraysPtr.S_n, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-#endif
 			//fwrite(HostArraysPtr.x, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			//fwrite(HostArraysPtr.y, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
 			//fwrite(HostArraysPtr.z, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
@@ -799,13 +784,10 @@ void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, loc
 				global_to_local_vars(&lN, parts, queue, def);
 				fread(j, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
-				fread(HostArraysPtr.P_n, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				fread(HostArraysPtr.S_w, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.S_g, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-#else
+#endif
 				fread(HostArraysPtr.P_w, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				fread(HostArraysPtr.S_n, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-#endif
 				//fread(HostArraysPtr.x, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				//fread(HostArraysPtr.y, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
 				//fread(HostArraysPtr.z, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
@@ -980,12 +962,10 @@ void read_defines(int argc, char *argv[], consts* def)
 			{(*def).P_d_gn[1] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_GR")) 
 			{(*def).S_w_gr = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_G_GR")) 
-			{(*def).S_g_gr = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_W_INIT")) 
 			{(*def).S_w_init = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_G_INIT")) 
-			{(*def).S_g_init = atof(attr_value); continue;}
+		if(!strcmp(attr_name,"S_N_INIT")) 
+			{(*def).S_n_init = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_NR_0")) 
 			{(*def).S_nr[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_NR_1")) 
@@ -994,20 +974,9 @@ void read_defines(int argc, char *argv[], consts* def)
 			{(*def).S_gr[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_GR_1")) 
 			{(*def).S_gr[1] = atof(attr_value); continue;}
-/*		if(!strcmp(attr_name,"S_W_RANGE_0")) 
-			{(*def).S_w_range[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_W_RANGE_1")) 
-			{(*def).S_w_range[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_G_RANGE_0")) 
-			{(*def).S_g_range[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_G_RANGE_1")) 
-			{(*def).S_g_range[1] = atof(attr_value); continue;}
-*/
-#else
+#endif
 		if(!strcmp(attr_name,"S_N_GR")) 
 			{(*def).S_n_gr = atof(attr_value); continue;}
-#endif
-
 		if(!strcmp(attr_name,"SOURCE"))
 			{(*def).source = atoi(attr_value); continue;}
 		if(!strcmp(attr_name,"ITERATIONS"))
