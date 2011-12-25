@@ -156,6 +156,7 @@ extern void read_defines_test(consts def);
 
 // Расчеты в каждой точке
 extern int i_to_I(int i, int rank, parts_sizes parts, consts def);
+extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
 extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);

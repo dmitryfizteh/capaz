@@ -45,6 +45,22 @@ __device__ int device_is_active_point(int i, int j, int k, localN locN, int rank
 		return 1;
 }
 
+// Функция вычисления "эффективной" плотности
+__device__ double ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k, localN locN)
+{
+	int media = DevArraysPtr.media[i + j * (locN.x) + k * (locN.x) * (locN.y)];
+
+#ifdef THREE_PHASE
+	double ro_g_dy = (DevArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - DevArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - DevArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
+		+ DevArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * DevArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)]
+	+ DevArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * DevArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * ((*gpu_def).m[media]) * ((*gpu_def).g_const) * ((*gpu_def).hy);
+#else
+	double ro_g_dy = (DevArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * DevArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] 
+	+ DevArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1 - DevArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)])) * ((*gpu_def).m[media]) * ((*gpu_def).g_const) * ((*gpu_def).hy);
+#endif
+	return ro_g_dy;
+}
+
 // Расчет плотностей, давления NAPL P2 и Xi во всех точках сетки
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ)
 {
@@ -446,7 +462,7 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr, localN locN, int ran
 
 		if ((j == (locN.y) - 1) && ((locN.y)>2))
 		{
-			DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = DevArraysPtr.P_w[i+(j-1)*(locN.x)+k*(locN.x)*locN.y] + DevArraysPtr.ro_w[i+(j-1)*(locN.x)+k*(locN.x)*locN.y] * (*gpu_def).g_const * (*gpu_def).hy;
+			DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = DevArraysPtr.P_w[i+(j-1)*(locN.x)+k*(locN.x)*locN.y] + ro_eff_gdy(DevArraysPtr, i, j-1, k, locN);
 			if (i==0) 
 				DevArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = DevArraysPtr.P_w[i+1+j*(locN.x)+k*(locN.x)*(locN.y)];
 			if (i==(*gpu_def).Nx - 1)

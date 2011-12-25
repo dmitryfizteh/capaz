@@ -196,6 +196,22 @@ void parts_initialization(int size, parts_sizes *parts)
 	(*parts).z = 1;
 }
 
+// Функция вычисления "эффективной" плотности * g * hy
+double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def)
+{
+	int media = HostArraysPtr.media[i + j * (locN.x) + k * (locN.x) * (locN.y)];
+
+#ifdef THREE_PHASE
+	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
+		+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)]
+	+ HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_g[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.m[media]) * (def.g_const) * (def.hy);
+#else
+	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] 
+	+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1 - HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)])) * (def.m[media]) * (def.g_const) * (def.hy);
+#endif
+	return ro_g_dy;
+}
+
 void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank, parts_sizes parts, consts def)
 {
 	*t=0;
@@ -225,12 +241,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						if(j == 0)
 							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = def.P_atm;
 						else
-							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_n[i + (j - 1) * locN.x + k * locN.x * locN.y]
-								+ (def.ro0_n * (1. - HostArraysPtr.S_w[i + (j - 1) * locN.x + k * locN.x * locN.y] - HostArraysPtr.S_g[i + (j - 1) * locN.x + k * locN.x * locN.y]) 
-								+ def.ro0_w * HostArraysPtr.S_w[i + (j - 1) * locN.x + k * locN.x * locN.y]
-								+ def.ro0_g * HostArraysPtr.S_g[i + (j - 1) * locN.x + k * locN.x * locN.y]) * (def.m[media]) * (def.g_const) * (def.hy);
+							HostArraysPtr.P_n[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_n[i + (j - 1) * locN.x + k * locN.x * locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
+	
+						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 
-											
+						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
+						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));	
 #else
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
@@ -239,10 +256,19 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						else
 							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0;
 
-						HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm+j * (def.ro0_w) * (def.g_const)*(def.hy);
+						if(j == 0)
+							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
+						else
+							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=HostArraysPtr.P_w[i+(j-1)*locN.x+k*locN.x*locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
+							
 						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
+
+						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+
+						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_n
+						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 #endif
-					
+
 						/*
 						if ((HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]<=4.*(def.NX)/5.*(def.h1)))
 							if ((HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]<=2./5.*locN.y*(def.h2)) && (HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]>=(-1.)*HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]/4.+2./5.*locN.y*(def.h2)))
