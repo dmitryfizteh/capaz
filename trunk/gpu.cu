@@ -211,6 +211,32 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, localN locN, doubl
 	{
 		int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 
+		double q_w=0;
+		double q_n=0;
+
+#ifdef B_L
+		double F_bl=0;
+		// ¬ левом нижнем углу нагнетающа€ скважина
+		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
+		{
+			q_w=(*gpu_def).Q;
+			q_n=0;
+		}
+
+		// ¬ правом верхнем углу добывающа€ скважина
+		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
+		{
+			int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
+			double S_e = (1. - DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
+			double k_w = pow(S_e, (2. + 3. * ((*gpu_def).lambda[media])) / (*gpu_def).lambda[media]);
+			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
+
+			F_bl = (k_w/((*gpu_def).mu_w)) / (k_w/((*gpu_def).mu_w) + k_n/((*gpu_def).mu_n));
+			q_w=-1 * (*gpu_def).Q * F_bl;
+			q_n=-1 * (*gpu_def).Q * (1-F_bl);
+		}
+#endif
+
 		double S2 = DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		double roS1 = DevArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] * (1 - S2);
 		double roS2 = DevArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] * S2;
@@ -272,8 +298,8 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, localN locN, doubl
 
 		DevArraysPtr.roS_w_old[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS1;
 		DevArraysPtr.roS_n_old[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS2;
-		DevArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS1 - ((*gpu_def).dt/(*gpu_def).m[media])*(f1 + f2 + f3);
-		DevArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS2 - ((*gpu_def).dt/(*gpu_def).m[media])*(g1 + g2 + g3);
+		DevArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS1 - ((*gpu_def).dt/(*gpu_def).m[media])*(q_w + f1 + f2 + f3);
+		DevArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = roS2 - ((*gpu_def).dt/(*gpu_def).m[media])*(q_n + g1 + g2 + g3);
 
 		device_test_positive(DevArraysPtr.roS_w_old[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 		device_test_positive(DevArraysPtr.roS_n_old[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
@@ -331,18 +357,25 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, localN locN, double t
 		double q_n=0;
 
 #ifdef B_L
+		double F_bl=0;
 		// ¬ левом нижнем углу нагнетающа€ скважина
 		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
 		{
-			q_w=0;
-			//q_n=def.Q;
+			q_w=(*gpu_def).Q;
+			q_n=0;
 		}
 
 		// ¬ правом верхнем углу добывающа€ скважина
 		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
 		{
-			//q_w=def.Q * F_bl(S);
-			//q_n=def.Q * (1-F_bl(S));
+			//int media = DevArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
+			double S_e = (1. - DevArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
+			double k_w = pow(S_e, (2. + 3. * ((*gpu_def).lambda[media])) / (*gpu_def).lambda[media]);
+			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
+
+			F_bl = (k_w/((*gpu_def).mu_w)) / (k_w/((*gpu_def).mu_w) + k_n/((*gpu_def).mu_n));
+			q_w=-1 * (*gpu_def).Q * F_bl;
+			q_n=-1 * (*gpu_def).Q * (1-F_bl);
 		}
 #endif
 

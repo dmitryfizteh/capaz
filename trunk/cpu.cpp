@@ -365,18 +365,25 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN 
 		double q_n=0;
 
 #ifdef B_L
+		double F_bl=0;
 		// ¬ левом нижнем углу нагнетающа€ скважина
 		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
 		{
-			q_w=0;
-			//q_n=def.Q;
+			q_w=def.Q;
+			q_n=0;
 		}
 
 		// ¬ правом верхнем углу добывающа€ скважина
 		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
 		{
-			//q_w=def.Q * F_bl(S);
-			//q_n=def.Q * (1-F_bl(S));
+			//int media = HostArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
+			double S_e = (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1. - def.S_wr[media]);
+			double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
+			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+
+			F_bl = (k_w/def.mu_w) / (k_w/def.mu_w + k_n/def.mu_n);
+			q_w=-1 * def.Q * F_bl;
+			q_n=-1 * def.Q * (1-F_bl);
 		}
 #endif
 
@@ -426,11 +433,37 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN 
 	}
 }
 
+
 void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN locN, consts def)
 {
 	if ((i!=0) && (i!=(locN.x)-1) && (j!=0) && (j!=(locN.y)-1) && (((k!=0) && (k!=(locN.z)-1)) || ((locN.z)<2)))
 	{
 		int media = HostArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
+
+		double q_w=0;
+		double q_n=0;
+
+#ifdef B_L
+		double F_bl=0;
+		// ¬ левом нижнем углу нагнетающа€ скважина
+		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		{
+			q_w=def.Q;
+			q_n=0;
+		}
+
+		// ¬ правом верхнем углу добывающа€ скважина
+		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		{
+			double S_e = (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1. - def.S_wr[media]);
+			double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
+			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+
+			F_bl = (k_w/def.mu_w) / (k_w/def.mu_w + k_n/def.mu_n);
+			q_w=-1 * def.Q * F_bl;
+			q_n=-1 * def.Q * (1-F_bl);
+		}
+#endif
 
 #ifdef THREE_PHASE
 		HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] * HostArraysPtr.S_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
@@ -510,8 +543,8 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, loca
                 (y1 + abs(y1))/2.0*(-1)* HostArraysPtr.Xi_n[i+(j-1)*(locN.x)+k*(locN.x)*(locN.y)] * HostArraysPtr.ro_n[i+(j-1)*(locN.x)+k*(locN.x)*(locN.y)] +
                 (y2 - abs(y2))/2.0*(-1)* HostArraysPtr.Xi_n[i+(j+1)*(locN.x)+k*(locN.x)*(locN.y)] * HostArraysPtr.ro_n[i+(j+1)*(locN.x)+k*(locN.x)*(locN.y)])/def.hy;
 
-		A1 = HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (def.dt/def.m[media])*(f1 + f2 + f3);
-        A2 = HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (def.dt/def.m[media])*(g1 + g2 + g3);
+		A1 = HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (def.dt/def.m[media])*(q_w + f1 + f2 + f3);
+        A2 = HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (def.dt/def.m[media])*(q_n + g1 + g2 + g3);
 
 		HostArraysPtr.roS_w_old[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.roS_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 		HostArraysPtr.roS_n_old[i+j*(locN.x)+k*(locN.x)*(locN.y)]= HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];

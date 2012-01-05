@@ -265,7 +265,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 
 						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 
-						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_n
+						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
 						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 #endif
 
@@ -929,6 +929,11 @@ void read_defines(int argc, char *argv[], consts* def)
 			{(*def).S_wr[0] = atof(attr_value); continue;}
 		if(!strcmp(attr_name,"S_WR_1")) 
 			{(*def).S_wr[1] = atof(attr_value); continue;}
+
+#ifdef B_L
+		if(!strcmp(attr_name,"Q")) 
+		{(*def).Q = atof(attr_value); continue;}
+#endif
 
 #ifndef B_L
 		if(!strcmp(attr_name,"K_0")) 
