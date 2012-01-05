@@ -117,7 +117,10 @@ void read_defines_test(consts def)
 	test_positive(def.Nx, __FILE__, __LINE__);
 	test_positive(def.Ny, __FILE__, __LINE__);
 	test_positive(def.Nz, __FILE__, __LINE__);
-	
+
+#ifdef B_L
+	test_positive(def.Q, __FILE__, __LINE__);
+#endif
 #ifdef THREE_PHASE
 	test_positive(def.c_g, __FILE__, __LINE__);
 	test_positive(def.beta_g, __FILE__, __LINE__);
