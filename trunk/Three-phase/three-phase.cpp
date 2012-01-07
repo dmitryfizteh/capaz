@@ -163,11 +163,11 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 			- (1. / det) * ((F2Sn * F3P - F2P * F3Sn) * F1 + F1P * F3Sn * F2 - F1P * F2Sn * F3);
 			HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)]                                                              
 			- (1. / det) * (F3P * F1Sw * F2 - F3P * F2Sw * F1 + (F1P*F2Sw - F2P * F1Sw) * F3);
-
-			test_S(HostArraysPtr.S_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-			test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-			test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 		}  
+		
+		test_S(HostArraysPtr.S_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 	}
 }
 

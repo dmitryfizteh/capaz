@@ -248,7 +248,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
 						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 						HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));	
-#else
+#endif
+#ifdef TWO_PHASE
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
 						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
@@ -267,6 +268,27 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 
 						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
 						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+#endif
+
+#ifdef B_L
+						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
+						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.9;
+
+						// Не учитывается сила тяжести
+						HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
+
+						// В левом нижнем углу нагнетающая скважина
+						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+						{
+							HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
+							HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 0;
+						}
+
+						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+
+						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
+						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+
 #endif
 
 						/*

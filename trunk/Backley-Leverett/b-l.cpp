@@ -43,10 +43,10 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 
 			HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (1 / det) * (F2S * F1 - F1S * F2);
 			HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - (1 / det) * (F1P * F2 - F2P * F1);
-
-			test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-			test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 		}  
+
+		test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 	}
 }
 
@@ -68,8 +68,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, int ra
 	if((k == (locN.z) - 1) && ((locN.z) > 2))
 		k1 --;
 
-	if(j != 0) 
-		HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.S_n[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
+	HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.S_n[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
 
 	test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 }
@@ -91,12 +90,21 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts
 	if((k == (locN.z) - 1) && ((locN.z) > 2))
 		k1 --;
 
+	// Без учета силы тяжести
+	HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.P_w[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
+
+	// В левом нижнем углу нагнетающая скважина
+	if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
+
+	/*
 	if((j != 0) && (j != (locN.y) - 1))
 		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.P_w[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
 	else if(j == 0)
 		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = def.P_atm;
 	else
 		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.P_w[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)] + HostArraysPtr.ro_w[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)] * (def.g_const) * (def.hy);
+		*/
 
 	test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 }
