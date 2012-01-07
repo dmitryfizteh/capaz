@@ -272,13 +272,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 
 #ifdef B_L
 						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
-						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.9;
+						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.8;
 
 						// Не учитывается сила тяжести
 						HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
 
 						// В левом нижнем углу нагнетающая скважина
-						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)))
 						{
 							HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
 							HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 0;
@@ -635,7 +635,8 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
 
 					}
-#else
+#endif
+#ifdef TWO_PHASE
 					if(def.Nz < 2)
 					{
 						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
@@ -646,21 +647,20 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 					}
 #endif
+#if B_L
+					if(def.Nz < 2)
+					{
+						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+
+					}
+					else
+					{
+						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+					}
+#endif
 				}
 
-	/* Не очень хорошо, так как запуск функции, условный оператор в цикле
-	for(int i=0; i<locN.x; i++)
-		for(int k=0; k<locN.z; k++)
-			if ((i_to_I(i,rank,size, def)==(def.Nx)/2) && is_active_point(i,locN.x,rank,size))
-				for(int j=0; j<locN.y; j++)
-					fprintf(fp_S2y,"%.2e %.3e\n", HostArraysPtr.y[locN.x/2+j*locN.x+k*locN.x*locN.y], HostArraysPtr.S_n[locN.x/2+j*locN.x+k*locN.x*locN.y]); 
 	
-
-	for(int i=0; i<locN.x; i++)
-		for(int k=0; k<locN.z; k++)
-			fprintf(fp_S2x,"%.2e %.3e\n", I*(def.hx), HostArraysPtr.S_n[i+locN.x*locN.y/2+k*locN.x*locN.y]); 
-	*/
-		
 	fclose(fp);
 }
 

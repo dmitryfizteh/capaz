@@ -5,16 +5,21 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, con
 {
 	int media = HostArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 	double S_e = (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1. - def.S_wr[media]);
-	//if (S_e<0)
-	//	S_e=0;
 	double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
 	double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+
+	// Временная заглушка
+	if (S_e<0)
+	{
+		k_w=0;
+		k_n=1;
+	}
 
 	HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 	HostArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (HostArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_w / def.mu_w;
 	HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (HostArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_n / def.mu_n;
 
-	test_S(S_e, __FILE__, __LINE__);
+//	test_S(S_e, __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.Xi_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
@@ -94,7 +99,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts
 	HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = HostArraysPtr.P_w[i1 + j1 * (locN.x) + k1 * (locN.x) * (locN.y)];
 
 	// В левом нижнем углу нагнетающая скважина
-	if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+	if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)))
 		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
 
 	/*
