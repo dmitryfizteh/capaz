@@ -75,9 +75,9 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	for (int w=1;w<=def.newton_iterations;w++)
 	{
 		Newton_method_kernel<<<dim3(blocksX,blocksY,blocksZ), dim3(BlockNX,BlockNY,BlockNZ)>>>(DevArraysPtr, locN); 
-		checkErrors("assign Pw and Sn", __FILE__, __LINE__);
-		cudaPrintfDisplay(stdout, true);
 	}
+	checkErrors("assign Pw and Sn", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 }
 
 // –асчет скорости в каждой точке сетки
