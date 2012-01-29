@@ -36,6 +36,9 @@ void test_nan (double x, char *file, int line)
 #ifdef MY_TEST
 	if ( isnan(x) )
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	// Тестовое более жесткое ограничение именно для этой задачи
+	if ( x > 1e8 )
+		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
 }
 

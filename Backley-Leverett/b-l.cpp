@@ -4,16 +4,47 @@
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def)
 {
 	int media = HostArraysPtr.media[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-	double S_e = (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1. - def.S_wr[media]);
-	double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
-	double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+	double k_w, k_n;
+	double S = 1 - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
+
+	// Значения коэффициентов и формулы для k взяты из 
+	// М.А.Корнилина, Е.А.Самарская, Б.Н.Четверушкин, Н.Г.Чурбанова, М.В.Якобовский
+	// "Моделирование разработки нефтяных месторождений на параллельных вычислительных системах"
+	double S_sv = 0.1;
+	double S_zv = 0.8;
+	double S_1 = 0.70324;
+
+	if ((S_sv <= S) && (S <= S_zv))
+		k_n = pow((S_zv-S)/(S_zv-S_sv), 2);
+	else
+	{
+		if ((0 <= S) && (S < S_sv))
+			k_n = 1;
+		else // if (S_zv<S<=1)
+			k_n = 0;
+	}
+
+	if ((S_sv <= S) && (S <= S_1))
+		k_w = pow((S-S_sv)/(S_zv-S_sv), 2);
+	else
+	{
+		if ((0 <= S) && (S < S_1))
+			k_w = 0;
+		else // if (S_1<S<=S_zv)
+			k_w = 0.8 * pow((S-S_sv)/(S_zv-S_sv), 0.5);
+	}
+	//double S_e = (1. - HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.S_wr[media]) / (1. - def.S_wr[media]);
+	//double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
+	//double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+
+
 
 	// Временная заглушка
-	if (S_e<0)
+/*	if (S_e<0)
 	{
 		k_w=0;
 		k_n=1;
-	}
+	}*/
 
 	HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)];
 	HostArraysPtr.Xi_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = -1. * (HostArraysPtr.K[i+j*(locN.x)+k*(locN.x)*(locN.y)]) * k_w / def.mu_w;
@@ -100,7 +131,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts
 
 	// В левом нижнем углу нагнетающая скважина
 	if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)))
-		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
+		HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e6;
 
 	/*
 	if((j != 0) && (j != (locN.y) - 1))
