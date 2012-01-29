@@ -272,16 +272,16 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 
 #ifdef B_L
 						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
-						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.8;
+						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.5;
 
 						// Не учитывается сила тяжести
 						HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
 
 						// В левом нижнем углу нагнетающая скважина
-						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)))
+						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)) || ((i==1) && (j==def.Ny-2)))
 						{
-							HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e8;
-							HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 0;
+							HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e6;
+							//HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 0;
 						}
 
 						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
