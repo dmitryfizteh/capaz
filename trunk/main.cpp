@@ -582,7 +582,7 @@ void print_plots_top (double t, consts def)
 }
 
 
-// Функция сохранения данных в файлы графиков (!3D)
+// Функция сохранения данных в файлы графиков
 void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts, localN locN, consts def)
 {
 	char fname[30];
@@ -662,6 +662,81 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 
 	
 	fclose(fp);
+}
+
+// Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
+void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts, localN locN, consts def)
+{
+/*
+	char *dname;
+	char *targetfuncs="r2d.bjn";
+	char *targetgrid="r2dgrid.bjn";
+	LPLPLPFLOAT F1;
+	double *F1D;
+
+	F1 = alloc_float_mas_n1_n2_n3(locN.x, locN.y, locN.z); 
+	if(F1 == NULL) exit(0);
+
+	F1D = (double *)malloc(locN.x, locN.y, locN.z*sizeof(double)); 
+	if(F1D == NULL) exit(0);
+
+	// Инициализация файла с данными функции
+	int err = WriteBjnGzippedScalar8RecInit(targetfuncs, "r2dgrid.bjn", def.Nx, def.Ny, def.Nz);   
+	if(err) 
+		fprintf(stderr, "Can't create file %s.\n", targetfuncs); 
+
+	// Запись блока данных значений функции
+	err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, locN.x*rank, 0, 0, locN.x, locN.y, locN.z, 5); // Поправить locN.x*rank на точное смещение
+	if(err) 
+		fprintf(stderr, "Can't add func block data err %d\n", err);
+
+	// Запись минимального и максимального значения сеточной функции S_n
+	err = WriteBjnGzippedScalar8RecFuncMinMax(targetfuncs, "S_n", 0, 1);
+	if(err) 
+		fprintf(stderr, "Can't add data about block err %d\n", err);
+
+	// Инициализация файла сетки
+	err = WriteBjnGzippedScalar8RecInit(targetgrid, "", def.Nx, def.Ny, def.Nz);      
+	if(err) 
+		fprintf(stderr, "Can't create file %s.\n", targetgrid);
+
+	// Для каждого из направлений
+	for(direct=0;direct<3;direct++)
+	{
+		for(i1=0; i1<m1; i1++)
+			for(i2=0; i2<m2; i2++)
+				for(i3=0; i3<m3; i3++)
+				{
+					for(i=0; i<n1; i++)     
+						for(j=0; j<n2; j++)     
+							for(k=0; k<n3; k++)
+							{
+								float x=(float)i1*(float)n1+(float)i;
+								float y=(float)i2*(float)n2+(float)j;
+								float z=(float)i3*(float)n3+(float)k;
+								switch(direct)
+								{
+									case 0: F1[i][j][k] = (float)x; dname="x"; break;
+									case 1: F1[i][j][k] = (float)y; dname="y"; break;
+									case 2: F1[i][j][k] = (float)(ffmin+k*(ffmax-ffmin)/3.f); dname="z"; break;
+								}
+
+								fmin=minab(fmin,F1[i][j][k]); 
+								fmax=maxab(fmax,F1[i][j][k]);
+							}
+
+				// Запись блока данных сетки
+				err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, locN.x*rank, 0, 0, locN.x, locN.y, locN.z, 9); // Поправить locN.x*rank на точное смещение
+				if(err)
+					fprintf(stderr, "Can't add grid `%s` block data err %d\n", dname, err);
+				}
+
+		// Запись максимального и минимального значений сетки
+		err = WriteBjnGzippedScalar8RecFuncMinMax(targetgrid, dname, fmin, fmax);
+		if(err) 
+			fprintf(stderr, "Can't add data about block err %d\n", err);
+	}
+*/
 }
 
 // Функция загрузки файла проницаемостей
