@@ -1,0 +1,4 @@
+      PARAMETER(NIH=15,NHALF=6,NJH=27,NSIDE=4,NI=NIH*NHALF+3,
+     *           NJ=NJH*NSIDE+3)
+
+
