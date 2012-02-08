@@ -73,7 +73,7 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, const
 	HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 	HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
 #ifdef THREE_PHASE
-	HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+	HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * HostArraysPtr.P_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] / def.P_atm;
 	test_positive(HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
 #endif
 	test_positive(HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);

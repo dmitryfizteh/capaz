@@ -142,18 +142,18 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts d
 				* HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.roS_w[i + j * (locN.x) + k * (locN.x) * (locN.y)];                  
 			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw - def.P_atm))
 				* HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.roS_n[i+j*(locN.x)+k*(locN.x)*(locN.y)];
-			F3 = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn - def.P_atm))                                                              
+			F3 = def.ro0_g * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn) / def.P_atm                                                              
 				* Sg - HostArraysPtr.roS_g[i + j * (locN.x) + k * (locN.x) * (locN.y)];
 
 			F1P = def.ro0_w * def.beta_w * HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)];                                                                                                                             
 			F2P = def.ro0_n * def.beta_n * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)];                                                                                                                                                                                                                                    
-			F3P = def.ro0_g * def.beta_g * Sg;   
+			F3P = def.ro0_g * Sg;   
 
 			F1Sw = def.ro0_w * (1 + def.beta_w * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - def.P_atm));                                                                                                                                                         
 			F2Sn = def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw - def.P_atm));                                         
 			F2Sw = F1Sn = 0;                                                                                                                                                                                                                                                                     
-			F3Sn = (-1) * def.ro0_g * (1 + def.beta_g * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn - def.P_atm - Sg * PkSn));
-			F3Sw = (-1) * def.ro0_g * (1 + def.beta_g * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn - def.P_atm - Sg * (PkSn + PkSw)));
+			F3Sn = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn - Sg * PkSn) / def.P_atm;
+			F3Sw = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / def.P_atm;
 
 			det = F1P * F2Sw * F3Sn - F1Sw * (F2P * F3Sn - F2Sn * F3P);                                                                                                                                                                                         
 
