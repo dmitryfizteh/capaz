@@ -7,44 +7,27 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	double k_w, k_n;
 	double S = 1 - HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
 
-	// Значения коэффициентов и формулы для k взяты из 
-	// М.А.Корнилина, Е.А.Самарская, Б.Н.Четверушкин, Н.Г.Чурбанова, М.В.Якобовский
-	// "Моделирование разработки нефтяных месторождений на параллельных вычислительных системах"
-	double S_sv = 0.1;
-	double S_zv = 0.8;
-	double S_1 = 0.70324;
+	double S_wc=0.2;
+	double S_wi=0.2;
+	double S_or=0.2;
+	double S_e=(S-S_wc)/(1-S_wc-S_or);
 
-	if ((S_sv <= S) && (S <= S_zv))
-		k_n = pow((S_zv-S)/(S_zv-S_sv), 2);
-	else
-	{
-		if ((0 <= S) && (S < S_sv))
-			k_n = 1;
-		else // if (S_zv<S<=1)
-			k_n = 0;
-	}
+	k_w=S_e*S_e;
+	k_n=(1-S_e)*(1-S_e);
 
-	if ((S_sv <= S) && (S <= S_1))
-		k_w = pow((S-S_sv)/(S_zv-S_sv), 2);
-	else
-	{
-		if ((0 <= S) && (S < S_1))
-			k_w = 0;
-		else // if (S_1<S<=S_zv)
-			k_w = 0.8 * pow((S-S_sv)/(S_zv-S_sv), 0.5);
-	}
-	//double S_e = (1. - HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media]);
-	//double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
-	//double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
+	//krw(Sor) = kro(Swc) = 1.0
 
-
-
-	// Временная заглушка
-/*	if (S_e<0)
+	if (S<S_wc)
 	{
 		k_w=0;
 		k_n=1;
-	}*/
+	}
+
+	if (S>(1-S_or))
+	{
+		k_w=1;
+		k_n=0;
+	}
 
 	HostArraysPtr.P_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
 	HostArraysPtr.Xi_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = -1. * (HostArraysPtr.K[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)]) * k_w / def.mu_w;
@@ -60,6 +43,29 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i!=0) && (i!=(def.locNx)-1) && (j!=0) && (j!=(def.locNy)-1) && (((k!=0) && (k!=(def.locNz)-1)) || ((def.locNz)<2)))
 	{
+		double A1 = HostArraysPtr.roS_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
+		double A2 = HostArraysPtr.roS_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
+		double a = def.beta_w * (def.beta_n);
+		double b = def.beta_w + def.beta_n - A2 * (def.beta_w) / (def.ro0_n) - A1 * (def.beta_n) / (def.ro0_w);
+		double c = 1 - A2 / def.ro0_n  - A1 / def.ro0_w;
+		double D = b*b - 4*a*c;
+		double P1 = def.P_atm + (-1 * b + sqrt(D)) / (2 * a);
+		double P2 = def.P_atm + (-1 * b - sqrt(D)) / (2 * a);
+		
+		if (P1 < 0)
+			HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = P2;
+		else
+			HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = P1;
+
+		HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = HostArraysPtr.roS_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] / (def.ro0_n * (1 + def.beta_n * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)]-def.P_atm)));
+		
+		if ( HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] < 0.2)
+			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0.2;
+
+		if ( HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] > 0.8)
+			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0.8;
+			
+		/*
 		int media = HostArraysPtr.media[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
 		double S_e, F1, F2, F1P, F2P, F1S, F2S, det;
 
@@ -80,10 +86,12 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - (1 / det) * (F2S * F1 - F1S * F2);
 			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - (1 / det) * (F1P * F2 - F2P * F1);
 		}  
+		*/
 
 		test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 		test_S(HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 	}
+	
 }
 
 // Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
@@ -127,20 +135,25 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		k1 --;
 
 	// Без учета силы тяжести
-	HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-
+	//HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+/*
 	// В левом нижнем углу нагнетающая скважина
 	if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)))
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1e6;
-
-	/*
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1e5;
+*/
+	
 	if((j != 0) && (j != (def.locNy) - 1))
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 	else if(j == 0)
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
 	else
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
-		*/
+	{
+		double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
+		+ def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy])]) * (def.g_const) * (def.hy);
+
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_g_dy;//HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+	}
+		
 
 	test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 }

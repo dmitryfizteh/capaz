@@ -37,7 +37,7 @@ void test_nan (double x, char *file, int line)
 	if ( isnan(x) )
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	// Тестовое более жесткое ограничение именно для этой задачи
-	if ( x > 1e8 )
+	if ( x > 1e12 )
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
 }
@@ -65,6 +65,20 @@ void test_S (double S, char *file, int line)
 		printf("Error: S<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	if ( S > 1 )
 		printf("Error: S>1\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+#endif
+}
+
+// Тест на вхождение скоростей в [-100;100]
+// Синтаксис вызова test_u(x, __FILE__, __LINE__);
+void test_u (double u, char *file, int line)
+{
+#ifdef MY_TEST
+	if ( isnan(u) )
+		printf("Error: u=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	if ( u < -10 )
+		printf("Error: u<-100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	if ( u > 10 )
+		printf("Error: u>100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
 }
 

@@ -14,13 +14,13 @@ int main(int argc, char* argv[])
 	// GPU-массив данных расчетной области процессора
 	ptr_Arrays DevArraysPtr;
 	// Счетчик шагов по времени
-	int j=0;
+	long int time_counter=0;
 	// Счетчик времени исполнения вычислительной части программы
 	clock_t task_time; 
 
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
-	initialization(&HostArraysPtr, &DevArraysPtr, &j, argc, argv, &def);
+	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
 	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
@@ -32,22 +32,22 @@ int main(int argc, char* argv[])
 	// 2. Каждые (def.print_screen) раз на экран выводится информация о временном слое
 	// 3. Каждые save_plots раз данные выгружаются в память хоста и 
 	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
-	for (j++; j <= def.timeX/(def.dt); j++)
+	for (time_counter++; time_counter <= def.timeX/(def.dt); time_counter++)
 	{
-		if ((j % (def.print_screen) == 0) && (def.rank) == 0) // (2)
+		if ((time_counter % (def.print_screen) == 0) && (def.rank) == 0) // (2)
 		{
-			printf ("t=%.3f\n", j * (def.dt)); 
+			printf ("t=%.3f\n", time_counter * (def.dt)); 
 			fflush(stdout);
 		}
 
-		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def, j * (def.dt)); // (1)
+		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def, time_counter * (def.dt)); // (1)
 
-		if ((j % (def.save_plots)) == 0) // (3)
+		if ((time_counter % (def.save_plots)) == 0) // (3)
 		{
 			// Следующие 2 функции вызываются строго в таком порядке,
 			// т.к. save использует данные, загруженные save_data_plots
-			save_data_plots(HostArraysPtr, DevArraysPtr, j * (def.dt), def); // (**)
-			//save(HostArraysPtr, DevArraysPtr, j, def); // (***)
+			save_data_plots(HostArraysPtr, DevArraysPtr, time_counter * (def.dt), def); // (**)
+			//save(HostArraysPtr, DevArraysPtr, time_counter, def); // (***)
 		}
 	}
 
@@ -211,7 +211,7 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	return ro_g_dy;
 }
 
-void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def)
+void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
 	*t = 0;
 	for(int i = 0; i < def.locNx; i++)
@@ -272,10 +272,24 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def)
 #ifdef B_L
 						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
 						HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0.5;
+						//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
+
+						double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
+						+ def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy])]) * (def.g_const) * (def.hy);
+
+						//HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+						if(j == 0)
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
+						else
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_g_dy;
 
 						// Не учитывается сила тяжести
-						HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
+						//HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
 
+						
+						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+/*
 						// В левом нижнем углу нагнетающая скважина
 						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)) || ((i==1) && (j==def.Ny-2)))
 						{
@@ -287,6 +301,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def)
 
 						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
 						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+						*/
 
 #endif
 
@@ -341,7 +356,7 @@ void print_task_name(consts def)
 // Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2), 
 // инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
 // Для задачи Б-Л загрузка проницаемостей из файла.
-void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int argc, char* argv[], consts* def)
+void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long int* time_counter, int argc, char* argv[], consts* def)
 {
 	FILE *f_save;
 
@@ -369,10 +384,10 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 	if (f_save=fopen("save/save.dat","rb"))
 	{
 		fclose(f_save);
-		restore(*HostArraysPtr, j, *def);
+		restore(*HostArraysPtr, time_counter, *def);
 	}
 	else
-		data_initialization (*HostArraysPtr, j, *def); // (4)
+		data_initialization (*HostArraysPtr, time_counter, *def); // (4)
 
 #ifdef THREE_PHASE
 	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *def);
@@ -743,10 +758,15 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 // Функция загрузки файла проницаемостей
 void load_permeability(double* K, consts def)
 {
-	FILE *input;
+	//FILE *input;
 	char *file="../noise.dat";
 
-	if(!(input=fopen(file,"rt")))
+	for(int i=0; i<def.locNx; i++)
+		for(int j=0; j<def.locNy; j++)
+			for(int k=0; k<def.locNz; k++)
+				K[i+j*def.locNx+k*def.locNx*def.locNy]=6.64e-11;
+
+	/*if(!(input=fopen(file,"rt")))
 	{
 		file="noise.dat";
 		if(!(input=fopen(file,"rt")))
@@ -790,10 +810,11 @@ void load_permeability(double* K, consts def)
 	}
 
 	fclose(input);
+	*/
 }
 
 // Сохранение состояния в файл
-void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def)
+void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def)
 {
 	// Загружаем в память хоста данные по roS_old
 	// P1 и S2 загружены уже для функции сохранения графиков,
@@ -836,7 +857,7 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def)
 				printf("\nError: Not open file \"save.dat\"!\n");
 				exit(0);
 			}
-			fwrite(&j, sizeof(int), 1, f_save);
+			fwrite(&time_counter, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
 			fwrite(HostArraysPtr.S_w, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
 #endif
@@ -857,7 +878,7 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def)
 }
 
 // Восстановление состояния из файла
-void restore (ptr_Arrays HostArraysPtr, int* j, consts def)
+void restore (ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 {
 	FILE *f_save;
 	for (int cpu=0; cpu<(def.sizex * (def.sizey) * (def.sizez));cpu++)
@@ -888,7 +909,7 @@ void restore (ptr_Arrays HostArraysPtr, int* j, consts def)
 			{
 				def_tmp.rank = queue;
 				global_to_local_vars(&def_tmp); 
-				fread(j, sizeof(int), 1, f_save);
+				fread(time_counter, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
 				fread(HostArraysPtr.S_w, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
 #endif
@@ -977,6 +998,7 @@ void read_defines(int argc, char *argv[], consts* def)
 		fgets(str,250,defs);
 		if(str[0]=='#')
 			continue;
+
 		for (i=0;str[i]!='=';i++)
 		{
 			if (i>=strlen(str))
@@ -989,6 +1011,8 @@ void read_defines(int argc, char *argv[], consts* def)
 		for(j=i+1;str[j]!=' ' && (j < a);j++)
 			attr_value[j-i-1]=str[j];
 		attr_value[j-i-1]='\0';
+
+		std::cout << str <<"\n";
 
 		if(!strcmp(attr_name,"HX")) 
 			{(*def).hx = atof(attr_value); continue;}
