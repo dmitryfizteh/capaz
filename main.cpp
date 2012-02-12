@@ -97,21 +97,21 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 // обмена данными, если имеет соседа 
 // (если 2 соседа с обеих сторон,то +2 точки). 
 // √лобальные границы хран€тс€ как обычные точки (отсюда и условие на (def.rank)==0)
-int i_to_I(int i, consts def)
+int local_to_global(int local_index, char axis, consts def)
 {
-	int I;
-	if ((def.rank) <= (def.Nx) % (def.sizex))
+	int global_index = local_index;
+	switch(axis)
 	{
-		if((def.rank) == 0)
-			I = i;
-		else
-			I = ((def.Nx) / (def.sizex) + 1) * (def.rank) + i - 1;
+	case 'x':
+		{ global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex); break; }
+	case 'y':
+		{ global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey); break; }
+	case 'z':
+		{ global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez); break; }
+	default: {printf("Error!");}
 	}
-	else
-		I = ((def.Nx) / (def.sizex) + 1) * (def.rank) - ((def.rank) - (def.Nx) % (def.sizex)) + i - 1;
-
-	test_positive(I, __FILE__, __LINE__);
-	return I;
+	//some_test(global_index);
+	return global_index;
 }
 
 // ¬ычисление расчетной области (нагрузки) процессора
@@ -186,6 +186,9 @@ void sizes_initialization(consts *def)
 	(*def).sizex = (*def).size;
 	(*def).sizey = 1;
 	(*def).sizez = 1;
+	(*def).rankx = (*def).rank;
+	(*def).ranky = 0;
+	(*def).rankz = 0;
 }
 
 void blocks_initialization(consts *def)
@@ -220,7 +223,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				if(is_active_point(i, j, k, def))
 					{
 						// ѕреобразование локальных координат процессора к глобальным
-						int I = i_to_I(i, def);
+						int I = local_to_global(i, 'x', def);
 
 #ifdef THREE_PHASE
 						int media = HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy] = 0;	
@@ -623,7 +626,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					local=i+j*def.locNx+k*def.locNx*def.locNy;
 
 					// ѕреобразование локальных координат процессора к глобальным
-					int I=i_to_I(i, def);
+					int I=local_to_global(i, 'x', def);
 #ifdef THREE_PHASE
 					if(def.Nz < 2)
 					{

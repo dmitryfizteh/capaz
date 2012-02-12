@@ -19,19 +19,21 @@ __constant__ consts gpu_def [1];
 // обмена данными, если имеет соседа 
 // (если 2 соседа с обеих сторон,то +2 точки). 
 // Глобальные границы хранятся как обычные точки (отсюда и условие на rank==0)
-__device__ int device_i_to_I(int i, consts def)
+__device__ int device_local_to_global(int local_index, char axis, consts def)
 {
-	int I;
-	if ((*gpu_def).rank <= ((*gpu_def).Nx)%(*gpu_def).sizex)
+	int global_index = local_index;
+	switch(axis)
 	{
-		if((*gpu_def).rank==0)
-			I=i;
-		else
-			I=(((*gpu_def).Nx)/(*gpu_def).sizex+1)*(*gpu_def).rank+i-1;
+	case 'x':
+		{ global_index += (*gpu_def).rankx * (*gpu_def).Nx / (*gpu_def).sizex + min((*gpu_def).rankx, (*gpu_def).Nx % (*gpu_def).sizex); break; }
+	case 'y':
+		{ global_index += (*gpu_def).ranky * (*gpu_def).Ny / (*gpu_def).sizey + min((*gpu_def).ranky, (*gpu_def).Ny % (*gpu_def).sizey); break; }
+	case 'z':
+		{ global_index += (*gpu_def).rankz * (*gpu_def).Nz / (*gpu_def).sizez + min((*gpu_def).rankz, (*gpu_def).Nz % (*gpu_def).sizez); break; }
+	default: {printf("Error!");}
 	}
-	else
-		I=(((*gpu_def).Nx)/(*gpu_def).sizex+1)*(*gpu_def).rank-((*gpu_def).rank-((*gpu_def).Nx)%(*gpu_def).sizex)+i-1;
-	return I;
+	//some_test(global_index);
+	return global_index;
 }
 
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
@@ -450,7 +452,7 @@ __global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr, consts def)
 		
 		if ((j==0) && (((*gpu_def).locNy)>2))
 		{
-			int I=device_i_to_I(i, gpu_def[0]);
+			int I=device_local_to_global(i, 'x', gpu_def[0]);
 			if ((I>=((*gpu_def).Nx)/2-((*gpu_def).source)) && (I<=((*gpu_def).Nx)/2+((*gpu_def).source)) && (k>=((*gpu_def).Nz)/2-((*gpu_def).source)) && (k<=((*gpu_def).Nz)/2+((*gpu_def).source)))
 				DevArraysPtr.S_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).S_n_gr;
 			else
@@ -542,49 +544,49 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 // Функция загрузки данных в память хоста
 void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, consts def)
 {
-	cudaMemcpy( HostArrayPtr, DevArrayPtr, ((*gpu_def).locNx)*((*gpu_def).locNy)*((*gpu_def).locNz)*sizeof(double), cudaMemcpyDeviceToHost );
+	cudaMemcpy( HostArrayPtr, DevArrayPtr, (def.locNx)*(def.locNy)*(def.locNz)*sizeof(double), cudaMemcpyDeviceToHost );
 	checkErrors("copy data to host", __FILE__, __LINE__);
 }
 
 // Функция загрузки данных типа double в память ускорителя
 void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, consts def)
 {
-	cudaMemcpy( DevArrayPtr, HostArrayPtr, ((*gpu_def).locNx)*((*gpu_def).locNy)*((*gpu_def).locNz)*sizeof(double), cudaMemcpyHostToDevice );
+	cudaMemcpy( DevArrayPtr, HostArrayPtr, (def.locNx)*(def.locNy)*(def.locNz)*sizeof(double), cudaMemcpyHostToDevice );
 	checkErrors("copy double data to device", __FILE__, __LINE__);
 }
 
 // Функция загрузки данных типа int в память ускорителя
 void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts def)
 {
-	cudaMemcpy( DevArrayPtr, HostArrayPtr, ((*gpu_def).locNx)*((*gpu_def).locNy)*((*gpu_def).locNz)*sizeof(int), cudaMemcpyHostToDevice );
+	cudaMemcpy( DevArrayPtr, HostArrayPtr, (def.locNx)*(def.locNy)*(def.locNz)*sizeof(int), cudaMemcpyHostToDevice );
 	checkErrors("copy int data to device", __FILE__, __LINE__);
 }
 
 // Выделение памяти ускорителя под массив точек расчетной области
 void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts def)
 {
-	cudaMalloc((void**) DevBuffer,  2 * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).P_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).P_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).S_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).ro_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).ro_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).ux_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).uy_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).uz_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).ux_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).uy_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).uz_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).Xi_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).Xi_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).roS_w),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).roS_n),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).roS_w_old),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).roS_n_old),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
-	cudaMalloc((void**) &((*ArraysPtr).media),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(int));
+	cudaMalloc((void**) DevBuffer,  2 * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).P_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).P_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).S_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).ro_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).ro_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).ux_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).uy_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).uz_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).ux_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).uy_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).uz_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).Xi_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).Xi_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).roS_w),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).roS_n),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).roS_w_old),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).roS_n_old),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).media),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(int));
 
 #ifdef B_L
-	cudaMalloc((void**) &((*ArraysPtr).K),  ((*gpu_def).locNx) * ((*gpu_def).locNy) * ((*gpu_def).locNz) * sizeof(double));
+	cudaMalloc((void**) &((*ArraysPtr).K),  (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 #endif
 
 	checkErrors("memory allocation", __FILE__, __LINE__);
@@ -636,14 +638,14 @@ void device_initialization(consts* def)
 	// Количество запускаемых блоков
 	// Если число точек сетки не кратно размеру блока,
 	// то количество блоков будет на 1 больше.
-	(*def).blocksX=((*gpu_def).locNx)/BlockNX;
-	if (((*gpu_def).locNx)%BlockNX!=0)
+	(*def).blocksX=(*def).locNx/BlockNX;
+	if (((*def).locNx%BlockNX)!=0)
 		((*def).blocksX)++;
-	(*def).blocksY=((*gpu_def).locNy)/BlockNY;
-	if (((*gpu_def).locNy)%BlockNY!=0)
+	(*def).blocksY=((*def).locNy)/BlockNY;
+	if (((*def).locNy)%BlockNY!=0)
 		((*def).blocksY)++;
-	(*def).blocksZ=((*gpu_def).locNz)/BlockNZ;
-	if (((*gpu_def).locNz)%BlockNZ!=0)
+	(*def).blocksZ=((*def).locNz)/BlockNZ;
+	if (((*def).locNz)%BlockNZ!=0)
 		((*def).blocksZ)++;
 
 	consts* deff=new consts[1];
@@ -681,8 +683,8 @@ void device_initialization(consts* def)
 		printf ( "\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4) );
 	}
 
-		// ((*gpu_def).locNx)+2 потому что 2NyNz на буфер обмена выделяется
-	if ( ((*gpu_def).locNx+2)*((*gpu_def).locNy)*((*gpu_def).locNz) > (devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4)))
+		// (def.locNx)+2 потому что 2NyNz на буфер обмена выделяется
+	if ( ((*def).locNx+2)*((*def).locNy)*((*def).locNz) > (devProp.totalGlobalMem/(sizeof(ptr_Arrays)*sizeof(double)/4)))
 		printf ("\nError! Not enough memory at GPU, rank=%d\n",(*def).rank);
 	fflush( stdout);
 
@@ -748,7 +750,7 @@ __global__ void save_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 
 void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
-	cudaMemcpy( DevBuffer, HostBuffer, 2*((*gpu_def).locNy)*((*gpu_def).locNz)*sizeof(double), cudaMemcpyHostToDevice );
+	cudaMemcpy( DevBuffer, HostBuffer, 2*(def.locNy)*(def.locNz)*sizeof(double), cudaMemcpyHostToDevice );
 	checkErrors("copy data to device", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 

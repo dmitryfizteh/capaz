@@ -38,6 +38,9 @@
 #include <sys/stat.h>
 #endif
 
+// Псевдо-функция минимума
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 // Вывод графиков BjnIO
 //#include "bjnio.h"
 
@@ -125,6 +128,7 @@ extern void blocks_initialization(consts* def);
 extern void communication_initialization(int argc, char* argv[], consts* def);
 extern void communication_finalization(void);
 extern void global_to_local_vars (consts* def);
+extern int local_to_global(int local_index, char axis, consts def);
 extern int is_active_point(int i, int j, int k, consts def);
 extern void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, consts def);
 extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, consts def);
@@ -157,7 +161,6 @@ extern void read_defines_test(consts def);
 
 
 // Расчеты в каждой точке
-extern int i_to_I(int i, consts def);
 extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);

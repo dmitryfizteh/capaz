@@ -76,7 +76,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	if((j == 0) && ((def.source) > 0))
 	{
-		int I=i_to_I(i, def);
+		int I=local_to_global(i, 'x', def);
 		if ((I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
 			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.S_n_gr;
 		else
