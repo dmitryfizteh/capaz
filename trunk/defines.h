@@ -65,19 +65,7 @@ struct ptr_Arrays_tag
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
 
-struct parts_sizes
-{
-	int x, y, z;
-};
-typedef struct parts_sizes parts_sizes;
-
-struct localN
-{
-	int x, y, z;
-};
-typedef struct localN localN;
-
-// Структура параметров сред
+// Структура параметров сред и характерных размеров задачи
 struct consts_tag
 {
 	double lambda[2];
@@ -107,46 +95,56 @@ struct consts_tag
 	double S_w_range[3];
 	double S_g_range[3];
 #endif
+// Локальные размеры
+	int locNx, locNy, locNz;
+// Число процессоров и ранг процессора
+	int size, rank;
+// Число частей дробления области по измерениям
+	int sizex, sizey, sizez;
+// Разложение ранга для трехмерного дробления области между процессорами
+	int rankx, ranky, rankz;
+// Количество блоков ускорителя
+	int blocksX, blocksY, blocksZ;
 };
 typedef struct consts_tag consts;
 
-extern void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t, localN locN, int rank,parts_sizes parts, int blocksX, int blocksY, int blocksZ);
-extern void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, localN* locN, int* size, parts_sizes *parts, int* rank, int* blocksX, int* blocksY, int* blocksZ, int argc, char* argv[], consts def);
-extern void load_permeability(double* K, localN locN);
+extern void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t);
+extern void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int argc, char* argv[], consts* def);
+extern void load_permeability(double* K, consts def);
 extern void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer);
-extern void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, localN locN, consts def);
-extern void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def);
-extern void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, localN locN, consts def);
+extern void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, consts def);
+extern void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def);
+extern void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts def);
 extern void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr);
 extern void host_memory_free(ptr_Arrays HostArraysPtr);
 extern void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer);
-extern void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, parts_sizes parts, int rank, localN locN, consts def);
-extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank, parts_sizes parts, consts def);
-extern void parts_initialization(int size, parts_sizes *parts);
-extern void communication_initialization(int argc, char* argv[], int* size, int* rank, consts def);
+extern void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def);
+extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def);
+extern void sizes_initialization(consts* def);
+extern void blocks_initialization(consts* def);
+extern void communication_initialization(int argc, char* argv[], consts* def);
 extern void communication_finalization(void);
-extern void global_to_local_vars (localN* locN, parts_sizes parts, int rank, consts def);
-extern int is_active_point(int i, int j, int k, localN locN, int rank, parts_sizes parts);
-extern void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, localN locN, consts def);
-extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, localN locN, consts def);
-extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, localN locN, consts def);
+extern void global_to_local_vars (consts* def);
+extern int is_active_point(int i, int j, int k, consts def);
+extern void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, consts def);
+extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, consts def);
+extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts def);
 
-extern void device_initialization(int rank, int* blocksX, int* blocksY, int* blocksZ, localN locN, consts def);
+extern void device_initialization(consts* def);
 extern void device__finalization(void);
-//extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, int localNx, int localNy, int rank, int size, consts def);
 
 // Служебные
 extern void print_plots_top (double t, consts def);
-extern void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts, localN locN, consts def);
+extern void print_plots(ptr_Arrays HostArraysPtr, double t, consts def);
 extern void barrier(void);
-extern void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, localN locN, consts def);
-extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, parts_sizes parts, localN locN, consts def);
+extern void restore (ptr_Arrays HostArraysPtr, int* j, consts def);
+extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def);
 extern void read_defines(int argc, char *argv[], consts* def);
 extern void read_version(void);
 
 // Unit-тесты
 #ifndef THREE_PHASE
-extern void test_correct_P_S(ptr_Arrays HostArraysPtr, localN locN, int rank, consts def);
+extern void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def);
 #endif
 
 extern void test_nan (double x, char *file, int line);
@@ -158,27 +156,27 @@ extern void read_defines_test(consts def);
 
 
 // Расчеты в каждой точке
-extern int i_to_I(int i, int rank, parts_sizes parts, consts def);
-extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
-extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
-extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
-extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
-extern void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN locN, consts def);
-extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, localN locN, consts def);
-extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
-extern void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, int rank, parts_sizes parts, consts def);
-extern void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def);
+extern int i_to_I(int i, consts def);
+extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts def);
+extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts def);
+extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 
-extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ);
-extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def);
-extern void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ, consts def);
-extern void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def);
-extern void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, double t, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ);
-extern void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ);
-extern void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, localN locN, int rank, parts_sizes parts, int blocksX, int blocksY, int blocksZ, consts def);
-extern void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def);
+extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
+extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);
+extern void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
+extern void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);
+extern void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def);
+extern void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
+extern void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
+extern void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);
 
-extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def);
-extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, localN locN, int blocksY, int blocksZ, int rank, parts_sizes parts, consts def);
+extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def);
+extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def);
 
 #endif
