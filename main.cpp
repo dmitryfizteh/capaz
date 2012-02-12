@@ -9,29 +9,21 @@ int main(int argc, char* argv[])
 	consts def;
 	read_defines(argc, argv, &def);
 
-	// Переменные количества процессоров и номера текущего процессора
-	int size=0, rank=0;
 	// Хостовый массив данных расчетной области процессора
 	ptr_Arrays HostArraysPtr;
 	// GPU-массив данных расчетной области процессора
 	ptr_Arrays DevArraysPtr;
-	// Размеры (локальные) расчетной области процессора
-	localN locN;
-	// Количество блоков ускорителя
-	int blocksX=0, blocksY=0, blocksZ=0;
 	// Счетчик шагов по времени
 	int j=0;
-	// Количество частей, на которые делим область
-	parts_sizes parts;
 	// Счетчик времени исполнения вычислительной части программы
 	clock_t task_time; 
 
 	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
 	// выделение памяти, загрузка начальных/сохраненных данных
-	initialization(&HostArraysPtr, &DevArraysPtr, &j, &locN, &size, &parts, &rank, &blocksX, &blocksY, &blocksZ, argc, argv, def);
+	initialization(&HostArraysPtr, &DevArraysPtr, &j, argc, argv, &def);
 
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, size, rank, localNx, def);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 	
 	task_time=clock();
 
@@ -42,20 +34,20 @@ int main(int argc, char* argv[])
 	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
 	for (j++; j <= def.timeX/(def.dt); j++)
 	{
-		if ((j % (def.print_screen) == 0) && rank==0) // (2)
+		if ((j % (def.print_screen) == 0) && (def.rank) == 0) // (2)
 		{
-			printf ("t=%.3f\n",j*(def.dt)); 
+			printf ("t=%.3f\n", j * (def.dt)); 
 			fflush(stdout);
 		}
 
-		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def,j*(def.dt),locN,rank,parts,blocksX,blocksY,blocksZ); // (1)
+		time_step_function(HostArraysPtr, DevArraysPtr, DevBuffer, def, j * (def.dt)); // (1)
 
 		if ((j % (def.save_plots)) == 0) // (3)
 		{
 			// Следующие 2 функции вызываются строго в таком порядке,
 			// т.к. save использует данные, загруженные save_data_plots
-			save_data_plots(HostArraysPtr, DevArraysPtr, j*(def.dt), parts, rank, locN, def); // (**)
-			//save(HostArraysPtr, DevArraysPtr, j, rank, size, localNx); // (***)
+			save_data_plots(HostArraysPtr, DevArraysPtr, j * (def.dt), def); // (**)
+			//save(HostArraysPtr, DevArraysPtr, j, def); // (***)
 		}
 	}
 
@@ -63,7 +55,7 @@ int main(int argc, char* argv[])
 	barrier();
 	// Вывод информации о времени работы программы в секундах
 	task_time=clock()-task_time;
-	if(!rank)
+	if(!(def.rank))
 		printf( "Task time in seconds:\t%.2f\n", (double) task_time/CLOCKS_PER_SEC);
 
 	// Завершение работы и освобождение памяти
@@ -87,16 +79,16 @@ int main(int argc, char* argv[])
 // 6. Расчет методом Ньютона давления воды P1 и насыщенности DNAPL S2
 // 7. Применение граничных условий для P1 и S2
 // 8. Обмен между процессорами пограничными значениями P1 и S2
-void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t, localN locN, int rank,parts_sizes parts, int blocksX, int blocksY, int blocksZ)
+void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t)
 {
-	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, locN,blocksY, blocksZ, rank, parts, def); // (8)
-	ro_P_Xi_calculation(HostArraysPtr,DevArraysPtr,def,locN,rank,parts,blocksX,blocksY, blocksZ); // (1)
-	P_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, locN,blocksY, blocksZ, rank, parts, def); // (2)
-	u_calculation(HostArraysPtr,DevArraysPtr,locN,rank,parts,blocksX,blocksY, blocksZ, def); // (3)
-	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, locN,blocksY, blocksZ, rank, parts, def); // (4)
-	roS_calculation(HostArraysPtr,DevArraysPtr,def,t,locN,rank,parts,blocksX,blocksY, blocksZ); // (5)
-	P_S_calculation(HostArraysPtr,DevArraysPtr,def,locN,rank,parts,blocksX,blocksY, blocksZ); // (6)
-	boundary_conditions(HostArraysPtr,DevArraysPtr,locN,rank,parts,blocksX,blocksY, blocksZ, def); // (7)
+	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (8)
+	ro_P_Xi_calculation(HostArraysPtr, DevArraysPtr, def); // (1)
+	P_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (2)
+	u_calculation(HostArraysPtr, DevArraysPtr, def); // (3)
+	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (4)
+	roS_calculation(HostArraysPtr, DevArraysPtr, t, def); // (5)
+	P_S_calculation(HostArraysPtr, DevArraysPtr, def); // (6)
+	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
 	
 }
 
@@ -104,19 +96,19 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 // Каждый процессор содержит дополнительную точку в массиве для
 // обмена данными, если имеет соседа 
 // (если 2 соседа с обеих сторон,то +2 точки). 
-// Глобальные границы хранятся как обычные точки (отсюда и условие на rank==0)
-int i_to_I(int i, int rank, parts_sizes parts, consts def)
+// Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
+int i_to_I(int i, consts def)
 {
 	int I;
-	if (rank <= (def.Nx)%parts.x)
+	if ((def.rank) <= (def.Nx) % (def.sizex))
 	{
-		if(rank==0)
-			I=i;
+		if((def.rank) == 0)
+			I = i;
 		else
-			I=((def.Nx)/parts.x+1)*rank+i-1;
+			I = ((def.Nx) / (def.sizex) + 1) * (def.rank) + i - 1;
 	}
 	else
-		I=((def.Nx)/parts.x+1)*rank-(rank-(def.Nx)%parts.x)+i-1;
+		I = ((def.Nx) / (def.sizex) + 1) * (def.rank) - ((def.rank) - (def.Nx) % (def.sizex)) + i - 1;
 
 	test_positive(I, __FILE__, __LINE__);
 	return I;
@@ -127,191 +119,198 @@ int i_to_I(int i, int rank, parts_sizes parts, consts def)
 // Каждый процессор содержит дополнительную точку в массиве для
 // обмена данными, если имеет соседа 
 // (если 2 соседа с обеих сторон,то +2 точки). 
-// Глобальные границы хранятся как обычные точки (отсюда и условие на rank==0)
-void global_to_local_vars (localN* locN, parts_sizes parts, int rank, consts def)
+// Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
+void global_to_local_vars (consts *def)
 {
-	(*locN).x = (def.Nx) / parts.x;
+	(*def).locNx = (*def).Nx / (*def).sizex;
 
-	if (rank % parts.x < (def.Nx) % parts.x)
-		((*locN).x) ++;
+	if ((*def).rank % (*def).sizex < (*def).Nx % (*def).sizex)
+		((*def).locNx) ++;
 
 	// Крайние процессоры получают по 1 точке для граничных данных,
 	// остальные - по 2 на обе границы
 	// Если процессор один, то границ у него нет и дополнительные точки не нужны
-	if (parts.x > 1)
+	if ((*def).sizex > 1)
 	{
-		if ((rank % parts.x == 0) || (rank % parts.x  == parts.x - 1))
-			((*locN).x) ++;
+		if (((*def).rank % (*def).sizex == 0) || ((*def).rank % (*def).sizex  == (*def).sizex - 1))
+			((*def).locNx) ++;
 		else
-			((*locN).x) += 2;
+			((*def).locNx) += 2;
 	}
 
-	(*locN).y = (def.Ny) / parts.y;
+	(*def).locNy = (*def).Ny / (*def).sizey;
 
-	if ((rank % ((parts.x) * (parts.y))) / parts.x < (def.Ny) % parts.y)
-		((*locN).y) ++;
+	if (((*def).rank % ((*def).sizex) * (*def).sizey) / (*def).sizex < (*def).Ny % (*def).sizey)
+		((*def).locNy) ++;
 
-	if (parts.y > 1)
+	if ((*def).sizey > 1)
 	{
-		if (((rank % ((parts.x) * (parts.y))) / parts.x == 0) || ((rank % ((parts.x) * (parts.y))) / parts.x == parts.y - 1))
-			((*locN).y) ++;
+		if ((((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == 0) || (((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == (*def).sizey - 1))
+			((*def).locNy) ++;
 		else
-			((*locN).y) += 2;
+			((*def).locNy) += 2;
 	}
 
-	(*locN).z = (def.Nz) / parts.z;
+	(*def).locNz = (*def).Nz / (*def).sizez;
 
-	if (rank / (parts.x) / (parts.y) < (def.Nz) % parts.z)
-		((*locN).z) ++;
+	if ((*def).rank / (*def).sizex / (*def).sizey < (*def).Nz % (*def).sizez)
+		((*def).locNz) ++;
 
-	if (parts.z > 1)
+	if ((*def).sizez > 1)
 	{
-		if ((rank / (parts.x) / (parts.y) == 0) || (rank / (parts.x) / (parts.y) == parts.z - 1))
-			((*locN).z) ++;
+		if (((*def).rank / (*def).sizex / (*def).sizey == 0) || ((*def).rank / (*def).sizex / (*def).sizey == (*def).sizez - 1))
+			((*def).locNz) ++;
 		else
-			((*locN).z) += 2;
+			((*def).locNz) += 2;
 	}
 
-	test_positive((*locN).x, __FILE__, __LINE__);
-	test_positive((*locN).y, __FILE__, __LINE__);
-	test_positive((*locN).z, __FILE__, __LINE__);
+	test_positive((*def).locNx, __FILE__, __LINE__);
+	test_positive((*def).locNy, __FILE__, __LINE__);
+	test_positive((*def).locNz, __FILE__, __LINE__);
 }
 
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
-int is_active_point(int i, int j, int k, localN locN, int rank, parts_sizes parts)
+int is_active_point(int i, int j, int k, consts def)
 {
-	if((rank % parts.x != 0 && i == 0) || (rank % parts.x != parts.x - 1 && i == locN.x - 1)
-		|| ((rank % ((parts.x) * (parts.y))) / parts.x != 0 && j == 0)	|| ((rank % ((parts.x) * (parts.y))) / parts.x != parts.y - 1 && j == locN.y - 1)
-		|| (((rank / (parts.x) / (parts.y) != 0 && k == 0) || (rank / (parts.x) / (parts.y) == parts.z - 1 && k == locN.z - 1)) && parts.z > 1))
+	if(((def.rank) % (def.sizex) != 0 && i == 0) || ((def.rank) % (def.sizex) != (def.sizex) - 1 && i == def.locNx - 1)
+		|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != 0 && j == 0)	|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != (def.sizey) - 1 && j == def.locNy - 1)
+		|| ((((def.rank) / (def.sizex) / (def.sizey) != 0 && k == 0) || ((def.rank) / (def.sizex) / (def.sizey) == (def.sizez) - 1 && k == def.locNz - 1)) && (def.sizez) > 1))
 		return 0;
 	else
 		return 1;
 }
 
 // Применение начальных данных во всех точках
-void parts_initialization(int size, parts_sizes *parts)
+void sizes_initialization(consts *def)
 {
-	(*parts).x = size;
-	(*parts).y = 1;
-	(*parts).z = 1;
+	(*def).sizex = (*def).size;
+	(*def).sizey = 1;
+	(*def).sizez = 1;
+}
+
+void blocks_initialization(consts *def)
+{
+	(*def).blocksX = 0;
+	(*def).blocksY = 0;
+	(*def).blocksZ = 0;	
 }
 
 // Функция вычисления "эффективной" плотности * g * hy
-double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, localN locN, consts def)
+double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int media = HostArraysPtr.media[i + j * (locN.x) + k * (locN.x) * (locN.y)];
+	int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 
 #ifdef THREE_PHASE
-	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1. - HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] - HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)]) 
-		+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_w[i + j * (locN.x) + k * (locN.x) * (locN.y)]
-	+ HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)]) * (def.m[media]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) 
+		+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+	+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.m[media]) * (def.g_const) * (def.hy);
 #else
-	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (locN.x) + k * (locN.x) *(locN.y)] * HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] 
-	+ HostArraysPtr.ro_w[i + j * (locN.x) + k * (locN.x) *(locN.y)] * (1 - HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)])) * (def.m[media]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
+	+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[media]) * (def.g_const) * (def.hy);
 #endif
 	return ro_g_dy;
 }
 
-void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank, parts_sizes parts, consts def)
+void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def)
 {
-	*t=0;
-	for(int i=0;i<locN.x;i++)
-		for(int j=0;j<locN.y;j++)
-			for(int k=0;k<locN.z;k++)
-				if(is_active_point(i, j, k, locN, rank, parts))
+	*t = 0;
+	for(int i = 0; i < def.locNx; i++)
+		for(int j = 0; j < def.locNy; j++)
+			for(int k = 0; k < def.locNz; k++)
+				if(is_active_point(i, j, k, def))
 					{
 						// Преобразование локальных координат процессора к глобальным
-						int I=i_to_I(i,rank,parts,def);
+						int I = i_to_I(i, def);
 
 #ifdef THREE_PHASE
-						int media = HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y] = 0;	
-						int j1 = locN.y / 2;
+						int media = HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy] = 0;	
+						int j1 = def.locNy / 2;
 
 						if(j < j1)
 						{
-							HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
+							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
 						}
 						else
 						{
-							HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y] = def.S_w_init;
-							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y] = def.S_n_init;
+							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_init;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_init;
 						}
 
 						if(j == 0)
-							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y] = def.P_atm;
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.P_atm;
 						else
-							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y] = HostArraysPtr.P_w[i + (j - 1) * locN.x + k * locN.x * locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
 	
-						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 
 						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
-						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
-						HostArraysPtr.ro_g[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));	
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+						HostArraysPtr.ro_g[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));	
 #endif
 #ifdef TWO_PHASE
 						// Если точка на верхней границе, не далее (def.source) точек от центра,
 						// то в ней начальная насыщенность. Иначе, нулевая
 						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=def.S_n_gr;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=def.S_n_gr;
 						else
-							HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0;
 
 						if(j == 0)
-							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
 						else
-							HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=HostArraysPtr.P_w[i+(j-1)*locN.x+k*locN.x*locN.y] + ro_eff_gdy(HostArraysPtr, i, j-1, k, locN, def);
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
 							
-						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
+						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
 
-						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 
 						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
-						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 #endif
 
 #ifdef B_L
-						HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=0;
-						HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y]=0.5;
+						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
+						HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0.5;
 
 						// Не учитывается сила тяжести
-						HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y]=def.P_atm;
+						HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
 
 						// В левом нижнем углу нагнетающая скважина
 						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)) || ((i==1) && (j==def.Ny-2)))
 						{
-							HostArraysPtr.P_w[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 1e6;
-							//HostArraysPtr.S_n[i + j * (locN.x) + k * (locN.x) * (locN.y)] = 0;
+							HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1e6;
+							//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0;
 						}
 
-						HostArraysPtr.ro_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 
 						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
-						HostArraysPtr.ro_n[i+j*(locN.x)+k*(locN.x)*(locN.y)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)] - def.P_atm));
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 
 #endif
 
 						/*
-						if ((HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]<=4.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]<=2./5.*locN.y*(def.h2)) && (HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]>=(-1.)*HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]/4.+2./5.*locN.y*(def.h2)))
-								HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=1;
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=4.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=2./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=(-1.)*HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]/4.+2./5.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
 
-						if ((HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]>=(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]<=2.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]<=4./5.*locN.y*(def.h2)) && (HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]>=3./5.*locN.y*(def.h2)))
-								HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=1;
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=2.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=4./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=3./5.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
 								*/
 					
 						/*
-						if ((HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]>=2.*(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*locN.x+k*locN.x*locN.y]<=3.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]>=1./10.*locN.y*(def.h2)) && (HostArraysPtr.y[i+j*locN.x+k*locN.x*locN.y]<=3./10.*locN.y*(def.h2)))
-								HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y]=1;
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=2.*(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=3.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=1./10.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=3./10.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
 						*/
 
-					test_nan(HostArraysPtr.S_n[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.P_w[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
 #ifdef THREE_PHASE 
-					test_nan(HostArraysPtr.S_w[i+j*locN.x+k*locN.x*locN.y], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
 #endif
 					}
 }
@@ -320,19 +319,19 @@ void data_initialization(ptr_Arrays HostArraysPtr, int* t, localN locN, int rank
 // Служебные функции
 
 // Вывод запускаемой задачи
-void print_task_name(int rank, int size)
+void print_task_name(consts def)
 {
 	// Нулевой процессор выводит название запускаемой задачи
-	if (!rank)
+	if (!(def.rank))
 	{
 		#ifdef TWO_PHASE
-				std::cout << "Two phase filtration by CAPAZ on "<<size<<" node(s).\n";
+				std::cout << "Two phase filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
 		#endif
 		#ifdef THREE_PHASE
-				std::cout << "Three phase filtration by CAPAZ on "<<size<<" node(s).\n";
+				std::cout << "Three phase filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
 		#endif
 		#ifdef B_L
-				std::cout << "Backley-Leverett filtration by CAPAZ on "<<size<<" node(s).\n";
+				std::cout << "Backley-Leverett filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
 		#endif
 		read_version();
 	    fflush(stdout);
@@ -342,25 +341,27 @@ void print_task_name(int rank, int size)
 // Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2), 
 // инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
 // Для задачи Б-Л загрузка проницаемостей из файла.
-void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, localN* locN, int* size, parts_sizes *parts, int* rank, int* blocksX, int* blocksY, int* blocksZ, int argc, char* argv[], consts def)
+void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int argc, char* argv[], consts* def)
 {
 	FILE *f_save;
 
-	communication_initialization(argc, argv, size, rank, def); // (1)
+	communication_initialization(argc, argv, def); // (1)
 
-	print_task_name(*rank, *size);
+	print_task_name(*def);
 
-	parts_initialization(*size, parts);
+	sizes_initialization(def);
 
-	global_to_local_vars(locN, *parts, *rank, def); // (2)
+	blocks_initialization(def);
 
-	device_initialization(*rank, blocksX, blocksY, blocksZ, *locN, def); // (2.5)
+	global_to_local_vars(def); // (2)
 
-	memory_allocation(HostArraysPtr, DevArraysPtr, *locN, def); // (3)
+	device_initialization(def); // (2.5)
+
+	memory_allocation(HostArraysPtr, DevArraysPtr, *def); // (3)
 
 #ifdef B_L
-	load_permeability((*HostArraysPtr).K, *locN); // (5)
-	load_data_to_device((*HostArraysPtr).K, (*DevArraysPtr).K, *locN, def);
+	load_permeability((*HostArraysPtr).K, *def); // (5)
+	load_data_to_device((*HostArraysPtr).K, (*DevArraysPtr).K, *def);
 #endif
 
 	// Если процессор может открыть файл сохраненного состояния,
@@ -368,20 +369,20 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j,
 	if (f_save=fopen("save/save.dat","rb"))
 	{
 		fclose(f_save);
-		restore(*HostArraysPtr, j, *rank, *parts, *locN, def);
+		restore(*HostArraysPtr, j, *def);
 	}
 	else
-		data_initialization (*HostArraysPtr, j, *locN, *rank, *parts, def); // (4)
+		data_initialization (*HostArraysPtr, j, *def); // (4)
 
 #ifdef THREE_PHASE
-	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *locN, def);
-	load_data_to_device((*HostArraysPtr).roS_g_old, (*DevArraysPtr).roS_g_old, *locN, def);
+	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *def);
+	load_data_to_device((*HostArraysPtr).roS_g_old, (*DevArraysPtr).roS_g_old, *def);
 #endif
-	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *locN, def);
-	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *locN, def);
-	load_data_to_device((*HostArraysPtr).roS_w_old, (*DevArraysPtr).roS_w_old, *locN, def);
-	load_data_to_device((*HostArraysPtr).roS_n_old, (*DevArraysPtr).roS_n_old, *locN, def);
-	load_data_to_device_int((*HostArraysPtr).media, (*DevArraysPtr).media, *locN, def);
+	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *def);
+	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *def);
+	load_data_to_device((*HostArraysPtr).roS_w_old, (*DevArraysPtr).roS_w_old, *def);
+	load_data_to_device((*HostArraysPtr).roS_n_old, (*DevArraysPtr).roS_n_old, *def);
+	load_data_to_device_int((*HostArraysPtr).media, (*DevArraysPtr).media, *def);
 }
 
 // Завершение работы (1), освобождение памяти (2)
@@ -393,10 +394,10 @@ void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* Dev
 }
 
 // Выделение памяти хоста (1) и ускорителя (2) под массив точек расчетной области
-void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, localN locN, consts def)
+void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, consts def)
 {
-	host_memory_allocation(HostArraysPtr, locN, def); // (1)
-	device_memory_allocation(DevArraysPtr, &DevBuffer, locN, def); // (2)
+	host_memory_allocation(HostArraysPtr, def); // (1)
+	device_memory_allocation(DevArraysPtr, &DevBuffer, def); // (2)
 }
 
 // Освобожение памяти хоста (1) и ускорителя (2) из под массива точек расчетной области
@@ -407,44 +408,44 @@ void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 }
 
 // Выделение памяти хоста под массив точек расчетной области
-void host_memory_allocation(ptr_Arrays* ArraysPtr, localN locN, consts def)		
+void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)		
 {	
-	if (!(HostBuffer=new double[2 * ((locN.y) * (locN.z))]))
+	if (!(HostBuffer=new double[2 * ((def.locNy) * (def.locNz))]))
 		printf ("\nWarning! Memory for *HostBuffer is not allocated in function host_memory_alloc\n");
 
 	try
 	{
-		(*ArraysPtr).S_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).P_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).P_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ro_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ro_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ux_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uy_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uz_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ux_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uy_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uz_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).Xi_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).Xi_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_w_old=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_n=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_n_old=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).media=new int [(locN.x)*(locN.y)*(locN.z)];
+		(*ArraysPtr).S_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).P_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).P_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ro_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ro_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ux_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uy_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uz_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ux_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uy_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uz_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).Xi_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).Xi_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_w_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_n_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).media=new int [(def.locNx)*(def.locNy)*(def.locNz)];
 #ifdef B_L
-		(*ArraysPtr).K=new double [(locN.x)*(locN.y)*(locN.z)];
+		(*ArraysPtr).K=new double [(def.locNx)*(def.locNy)*(def.locNz)];
 #endif
 #ifdef THREE_PHASE
-		(*ArraysPtr).P_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).S_w=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ro_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).ux_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uy_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).uz_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).Xi_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_g=new double [(locN.x)*(locN.y)*(locN.z)];
-		(*ArraysPtr).roS_g_old=new double [(locN.x)*(locN.y)*(locN.z)];
+		(*ArraysPtr).P_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).S_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ro_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).ux_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uy_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).uz_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).Xi_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).roS_g_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
 #endif
 	}
 	catch(...)
@@ -493,43 +494,43 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 }
 
 // Функция сохранения графиков в файлы
-void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, parts_sizes parts, int rank, localN locN, consts def)
+void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
 	// Загрузка в память хоста результатов расчета
 #ifdef THREE_PHASE
-	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , locN, def);
-	load_data_to_host(HostArraysPtr.ux_w, DevArraysPtr.ux_w , locN, def);
-	load_data_to_host(HostArraysPtr.uy_w, DevArraysPtr.uy_w , locN, def);
-	load_data_to_host(HostArraysPtr.uz_w, DevArraysPtr.uz_w , locN, def);
-	load_data_to_host(HostArraysPtr.ux_g, DevArraysPtr.ux_g , locN, def);
-	load_data_to_host(HostArraysPtr.uy_g, DevArraysPtr.uy_g , locN, def);
-	load_data_to_host(HostArraysPtr.uz_g, DevArraysPtr.uz_g , locN, def);
+	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , def);
+	load_data_to_host(HostArraysPtr.ux_w, DevArraysPtr.ux_w , def);
+	load_data_to_host(HostArraysPtr.uy_w, DevArraysPtr.uy_w , def);
+	load_data_to_host(HostArraysPtr.uz_w, DevArraysPtr.uz_w , def);
+	load_data_to_host(HostArraysPtr.ux_g, DevArraysPtr.ux_g , def);
+	load_data_to_host(HostArraysPtr.uy_g, DevArraysPtr.uy_g , def);
+	load_data_to_host(HostArraysPtr.uz_g, DevArraysPtr.uz_g , def);
 #endif
-	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , locN, def);
-	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , locN, def);
-	load_data_to_host(HostArraysPtr.ux_n, DevArraysPtr.ux_n , locN, def);
-	load_data_to_host(HostArraysPtr.uy_n, DevArraysPtr.uy_n , locN, def);
-	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , locN, def);
+	load_data_to_host(HostArraysPtr.P_w, DevArraysPtr.P_w , def);
+	load_data_to_host(HostArraysPtr.S_n, DevArraysPtr.S_n , def);
+	load_data_to_host(HostArraysPtr.ux_n, DevArraysPtr.ux_n , def);
+	load_data_to_host(HostArraysPtr.uy_n, DevArraysPtr.uy_n , def);
+	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , def);
 
 #ifndef THREE_PHASE
 	// Проверка на выход из допустимого диапазона значений P и S
 #ifdef MY_TEST
-	test_correct_P_S(HostArraysPtr, locN, rank, def);
+	test_correct_P_S(HostArraysPtr, def);
 #endif
 #endif
 	
 	// Нулевой процессор создает директории, файлы и прописывает заголовки файлов
-	if (rank==0)
+	if ((def.rank)==0)
 		print_plots_top (t, def);
 
 	// По очереди для каждого из процессоров вызываем функцию вывода на график
 	// своей части массива.
-	for (int cpu = 0; cpu < (parts.x * parts.y * parts.z); cpu ++)
+	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu ++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
-		if (rank==cpu)
-			print_plots(HostArraysPtr, t, rank, parts, locN,def);	
+		if ((def.rank)==cpu)
+			print_plots(HostArraysPtr, t, def);	
 	}
 }
 
@@ -583,7 +584,7 @@ void print_plots_top (double t, consts def)
 
 
 // Функция сохранения данных в файлы графиков
-void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts, localN locN, consts def)
+void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 {
 	char fname[30];
 	FILE *fp;
@@ -599,15 +600,15 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 	if(!(fp=fopen(fname,"at")))
 		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
 
-	for(int i=0; i<locN.x; i++)
-		for(int j=0; j<locN.y; j++)
-			for(int k=0; k<locN.z; k++)
-				if(is_active_point(i, j, k, locN, rank, parts))
+	for(int i=0; i<def.locNx; i++)
+		for(int j=0; j<def.locNy; j++)
+			for(int k=0; k<def.locNz; k++)
+				if(is_active_point(i, j, k, def))
 				{
-					local=i+j*locN.x+k*locN.x*locN.y;
+					local=i+j*def.locNx+k*def.locNx*def.locNy;
 
 					// Преобразование локальных координат процессора к глобальным
-					int I=i_to_I(i,rank,parts,def);
+					int I=i_to_I(i, def);
 #ifdef THREE_PHASE
 					if(def.Nz < 2)
 					{
@@ -665,7 +666,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts
 }
 
 // Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
-void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes parts, localN locN, consts def)
+void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 {
 /*
 	char *dname;
@@ -674,10 +675,10 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes
 	LPLPLPFLOAT F1;
 	double *F1D;
 
-	F1 = alloc_float_mas_n1_n2_n3(locN.x, locN.y, locN.z); 
+	F1 = alloc_float_mas_n1_n2_n3(def.locNx, def.locNy, def.locNz); 
 	if(F1 == NULL) exit(0);
 
-	F1D = (double *)malloc(locN.x, locN.y, locN.z*sizeof(double)); 
+	F1D = (double *)malloc(def.locNx, def.locNy, def.locNz*sizeof(double)); 
 	if(F1D == NULL) exit(0);
 
 	// Инициализация файла с данными функции
@@ -686,7 +687,7 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes
 		fprintf(stderr, "Can't create file %s.\n", targetfuncs); 
 
 	// Запись блока данных значений функции
-	err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, locN.x*rank, 0, 0, locN.x, locN.y, locN.z, 5); // Поправить locN.x*rank на точное смещение
+	err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 5); // Поправить def.locNx*(def.rank) на точное смещение
 	if(err) 
 		fprintf(stderr, "Can't add func block data err %d\n", err);
 
@@ -726,7 +727,7 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes
 							}
 
 				// Запись блока данных сетки
-				err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, locN.x*rank, 0, 0, locN.x, locN.y, locN.z, 9); // Поправить locN.x*rank на точное смещение
+				err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 9); // Поправить def.locNx*(def.rank) на точное смещение
 				if(err)
 					fprintf(stderr, "Can't add grid `%s` block data err %d\n", dname, err);
 				}
@@ -740,7 +741,7 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, int rank, parts_sizes
 }
 
 // Функция загрузки файла проницаемостей
-void load_permeability(double* K, localN locN)
+void load_permeability(double* K, consts def)
 {
 	FILE *input;
 	char *file="../noise.dat";
@@ -758,7 +759,7 @@ void load_permeability(double* K, localN locN)
 	int Nx, Ny;
 	fscanf(input, "%d %d\n", &Nx, &Ny);
 
-	if((Nx!=locN.x) || (Ny!=locN.y))
+	if((Nx!=def.locNx) || (Ny!=def.locNy))
 	{
 		printf("Nx/Ny from noise.dat not equal\nError in file \"%s\" at line %d\n",__FILE__,__LINE__);
 		fflush(stdout);
@@ -783,8 +784,8 @@ void load_permeability(double* K, localN locN)
 			value[iter]='\0';
 			n++;
 
-			for (int k=0;k<locN.z;k++)
-				K[i+j*locN.x+k*locN.x*locN.y]=1e-10 * exp(atof(value));
+			for (int k=0;k<def.locNz;k++)
+				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value));
 		}
 	}
 
@@ -792,22 +793,22 @@ void load_permeability(double* K, localN locN)
 }
 
 // Сохранение состояния в файл
-void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, parts_sizes parts, localN locN, consts def)
+void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def)
 {
 	// Загружаем в память хоста данные по roS_old
 	// P1 и S2 загружены уже для функции сохранения графиков,
 	// x,y и media не изменились и загрузки не требуют.
 	//load_data_to_host(HostArraysPtr.P1, DevArraysPtr.P1 , localNx);
 	//load_data_to_host(HostArraysPtr.S2, DevArraysPtr.S2 , localNx);
-	load_data_to_host(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old , locN, def);
-	load_data_to_host(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old , locN, def);
+	load_data_to_host(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old , def);
+	load_data_to_host(HostArraysPtr.roS_n_old, DevArraysPtr.roS_n_old , def);
 #ifdef THREE_PHASE
-	load_data_to_host(HostArraysPtr.roS_g_old, DevArraysPtr.roS_n_old , locN, def);
+	load_data_to_host(HostArraysPtr.roS_g_old, DevArraysPtr.roS_n_old , def);
 #endif
 
 	FILE *f_save;
 
-	if (rank==0)
+	if ((def.rank)==0)
 	{
 
 #ifdef _WIN32
@@ -824,11 +825,11 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, pa
 		fclose(f_save);
 	}
 
-	for (int cpu=0; cpu<(parts.x * parts.y * parts.z);cpu++)
+	for (int cpu=0; cpu<(def.sizex * (def.sizey) * (def.sizez));cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
-		if (rank==cpu)
+		if ((def.rank)==cpu)
 		{
 			if(!(f_save=fopen("save/save.dat","ab")))
 			{
@@ -837,63 +838,71 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, int rank, pa
 			}
 			fwrite(&j, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
-			fwrite(HostArraysPtr.S_w, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			fwrite(HostArraysPtr.S_w, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
 #endif
-			fwrite(HostArraysPtr.P_w, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.S_n, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			//fwrite(HostArraysPtr.x, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			//fwrite(HostArraysPtr.y, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			//fwrite(HostArraysPtr.z, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.roS_w_old, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
-			fwrite(HostArraysPtr.roS_n_old, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			fwrite(HostArraysPtr.P_w, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			fwrite(HostArraysPtr.S_n, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			//fwrite(HostArraysPtr.x, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			//fwrite(HostArraysPtr.y, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			//fwrite(HostArraysPtr.z, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			fwrite(HostArraysPtr.roS_w_old, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
+			fwrite(HostArraysPtr.roS_n_old, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
 #ifdef THREE_PHASE
-			fwrite(HostArraysPtr.roS_g_old, sizeof(double), (locN.x) * (locN.y) * (locN.z), f_save);
+			fwrite(HostArraysPtr.roS_g_old, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
 #endif
-			fwrite(HostArraysPtr.media, sizeof(int), (locN.x) * (locN.y) * (locN.z), f_save);
+			fwrite(HostArraysPtr.media, sizeof(int), (def.locNx) * (def.locNy) * (def.locNz), f_save);
 			fclose(f_save);
 		}
 	}
 }
 
 // Восстановление состояния из файла
-void restore (ptr_Arrays HostArraysPtr, int* j, int rank, parts_sizes parts, localN locN, consts def)
+void restore (ptr_Arrays HostArraysPtr, int* j, consts def)
 {
 	FILE *f_save;
-	for (int cpu=0; cpu<(parts.x * parts.y * parts.z);cpu++)
+	for (int cpu=0; cpu<(def.sizex * (def.sizey) * (def.sizez));cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
-		localN lN;
 
-		lN.x = 0;
-		lN.y = 0;
-		lN.z = 0;
+		consts def_tmp;
+		def_tmp.locNx = 0;
+		def_tmp.locNy = 0;
+		def_tmp.locNz = 0;
+		def_tmp.Nx = def.Nx;
+		def_tmp.Ny = def.Ny;
+		def_tmp.Nz = def.Nz;
+		def_tmp.size = def.size;
+		def_tmp.sizex = def.sizex;
+		def_tmp.sizey = def.sizey;
+		def_tmp.sizez = def.sizez;
 
-		if (rank==cpu)
+		if ((def.rank)==cpu)
 		{
 			if(!(f_save=fopen("save/save.dat","rb")))
 			{
 					printf("\nError: Not open file \"save.dat\"!\n");
 					exit(0);
 			}
-			for (int queue=0;queue<=rank;queue++)
+			for (int queue=0;queue<=(def.rank);queue++)
 			{
-				global_to_local_vars(&lN, parts, queue, def);
+				def_tmp.rank = queue;
+				global_to_local_vars(&def_tmp); 
 				fread(j, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
-				fread(HostArraysPtr.S_w, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				fread(HostArraysPtr.S_w, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
 #endif
-				fread(HostArraysPtr.P_w, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.S_n, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				//fread(HostArraysPtr.x, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				//fread(HostArraysPtr.y, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				//fread(HostArraysPtr.z, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.roS_w_old, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
-				fread(HostArraysPtr.roS_n_old, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				fread(HostArraysPtr.P_w, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				fread(HostArraysPtr.S_n, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				//fread(HostArraysPtr.x, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				//fread(HostArraysPtr.y, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				//fread(HostArraysPtr.z, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				fread(HostArraysPtr.roS_w_old, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
+				fread(HostArraysPtr.roS_n_old, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
 #ifdef THREE_PHASE
-				fread(HostArraysPtr.roS_g_old, sizeof(double), (lN.x) * (lN.y) * (lN.y), f_save);
+				fread(HostArraysPtr.roS_g_old, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
 #endif
-				fread(HostArraysPtr.media, sizeof(int), (lN.x) * (lN.y) * (lN.y), f_save);
+				fread(HostArraysPtr.media, sizeof(int), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
 			}
 			fclose(f_save);
 		}

@@ -14,17 +14,17 @@
 // Функция проверки на выход из допустимого диапазона значений
 // во всех точках расчетной области процессора
 #ifndef THREE_PHASE
-void test_correct_P_S(ptr_Arrays HostArraysPtr, localN locN, int rank, consts def)
+void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 {
-	for(int i=0;i<(locN.x);i++)
-		for(int j=0;j<(locN.y);j++)
-			for(int k=0;k<(locN.z);k++)
+	for(int i=0;i<(def.locNx);i++)
+		for(int j=0;j<(def.locNy);j++)
+			for(int k=0;k<(def.locNz);k++)
 			{
-				test_S(HostArraysPtr.S_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				test_positive(HostArraysPtr.P_w[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.ux_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.uy_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.uz_n[i+j*(locN.x)+k*(locN.x)*(locN.y)], __FILE__, __LINE__);
+				test_S(HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
+				test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.ux_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.uy_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.uz_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 			}
 }
 #endif
