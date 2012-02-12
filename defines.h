@@ -9,7 +9,7 @@
 // Считать направленными разностями (если не определена NR, то считается без них)
 #define NR 
 #else
-#define TWO_LAYERS 0
+#define TWO_LAYERS 1
 #define NR 
 #endif
 
@@ -109,7 +109,7 @@ struct consts_tag
 typedef struct consts_tag consts;
 
 extern void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t);
-extern void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, int* j, int argc, char* argv[], consts* def);
+extern void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long int* time_counter, int argc, char* argv[], consts* def);
 extern void load_permeability(double* K, consts def);
 extern void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer);
 extern void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, consts def);
@@ -119,7 +119,7 @@ extern void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr);
 extern void host_memory_free(ptr_Arrays HostArraysPtr);
 extern void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer);
 extern void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def);
-extern void data_initialization(ptr_Arrays HostArraysPtr, int* t, consts def);
+extern void data_initialization(ptr_Arrays HostArraysPtr, long int* time_counter, consts def);
 extern void sizes_initialization(consts* def);
 extern void blocks_initialization(consts* def);
 extern void communication_initialization(int argc, char* argv[], consts* def);
@@ -137,8 +137,8 @@ extern void device__finalization(void);
 extern void print_plots_top (double t, consts def);
 extern void print_plots(ptr_Arrays HostArraysPtr, double t, consts def);
 extern void barrier(void);
-extern void restore (ptr_Arrays HostArraysPtr, int* j, consts def);
-extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int j, consts def);
+extern void restore (ptr_Arrays HostArraysPtr, long int* time_counter, consts def);
+extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def);
 extern void read_defines(int argc, char *argv[], consts* def);
 extern void read_version(void);
 
@@ -150,6 +150,7 @@ extern void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def);
 extern void test_nan (double x, char *file, int line);
 extern void test_positive (double x, char *file, int line);
 extern void test_S (double S, char *file, int line);
+extern void test_u (double u, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
 extern void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line);
 extern void read_defines_test(consts def);
