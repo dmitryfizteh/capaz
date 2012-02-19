@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
+	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 	
 	task_time=clock();
 
@@ -642,15 +642,15 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 // Функция загрузки файла проницаемостей
 void load_permeability(double* K, consts def)
 {
-	//FILE *input;
-	//char *file="../porosity.dat";
+	FILE *input;
+	char *file="../porosity.dat";
 
 	for(int i=0; i<def.locNx; i++)
 		for(int j=0; j<def.locNy; j++)
 			for(int k=0; k<def.locNz; k++)
 				K[i+j*def.locNx+k*def.locNx*def.locNy]=6.64e-11;
 
-	/*
+	
 	if(!(input=fopen(file,"rt")))
 	{
 		file="porosity.dat";
@@ -670,10 +670,51 @@ void load_permeability(double* K, consts def)
 		fflush(stdout);
 	}
 
-	float s1, s2, s3, s4, s5, s6;
-	//fscanf(input, "%f %f %f %f %f %f\n", &s1, &s2, &s3, &s4, &s5, &s6);
+	double s[6];
+	long int row=0, bigN=0;
+	int index=0;
+	int six=6;
+/*
+	while (row*six < def.Nx*(def.Ny)*(def.Nz))
+	{
+		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
+
+		for (index=0;index<six;index++)
+		{
+			bigN = six * row + index;
+			int k = bigN % def.Nz;
+			int j = (bigN/def.Nz) % def.Ny;
+			int i = bigN / (def.Ny * (def.Nz));
+
+			K[i+j*def.Nx+k*def.Nx*def.Ny]=s[index];
+		}
+		row++;
+	}
+
+*/
+	while (row*six < def.Nx*(def.Ny)*(def.Nz))
+	{
+		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
+
+		for (index=0;index<six;index++)
+		{
+			bigN = six * row + index;
+			int i = bigN % def.Nx;
+			int k = (bigN/def.Nx) % def.Nz;
+			int j = bigN / (def.Nz * (def.Nx));
+
+			K[i+j*def.Nx+k*def.Nx*def.Ny]=6.64e-11 + s[index]*10e-13;
+		}
+		row++;
+	}
 	
-	*/
+	fclose(input);
+
+
+
+
+
+	
 
 	/*
 	char* str=new char[30*Nx];
