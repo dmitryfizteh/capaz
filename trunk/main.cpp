@@ -903,7 +903,7 @@ void read_defines(int argc, char *argv[], consts* def)
 			attr_value[j-i-1]=str[j];
 		attr_value[j-i-1]='\0';
 
-		std::cout << str <<"\n";
+		//std::cout << str <<"\n";
 
 		if(!strcmp(attr_name,"HX")) 
 			{(*def).hx = atof(attr_value); continue;}
