@@ -113,3 +113,55 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 }
+
+void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
+{
+	*t = 0;
+	for(int i = 0; i < def.locNx; i++)
+		for(int j = 0; j < def.locNy; j++)
+			for(int k = 0; k < def.locNz; k++)
+				if(is_active_point(i, j, k, def))
+					{
+						// Преобразование локальных координат процессора к глобальным
+						int I = local_to_global(i, 'x', def);
+
+						// Если точка на верхней границе, не далее (def.source) точек от центра,
+						// то в ней начальная насыщенность. Иначе, нулевая
+						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=def.S_n_gr;
+						else
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0;
+
+						if(j == 0)
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
+						else
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
+							
+						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
+
+						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+
+						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+
+						/*
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=4.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=2./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=(-1.)*HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]/4.+2./5.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
+
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=2.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=4./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=3./5.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
+								*/
+					
+						/*
+						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=2.*(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=3.*(def.NX)/5.*(def.h1)))
+							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=1./10.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=3./10.*def.locNy*(def.h2)))
+								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
+						*/
+
+						test_nan(HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+						test_nan(HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+						test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+					}
+}

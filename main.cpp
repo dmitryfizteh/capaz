@@ -214,125 +214,6 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	return ro_g_dy;
 }
 
-void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
-{
-	*t = 0;
-	for(int i = 0; i < def.locNx; i++)
-		for(int j = 0; j < def.locNy; j++)
-			for(int k = 0; k < def.locNz; k++)
-				if(is_active_point(i, j, k, def))
-					{
-						// Преобразование локальных координат процессора к глобальным
-						int I = local_to_global(i, 'x', def);
-
-#ifdef THREE_PHASE
-						int media = HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy] = 0;	
-						int j1 = def.locNy / 2;
-
-						if(j < j1)
-						{
-							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
-						}
-						else
-						{
-							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_init;
-							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_init;
-						}
-
-						if(j == 0)
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.P_atm;
-						else
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
-	
-						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-
-						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
-						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-						HostArraysPtr.ro_g[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));	
-#endif
-#ifdef TWO_PHASE
-						// Если точка на верхней границе, не далее (def.source) точек от центра,
-						// то в ней начальная насыщенность. Иначе, нулевая
-						if ((j==0) && (I>=(def.Nx)/2-(def.source)) && (I<=(def.Nx)/2+(def.source)) && (k>=(def.Nz)/2-(def.source)) && (k<=(def.Nz)/2+(def.source)))
-							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=def.S_n_gr;
-						else
-							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0;
-
-						if(j == 0)
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
-						else
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
-							
-						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
-
-						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-
-						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
-						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-#endif
-
-#ifdef B_L
-						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
-						HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0.5;
-						//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
-
-						double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
-						+ def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy])]) * (def.g_const) * (def.hy);
-
-						//HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-						if(j == 0)
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
-						else
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_g_dy;
-
-						// Не учитывается сила тяжести
-						//HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm;
-
-						
-						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
-						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-/*
-						// В левом нижнем углу нагнетающая скважина
-						if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)) || ((i==0) && (j==def.Ny-1)) || ((i==1) && (j==def.Ny-2)))
-						{
-							HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1e6;
-							//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0;
-						}
-
-						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-
-						///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
-						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
-						*/
-
-#endif
-
-						/*
-						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/2.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=4.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=2./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=(-1.)*HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]/4.+2./5.*def.locNy*(def.h2)))
-								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
-
-						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=2.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=4./5.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=3./5.*def.locNy*(def.h2)))
-								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
-								*/
-					
-						/*
-						if ((HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]>=2.*(def.NX)/5.*(def.h1)) && (HostArraysPtr.x[i+j*def.locNx+k*def.locNx*def.locNy]<=3.*(def.NX)/5.*(def.h1)))
-							if ((HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]>=1./10.*def.locNy*(def.h2)) && (HostArraysPtr.y[i+j*def.locNx+k*def.locNx*def.locNy]<=3./10.*def.locNy*(def.h2)))
-								HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=1;
-						*/
-
-					test_nan(HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-#ifdef THREE_PHASE 
-					test_nan(HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-#endif
-					}
-}
-
 //----------------------------------------------------------------------------------------------------
 // Служебные функции
 
@@ -762,16 +643,17 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 void load_permeability(double* K, consts def)
 {
 	//FILE *input;
-	char *file="../noise.dat";
+	//char *file="../porosity.dat";
 
 	for(int i=0; i<def.locNx; i++)
 		for(int j=0; j<def.locNy; j++)
 			for(int k=0; k<def.locNz; k++)
 				K[i+j*def.locNx+k*def.locNx*def.locNy]=6.64e-11;
 
-	/*if(!(input=fopen(file,"rt")))
+	/*
+	if(!(input=fopen(file,"rt")))
 	{
-		file="noise.dat";
+		file="porosity.dat";
 		if(!(input=fopen(file,"rt")))
 		{
 			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file,__FILE__,__LINE__);
@@ -779,17 +661,23 @@ void load_permeability(double* K, consts def)
 		}
 	}
 
-	int Nx, Ny;
-	fscanf(input, "%d %d\n", &Nx, &Ny);
+	int Nx, Ny, Nz;
+	fscanf(input, "%d %d %d\n", &Nx, &Ny, &Nz);
 
-	if((Nx!=def.locNx) || (Ny!=def.locNy))
+	if((Nx!=def.Nx) || (Ny!=def.Ny) || (Nz!=def.Nz))
 	{
-		printf("Nx/Ny from noise.dat not equal\nError in file \"%s\" at line %d\n",__FILE__,__LINE__);
+		printf("Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n",__FILE__,__LINE__);
 		fflush(stdout);
 	}
 
-	char* str=new char[30*Nx];
+	float s1, s2, s3, s4, s5, s6;
+	//fscanf(input, "%f %f %f %f %f %f\n", &s1, &s2, &s3, &s4, &s5, &s6);
+	
+	*/
 
+	/*
+	char* str=new char[30*Nx];
+	
 	char value[30];
 	for(int j=0; j<Ny; j++)
 	{

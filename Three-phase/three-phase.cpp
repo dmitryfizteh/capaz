@@ -228,3 +228,48 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	else
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_eff_gdy(HostArraysPtr, i1, j1, k1, def);
 }
+
+void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
+{
+	*t = 0;
+	for(int i = 0; i < def.locNx; i++)
+		for(int j = 0; j < def.locNy; j++)
+			for(int k = 0; k < def.locNz; k++)
+				if(is_active_point(i, j, k, def))
+					{
+						// Преобразование локальных координат процессора к глобальным
+						int I = local_to_global(i, 'x', def);
+
+						int media = HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy] = 0;	
+						int j1 = def.locNy / 2;
+
+						if(j < j1)
+						{
+							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
+						}
+						else
+						{
+							HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_w_init;
+							HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] = def.S_n_init;
+						}
+
+						if(j == 0)
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = def.P_atm;
+						else
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j-1, k, def);
+	
+						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+
+						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
+						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
+						HostArraysPtr.ro_g[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));	
+
+					test_nan(HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+#ifdef THREE_PHASE 
+					test_nan(HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+#endif
+					}
+}
