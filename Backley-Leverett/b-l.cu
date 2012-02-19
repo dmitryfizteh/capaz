@@ -10,7 +10,6 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, consts def)
 
 	if ((i<((*gpu_def).locNx)) && (j<((*gpu_def).locNy)) && (k<((*gpu_def).locNz)) && (device_is_active_point(i, j, k, def)==1))
 	{
-		//int media = DevArraysPtr.media[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)];
 		double k_w, k_n;
 		double S = 1 - DevArraysPtr.S_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)];
 

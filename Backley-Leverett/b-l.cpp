@@ -92,7 +92,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 
-	/*
+	
 	// В центре резервуара находится нагнетающая скважина
 	if ((i==def.Nx/2) && (j==def.Ny-3) && (k==def.Nz/2))
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.3;
@@ -100,7 +100,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	// В центре резервуара находится добывающая скважина
 	if ((i==def.Nx-3) && (j==3) && (k==def.Nz-3))
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.65;
-	*/
+	
 
 	test_S(HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 }
@@ -109,7 +109,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 double Injection_well_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	// 10000psi in Pa
-	return 68947572.9;
+	return def.P_atm+10000000;//68947572.9;
 }
 
 // Давление на добывающей скважине
@@ -149,7 +149,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_g_dy;//HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 	
-	/*
+	
 	// В центре резервуара находится нагнетающая скважина
 	if ((i==def.Nx/2) && (j==def.Ny-3) && (k==def.Nz/2))
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
@@ -157,7 +157,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	// В центре резервуара находится добывающая скважина
 	if ((i==def.Nx-3) && (j==3) && (k==def.Nz-3))
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
-	*/
+	
 
 	test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
 }
@@ -175,7 +175,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						int I = local_to_global(i, 'x', def);
 
 						HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy]=0;
-						HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0.5;
+						HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy]=0.7;
 						//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
 						double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
@@ -183,11 +183,11 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 						// 6000 pound per square inch = 41 368 543.8 Паскаля
 						if(j == 0)
-							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=50368543.8;
+							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=def.P_atm + 5000000;// 50368543.8;
 						else
 							HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy]=HostArraysPtr.P_w[i+(j-1)*def.locNx+k*def.locNx*def.locNy] + ro_g_dy;
 
-						/*
+						
 						// В центре резервуара находится нагнетающая скважина
 						if ((i==def.Nx/2) && (j==def.Ny-3) && (k==def.Nz/2))
 						{
@@ -201,7 +201,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 							HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 							//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
 						}
-						*/
+						
 
 						HostArraysPtr.ro_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));
 						HostArraysPtr.ro_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.P_atm));

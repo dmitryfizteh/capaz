@@ -462,27 +462,23 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 			k_n=0;
 		}
 
-		/*
+		
 		double F_bl=0;
-		// В левом нижнем углу нагнетающая скважина
-		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		// В центре резервуара находится нагнетающая скважина
+		if ((i==def.Nx/2) && (j==def.Ny-3) && (k==def.Nz/2))
 		{
 			q_w=def.Q;
 			q_n=0;
 		}
 
-		// В правом верхнем углу добывающая скважина
-		if (((i==0) && (j==def.Ny-2)) || ((i==1) && (j==def.Ny-1)))
+		// В центре резервуара находится добывающая скважина
+		if ((i==def.Nx-3) && (j==3) && (k==def.Nz-3))
 		{
-			double S_e = (1. - HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media]);
-			double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
-			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
-
 			F_bl = (k_w/def.mu_w) / (k_w/def.mu_w + k_n/def.mu_n);
 			q_w=-1 * def.Q * F_bl;
 			q_n=-1 * def.Q * (1-F_bl);
 		}
-		*/
+		
 #endif
 
 #ifdef THREE_PHASE
