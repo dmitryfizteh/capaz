@@ -92,6 +92,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		double S_w_e, S_g_e, S_n_e, P_k_nw, P_k_gn, A, Sg, F1, F2, F3;
 		double PkSw, PkSn, F1P, F2P, F3P, F1Sw, F2Sw, F3Sw, F1Sn, F2Sn, F3Sn, det;
+		double a[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 		for (int w = 1; w <= def.newton_iterations; w++)
 		{
@@ -155,14 +156,25 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			F3Sn = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * PkSn) / def.P_atm;
 			F3Sw = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / def.P_atm;
 
-			det = F1P * F2Sw * F3Sn - F1Sw * (F2P * F3Sn - F2Sn * F3P);                                                                                                                                                                                         
+			// Вычисление дополнительных миноров матрицы частных производных
+			a[0] = F2Sw * F3Sn - F3Sw * F2Sn;
+			a[3] = F3Sw * F1Sn - F1Sw * F3Sn;
+			a[6] = F1Sw * F2Sn - F2Sw * F1Sn;
+			a[1] = F3P * F2Sn - F2P * F3Sn;
+			a[4] = F1P * F3Sn - F3P * F1Sn;
+			a[7] = F2P * F1Sn - F1P * F2Sn;
+			a[2] = F2P * F3Sw - F3P * F2Sw;
+			a[5] = F3P * F1Sw - F1P * F3Sw;
+			a[8] = F2P * F3Sw - F3P * F2Sw;
+
+			det = F1P * a[0] + F2P * a[3] + F3P * a[6];                                                                                                                                                                                         
 
 			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]                                                              
-			- (1. / det) * (F2Sw * F3Sn * F1 - F1Sw * F3Sn* F2 + F1Sw * F2Sn * F3);
+			- (1. / det) * (a[0] * F1 + a[3] * F2 + a[6] * F3);
 			HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]                                                              
-			- (1. / det) * ((F2Sn * F3P - F2P * F3Sn) * F1 + F1P * F3Sn * F2 - F1P * F2Sn * F3);
+			- (1. / det) * (a[1] * F1 + a[4] * F2 + a[7] * F3);
 			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]                                                              
-			- (1. / det) * (F3P * F1Sw * F2 - F3P * F2Sw * F1 + (F1P*F2Sw - F2P * F1Sw) * F3);
+			- (1. / det) * (a[2] * F1 + a[5] * F2 + a[8] * F3);
 		}  
 		
 		test_S(HostArraysPtr.S_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
