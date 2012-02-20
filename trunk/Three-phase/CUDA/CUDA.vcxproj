@@ -19,12 +19,20 @@
     <None Include="..\defines.ini" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\gpu.cu" />
-    <CudaCompile Include="..\three-phase.cu" />
+    <CudaCompile Include="..\..\shared_test.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CudaCompile>
+    <CudaCompile Include="..\three-phase.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\gpu.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\no_communication.cpp" />
+    <ClCompile Include="..\..\shared_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C6C71C26-0E1A-4F07-8D4C-2F5AD48DE7B3}</ProjectGuid>

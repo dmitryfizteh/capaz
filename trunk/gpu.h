@@ -1,3 +1,6 @@
+#ifndef GPU_H
+#define GPU_H
+
 #include "defines.h"
 #include <cuda.h>
 
@@ -8,3 +11,7 @@
 	__VA_ARGS__)
 
 __device__ int device_is_active_point(int i, int j, int k, consts def);
+__device__ int device_local_to_global(int local_index, char axis, consts def);
+__device__ double cu_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k, consts def);
+
+#endif
