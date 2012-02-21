@@ -107,3 +107,68 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 		device_test_S(DevArraysPtr.S_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)], __FILE__, __LINE__);
 	}
 }
+
+// Давление на нагнетающей скважине
+__device__ double device_Injection_well_P(ptr_Arrays DevArraysPtr, int i, int j, int k, consts def)
+{
+	// 10000psi in Pa
+	return def.P_atm+10000000;//68947572.9;
+}
+
+// Давление на добывающей скважине
+__device__ double device_Production_well_P(ptr_Arrays DevArraysPtr, int i, int j, int k, consts def)
+{
+	// 4000psi in Pa
+	return def.P_atm;//27579029.16;
+}
+
+// Присвоение начальных условий для каждой точки сетки (независимо от остальных точек)
+__global__ void data_initialization(ptr_Arrays DevArraysPtr, long int* t, consts def)
+{
+	*t = 0;
+	int i=threadIdx.x+blockIdx.x*blockDim.x;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
+	if(device_is_active_point(i, j, k, def))
+	{
+		// Преобразование локальных координат процессора к глобальным
+		int I = device_local_to_global(i, 'x', def);
+
+		DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=0;
+		DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=0.7;
+		//DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] =0.3 + 0.3 * j / (*gpu_def).Ny;
+
+		double ro_g_dy = ((*gpu_def).ro0_n * DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] 
+		+ (*gpu_def).ro0_w * (1 - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)])) * ((*gpu_def).m[(DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy])]) * ((*gpu_def).g_const) * ((*gpu_def).hy);
+
+		// 6000 pound per square inch = 41 368 543.8 Паскаля
+		if(j == 0)
+			DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=(*gpu_def).P_atm + 5000000;// 50368543.8;
+		else
+			DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=DevArraysPtr.P_w[i+(j-1)*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] + ro_g_dy;
+
+						
+		// В центре резервуара находится нагнетающая скважина
+		if ((i==(*gpu_def).Nx/2) && (j==(*gpu_def).Ny-3) && (k==(*gpu_def).Nz/2))
+		{
+			DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = device_Injection_well_P(DevArraysPtr, i, j, k, def);
+			//DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = 0.5;
+		}
+
+		// В центре резервуара находится добывающая скважина
+		if ((i==(*gpu_def).Nx-3) && (j==3) && (k==(*gpu_def).Nz-3))
+		{
+			DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = device_Production_well_P(DevArraysPtr, i, j, k, def);
+			//DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = 0.5;
+		}
+						
+
+		DevArraysPtr.ro_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+		DevArraysPtr.ro_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+
+		device_test_nan(DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+	}
+}
+

@@ -211,3 +211,4 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
 					}
 }
+

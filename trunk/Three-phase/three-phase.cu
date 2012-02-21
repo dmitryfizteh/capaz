@@ -242,47 +242,49 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr, consts def)
 		DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.P_w[i1 + j1 * ((*gpu_def).locNx) + k1 * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + cu_ro_eff_gdy(DevArraysPtr, i1, j1, k1, def);
 }
 
+// Запись начальных условий для каждой точки сетки (независимо от остальных точек)
 __global__ void data_initialization(ptr_Arrays DevArraysPtr, long int* t, consts def)
 {
 	*t = 0;
-	for(int i = 0; i < (*gpu_def).locNx; i++)
-		for(int j = 0; j < (*gpu_def).locNy; j++)
-			for(int k = 0; k < (*gpu_def).locNz; k++)
-				if(device_is_active_point(i, j, k, def))
-					{
-						// Преобразование локальных координат процессора к глобальным
-						int I = device_local_to_global(i, 'x', def);
+	int i=threadIdx.x+blockIdx.x*blockDim.x;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
 
-						int media = DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = 0;	
-						int j1 = (*gpu_def).locNy / 2;
+	if(device_is_active_point(i, j, k, def))
+	{
+		// Преобразование локальных координат процессора к глобальным
+		int I = device_local_to_global(i, 'x', def);
 
-						if(j < j1)
-						{
-							DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_w_gr + ((*gpu_def).S_w_init - (*gpu_def).S_w_gr) * j / j1;
-							DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_n_gr + ((*gpu_def).S_n_init - (*gpu_def).S_n_gr) * j / j1;
-						}
-						else
-						{
-							DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_w_init;
-							DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_n_init;
-						}
+		int media = DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = 0;	
+		int j1 = (*gpu_def).locNy / 2;
 
-						if(j == 0)
-							DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).P_atm;
-						else
-							DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = DevArraysPtr.P_w[i + (j - 1) * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j-1, k, def);
+		if(j < j1)
+		{
+			DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_w_gr + ((*gpu_def).S_w_init - (*gpu_def).S_w_gr) * j / j1;
+			DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_n_gr + ((*gpu_def).S_n_init - (*gpu_def).S_n_gr) * j / j1;
+		}
+		else
+		{
+			DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_w_init;
+			DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).S_n_init;
+		}
+
+		if(j == 0)
+			DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = (*gpu_def).P_atm;
+		else
+			DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] = DevArraysPtr.P_w[i + (j - 1) * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j-1, k, def);
 	
-						DevArraysPtr.ro_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+		DevArraysPtr.ro_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
 
-						///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
-						DevArraysPtr.ro_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
-						DevArraysPtr.ro_g[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_g * (1. + ((*gpu_def).beta_g) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));	
+		///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
+		DevArraysPtr.ro_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+		DevArraysPtr.ro_g[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_g * (1. + ((*gpu_def).beta_g) * (DevArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));	
 
-						device_test_nan(DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
-						device_test_nan(DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
-						device_test_nan(DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
-#ifdef THREE_PHASE 
-						device_test_nan(DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
-#endif
-					}
+		device_test_nan(DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.S_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+	}
 }
+
+

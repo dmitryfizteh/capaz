@@ -70,3 +70,58 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 		device_test_S(DevArraysPtr.S_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)], __FILE__, __LINE__);
 	}
 }
+
+// «апись начальных условий дл€ каждой точки сетки (независимо от остальных точек)
+__global__ void data_initialization(ptr_Arrays DefArraysPtr, long int* t, consts def)
+{
+	*t = 0;
+
+	int i=threadIdx.x+blockIdx.x*blockDim.x;
+	int j=threadIdx.y+blockIdx.y*blockDim.y;
+	int k=threadIdx.z+blockIdx.z*blockDim.z;
+
+	if(device_is_active_point(i, j, k, def))
+	{
+		// ѕреобразование локальных координат процессора к глобальным
+		int I = device_local_to_global(i, 'x', def);
+
+		// ≈сли точка на верхней границе, не далее ((*gpu_def).source) точек от центра,
+		// то в ней начальна€ насыщенность. »наче, нулева€
+		if ((j==0) && (I>=((*gpu_def).Nx)/2-((*gpu_def).source)) && (I<=((*gpu_def).Nx)/2+((*gpu_def).source)) && (k>=((*gpu_def).Nz)/2-((*gpu_def).source)) && (k<=((*gpu_def).Nz)/2+((*gpu_def).source)))
+			DefArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=(*gpu_def).S_n_gr;
+		else
+			DefArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=0;
+
+		if(j == 0)
+			DefArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=(*gpu_def).P_atm;
+		else
+			DefArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=DefArraysPtr.P_w[i+(j-1)*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] + cu_ro_eff_gdy(DefArraysPtr, i, j-1, k, def);
+							
+		DefArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=0;
+
+		DefArraysPtr.ro_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DefArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+
+		///!!!! Ќе учитываютс€ капилл€рные силы! »ли надо считать перед этим шагом P_n
+		DefArraysPtr.ro_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * (DefArraysPtr.P_w[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).P_atm));
+
+		/*
+		if ((DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=((*gpu_def).NX)/2.*((*gpu_def).h1)) && (DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=4.*((*gpu_def).NX)/5.*((*gpu_def).h1)))
+			if ((DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=2./5.*(*gpu_def).locNy*((*gpu_def).h2)) && (DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=(-1.)*DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]/4.+2./5.*(*gpu_def).locNy*((*gpu_def).h2)))
+				DefArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=1;
+
+		if ((DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=((*gpu_def).NX)/5.*((*gpu_def).h1)) && (DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=2.*((*gpu_def).NX)/5.*((*gpu_def).h1)))
+			if ((DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=4./5.*(*gpu_def).locNy*((*gpu_def).h2)) && (DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=3./5.*(*gpu_def).locNy*((*gpu_def).h2)))
+				DefArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=1;
+				*/
+					
+		/*
+		if ((DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=2.*((*gpu_def).NX)/5.*((*gpu_def).h1)) && (DefArraysPtr.x[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=3.*((*gpu_def).NX)/5.*((*gpu_def).h1)))
+			if ((DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]>=1./10.*(*gpu_def).locNy*((*gpu_def).h2)) && (DefArraysPtr.y[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]<=3./10.*(*gpu_def).locNy*((*gpu_def).h2)))
+				DefArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy]=1;
+		*/
+
+		device_test_nan(DefArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DefArraysPtr.P_w[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DefArraysPtr.media[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy], __FILE__, __LINE__);
+	}
+}

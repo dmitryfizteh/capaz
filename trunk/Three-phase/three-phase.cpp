@@ -280,8 +280,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					test_nan(HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.media[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-#ifdef THREE_PHASE 
 					test_nan(HostArraysPtr.S_w[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
-#endif
 					}
 }
+
+

@@ -30,7 +30,7 @@ __device__ int device_local_to_global(int local_index, char axis, consts def)
 		{ global_index += (*gpu_def).ranky * (*gpu_def).Ny / (*gpu_def).sizey + min((*gpu_def).ranky, (*gpu_def).Ny % (*gpu_def).sizey); break; }
 	case 'z':
 		{ global_index += (*gpu_def).rankz * (*gpu_def).Nz / (*gpu_def).sizez + min((*gpu_def).rankz, (*gpu_def).Nz % (*gpu_def).sizez); break; }
-	default: {printf("Error!");}
+	default: {;} //{printf("Error!");}
 	}
 	//some_test(global_index);
 	return global_index;
@@ -884,3 +884,4 @@ void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 	checkErrors("save_exchange_data", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
+

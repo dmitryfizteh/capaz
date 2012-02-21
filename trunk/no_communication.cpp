@@ -26,3 +26,4 @@ void communication_finalization(void)
 void barrier(void)
 {
 }
+
