@@ -184,3 +184,4 @@ extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double
 extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def);
 
 #endif
+

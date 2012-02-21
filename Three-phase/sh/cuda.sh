@@ -14,7 +14,7 @@ done;
   do 
     dos2unix $i;
   done;
-  ARCH='20'
+  ARCH='13'
 #
 nvcc -D THREE_PHASE -c -arch sm_$ARCH gpu.o ../../gpu.cu
 #nvcc -D THREE_PHASE -c -arch sm_$ARCH shared_test.o ../../shared_test.cu

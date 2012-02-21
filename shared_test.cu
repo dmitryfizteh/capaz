@@ -55,3 +55,4 @@ __device__ void device_test_S (double S, char *file, int line)
 		CUPRINTF("Error: S>1\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 #endif
 }
+

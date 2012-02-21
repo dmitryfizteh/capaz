@@ -676,3 +676,4 @@ void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostB
 			}
 		}
 }
+
