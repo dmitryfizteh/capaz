@@ -157,11 +157,12 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 			F1P = (*gpu_def).ro0_w * (*gpu_def).beta_w * DevArraysPtr.S_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 			F2P = (*gpu_def).ro0_n * (*gpu_def).beta_n * DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
-			F3P = (*gpu_def).ro0_g * Sg;
+			F3P = (*gpu_def).ro0_g * Sg / (*gpu_def).P_atm;
 
 			F1Sw = (*gpu_def).ro0_w * (1 + (*gpu_def).beta_w * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - (*gpu_def).P_atm));
+			F2Sw = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * PkSw) * DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 			F2Sn = (*gpu_def).ro0_n * (1. + (*gpu_def).beta_n * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + P_k_nw - (*gpu_def).P_atm));
-			F2Sw = F1Sn = 0;
+			F1Sn = 0;
 			F3Sn = (-1) * (*gpu_def).ro0_g * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + P_k_nw + P_k_gn - Sg * PkSn) / (*gpu_def).P_atm;
 			F3Sw = (-1) * (*gpu_def).ro0_g * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / (*gpu_def).P_atm;
 
@@ -174,7 +175,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 			a[7] = F2P * F1Sn - F1P * F2Sn;
 			a[2] = F2P * F3Sw - F3P * F2Sw;
 			a[5] = F3P * F1Sw - F1P * F3Sw;
-			a[8] = F2P * F3Sw - F3P * F2Sw;
+			a[8] = F1P * F2Sw - F2P * F1Sw;
 
 			det = F1P * a[0] + F2P * a[3] + F3P * a[6];
 

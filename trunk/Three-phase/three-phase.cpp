@@ -164,11 +164,12 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 			F1P = def.ro0_w * def.beta_w * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 			F2P = def.ro0_n * def.beta_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			F3P = def.ro0_g * Sg;
+			F3P = def.ro0_g * Sg / def.P_atm;
 
 			F1Sw = def.ro0_w * (1 + def.beta_w * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+			F2Sw = def.ro0_n * (1. + (def.beta_n) * PkSw) * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 			F2Sn = def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw - def.P_atm));
-			F2Sw = F1Sn = 0;
+			F1Sn = 0;
 			F3Sn = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * PkSn) / def.P_atm;
 			F3Sw = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / def.P_atm;
 
@@ -181,7 +182,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			a[7] = F2P * F1Sn - F1P * F2Sn;
 			a[2] = F2P * F3Sw - F3P * F2Sw;
 			a[5] = F3P * F1Sw - F1P * F3Sw;
-			a[8] = F2P * F3Sw - F3P * F2Sw;
+			a[8] = F1P * F2Sw - F2P * F1Sw;
 
 			det = F1P * a[0] + F2P * a[3] + F3P * a[6];
 
