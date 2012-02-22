@@ -5,10 +5,10 @@
 #include <cuda.h>
 
 #define CUPRINTF(fmt, ...) printf("[%d, %d , %d]:\t" fmt, \
-	blockIdx.x*gridDim.x+threadIdx.x,\
-	blockIdx.y*gridDim.y+threadIdx.y,\
-	blockIdx.z*gridDim.z+threadIdx.z,\
-	__VA_ARGS__)
+                                  blockIdx.x*gridDim.x+threadIdx.x,\
+                                  blockIdx.y*gridDim.y+threadIdx.y,\
+                                  blockIdx.z*gridDim.z+threadIdx.z,\
+                                  __VA_ARGS__)
 
 __device__ int device_is_active_point(int i, int j, int k, consts def);
 __device__ int device_local_to_global(int local_index, char axis, consts def);

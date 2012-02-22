@@ -1,5 +1,5 @@
 #ifndef DEFINES_H
-#define DEFINES_H 
+#define DEFINES_H
 
 #define VERSION "0.4"
 
@@ -7,10 +7,10 @@
 //Если 1, то считать двухслойной РС
 #define TWO_LAYERS 0
 // Считать направленными разностями (если не определена NR, то считается без них)
-#define NR 
+#define NR
 #else
 #define TWO_LAYERS 1
-#define NR 
+#define NR
 #endif
 
 // Количество видеоускорителей на узле кластера
@@ -44,22 +44,22 @@
 // Вывод графиков BjnIO
 //#include "bjnio.h"
 
-#ifdef THREE_PHASE	
-	// Коэффициенты прямых, продолжающих функции капиллярных давлений на границах интервала изменения насыщенностей [0,1]
-	const double aw[2] = {-39640, -26530};
-	const double bw[2] = {12560, 27110};
-	const double ag[2] = {14170, 35380};
-	const double bg[2] = {158, -2969};
-	// Ключевые точки интервала изменения насыщенностей для вычисления проницаемостей и капиллярных давлений
-	const double S_w_range[3] = {0.001, 0.1, 0.99};
-	const double S_g_range[3] = {0.001, 0.005, 0.95};
+#ifdef THREE_PHASE
+// Коэффициенты прямых, продолжающих функции капиллярных давлений на границах интервала изменения насыщенностей [0,1]
+const double aw[2] = { -39640, -26530};
+const double bw[2] = {12560, 27110};
+const double ag[2] = {14170, 35380};
+const double bg[2] = {158, -2969};
+// Ключевые точки интервала изменения насыщенностей для вычисления проницаемостей и капиллярных давлений
+const double S_w_range[3] = {0.001, 0.1, 0.99};
+const double S_g_range[3] = {0.001, 0.005, 0.95};
 #endif
 
-struct ptr_Arrays_tag 
+struct ptr_Arrays_tag
 {
-	double *S_n, *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n,*roS_w,*roS_w_old,*roS_n,*roS_n_old;
+	double *S_n, *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n, *roS_w, *roS_w_old, *roS_n, *roS_n_old;
 	int *media;
-#ifdef THREE_PHASE 
+#ifdef THREE_PHASE
 	double *P_g, *S_w, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
 #endif
 #ifdef B_L
@@ -98,15 +98,15 @@ struct consts_tag
 	double S_w_range[3];
 	double S_g_range[3];
 #endif
-// Локальные размеры
+	// Локальные размеры
 	int locNx, locNy, locNz;
-// Число процессоров и ранг процессора
+	// Число процессоров и ранг процессора
 	int size, rank;
-// Число частей дробления области по измерениям
+	// Число частей дробления области по измерениям
 	int sizex, sizey, sizez;
-// Разложение ранга для трехмерного дробления области между процессорами
+	// Разложение ранга для трехмерного дробления области между процессорами
 	int rankx, ranky, rankz;
-// Количество блоков ускорителя
+	// Количество блоков ускорителя
 	int blocksX, blocksY, blocksZ;
 };
 typedef struct consts_tag consts;
@@ -127,7 +127,7 @@ extern void sizes_initialization(consts* def);
 extern void blocks_initialization(consts* def);
 extern void communication_initialization(int argc, char* argv[], consts* def);
 extern void communication_finalization(void);
-extern void global_to_local_vars (consts* def);
+extern void global_to_local_vars(consts* def);
 extern int local_to_global(int local_index, char axis, consts def);
 extern int is_active_point(int i, int j, int k, consts def);
 extern void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, consts def);
@@ -138,10 +138,10 @@ extern void device_initialization(consts* def);
 extern void device__finalization(void);
 
 // Служебные
-extern void print_plots_top (double t, consts def);
+extern void print_plots_top(double t, consts def);
 extern void print_plots(ptr_Arrays HostArraysPtr, double t, consts def);
 extern void barrier(void);
-extern void restore (ptr_Arrays HostArraysPtr, long int* time_counter, consts def);
+extern void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def);
 extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def);
 extern void read_defines(int argc, char *argv[], consts* def);
 extern void read_version(void);
@@ -151,10 +151,10 @@ extern void read_version(void);
 extern void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def);
 #endif
 
-extern void test_nan (double x, char *file, int line);
-extern void test_positive (double x, char *file, int line);
-extern void test_S (double S, char *file, int line);
-extern void test_u (double u, char *file, int line);
+extern void test_nan(double x, char *file, int line);
+extern void test_positive(double x, char *file, int line);
+extern void test_S(double S, char *file, int line);
+extern void test_u(double u, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
 extern void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line);
 extern void read_defines_test(consts def);

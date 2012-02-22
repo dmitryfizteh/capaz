@@ -16,69 +16,89 @@
 #ifndef THREE_PHASE
 void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 {
-	for(int i=0;i<(def.locNx);i++)
-		for(int j=0;j<(def.locNy);j++)
-			for(int k=0;k<(def.locNz);k++)
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+			for (int k = 0; k < (def.locNz); k++)
 			{
-				test_S(HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
-				test_positive(HostArraysPtr.P_w[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.ux_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.uy_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
-				test_nan(HostArraysPtr.uz_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)], __FILE__, __LINE__);
+				test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+				test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.ux_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.uy_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+				test_nan(HostArraysPtr.uz_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 			}
 }
 #endif
 
 // Тест на NaN
 // Синтаксис вызова test_nan(x, __FILE__, __LINE__);
-void test_nan (double x, char *file, int line)
+void test_nan(double x, char *file, int line)
 {
 #ifdef MY_TEST
-	if ( isnan(x) )
+	if (isnan(x))
+	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 	// Тестовое более жесткое ограничение именно для этой задачи
-	if ( x > 1e12 )
+	if (x > 1e12)
+	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
 // Тест на положительное и не NaN
 // Синтаксис вызова test_positive(x, __FILE__, __LINE__);
-void test_positive (double x, char *file, int line)
+void test_positive(double x, char *file, int line)
 {
 #ifdef MY_TEST
-	if ( isnan(x) )
+	if (isnan(x))
+	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	if ( x < 0 )
+	}
+	if (x < 0)
+	{
 		printf("Error: x<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
 // Тест на вхождение насыщенностей в [0;1]
 // Синтаксис вызова test_S(x, __FILE__, __LINE__);
-void test_S (double S, char *file, int line)
+void test_S(double S, char *file, int line)
 {
 #ifdef MY_TEST
-	if ( isnan(S) )
+	if (isnan(S))
+	{
 		printf("Error: S=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	if ( S < 0 )
+	}
+	if (S < 0)
+	{
 		printf("Error: S<0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	if ( S > 1 )
+	}
+	if (S > 1)
+	{
 		printf("Error: S>1\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
 // Тест на вхождение скоростей в [-100;100]
 // Синтаксис вызова test_u(x, __FILE__, __LINE__);
-void test_u (double u, char *file, int line)
+void test_u(double u, char *file, int line)
 {
 #ifdef MY_TEST
-	if ( isnan(u) )
+	if (isnan(u))
+	{
 		printf("Error: u=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	if ( u < -10 )
+	}
+	if (u < -10)
+	{
 		printf("Error: u<-100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	if ( u > 10 )
+	}
+	if (u > 10)
+	{
 		printf("Error: u>100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
@@ -87,8 +107,10 @@ void test_u (double u, char *file, int line)
 void test_arrowhead(double big, double small, char *file, int line)
 {
 #ifdef MY_TEST_1
-	if (abs(big/30) < abs(small))
+	if (abs(big / 30) < abs(small))
+	{
 		printf("Warning: See task parameters.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
@@ -97,11 +119,13 @@ void test_arrowhead(double big, double small, char *file, int line)
 void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line)
 {
 #ifdef MY_TEST_1
-	double L=def.m[media] * (S_new - S_old) / (2 * (def.dt));
-	double R=def.tau * (S_new - 2*S_now + S_old) / ((def.dt)*(def.dt));
+	double L = def.m[media] * (S_new - S_old) / (2 * (def.dt));
+	double R = def.tau * (S_new - 2 * S_now + S_old) / ((def.dt) * (def.dt));
 
-	if (abs(L/30) < abs(R))
+	if (abs(L / 30) < abs(R))
+	{
 		printf("Warning: parameter tau is very much.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
 #endif
 }
 
@@ -125,7 +149,7 @@ void read_defines_test(consts def)
 	test_positive(def.mu_n, __FILE__, __LINE__);
 	test_positive(def.g_const, __FILE__, __LINE__);
 	test_positive(def.P_atm, __FILE__, __LINE__);
-	
+
 	test_positive(def.source, __FILE__, __LINE__);
 	test_positive(def.newton_iterations, __FILE__, __LINE__);
 	test_positive(def.timeX, __FILE__, __LINE__);
@@ -147,6 +171,6 @@ void read_defines_test(consts def)
 #endif
 	test_positive(def.S_n_gr, __FILE__, __LINE__);
 #endif
-	
+
 }
 
