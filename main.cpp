@@ -14,29 +14,29 @@ int main(int argc, char* argv[])
 	// GPU-массив данных расчетной области процессора
 	ptr_Arrays DevArraysPtr;
 	// Счетчик шагов по времени
-	long int time_counter=0;
+	long int time_counter = 0;
 	// Счетчик времени исполнения вычислительной части программы
-	clock_t task_time; 
+	clock_t task_time;
 
-	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора, 
+	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора,
 	// выделение памяти, загрузка начальных/сохраненных данных
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
 	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
-	
-	task_time=clock();
+
+	task_time = clock();
 
 	// Цикл шагов по времени (каждая итерация - новый слой по времени)
 	// 1. Проводятся расчеты P1 и S2 на следующем временном слое
 	// 2. Каждые (def.print_screen) раз на экран выводится информация о временном слое
-	// 3. Каждые save_plots раз данные выгружаются в память хоста и 
+	// 3. Каждые save_plots раз данные выгружаются в память хоста и
 	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
-	for (time_counter++; time_counter <= def.timeX/(def.dt); time_counter++)
+	for (time_counter++; time_counter <= def.timeX / (def.dt); time_counter++)
 	{
 		if ((time_counter % (def.print_screen) == 0) && (def.rank) == 0) // (2)
 		{
-			printf ("t=%.3f\n", time_counter * (def.dt)); 
+			printf("t=%.3f\n", time_counter * (def.dt));
 			fflush(stdout);
 		}
 
@@ -54,9 +54,11 @@ int main(int argc, char* argv[])
 	// Ждем пока все процессоры закончат расчеты
 	barrier();
 	// Вывод информации о времени работы программы в секундах
-	task_time=clock()-task_time;
-	if(!(def.rank))
-		printf( "Task time in seconds:\t%.2f\n", (double) task_time/CLOCKS_PER_SEC);
+	task_time = clock() - task_time;
+	if (!(def.rank))
+	{
+		printf("Task time in seconds:\t%.2f\n", (double) task_time / CLOCKS_PER_SEC);
+	}
 
 	// Завершение работы и освобождение памяти
 	finalization(HostArraysPtr, DevArraysPtr, DevBuffer);
@@ -64,7 +66,7 @@ int main(int argc, char* argv[])
 	// При запуске в Windows после работы программы оставлять окно консоли
 #ifdef _WIN32
 	printf("\nPress <Enter> to exit...\n");
-	fflush( stdout);
+	fflush(stdout);
 	getchar();
 #endif
 	return 0;
@@ -89,26 +91,38 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 	roS_calculation(HostArraysPtr, DevArraysPtr, t, def); // (5)
 	P_S_calculation(HostArraysPtr, DevArraysPtr, def); // (6)
 	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
-	
+
 }
 
 // Преобразование локальных координат процессора к глобальным
 // Каждый процессор содержит дополнительную точку в массиве для
-// обмена данными, если имеет соседа 
-// (если 2 соседа с обеих сторон,то +2 точки). 
+// обмена данными, если имеет соседа
+// (если 2 соседа с обеих сторон,то +2 точки).
 // Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
 int local_to_global(int local_index, char axis, consts def)
 {
 	int global_index = local_index;
-	switch(axis)
+	switch (axis)
 	{
 	case 'x':
-		{ global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex); break; }
+	{
+		global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex);
+		break;
+	}
 	case 'y':
-		{ global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey); break; }
+	{
+		global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey);
+		break;
+	}
 	case 'z':
-		{ global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez); break; }
-	default: {printf("Error!");}
+	{
+		global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez);
+		break;
+	}
+	default:
+	{
+		printf("Error!");
+	}
 	}
 	//some_test(global_index);
 	return global_index;
@@ -117,15 +131,17 @@ int local_to_global(int local_index, char axis, consts def)
 // Вычисление расчетной области (нагрузки) процессора
 // Если поровну не распределяется, то первые (def.NX)%size получают +1 в нагрузку.
 // Каждый процессор содержит дополнительную точку в массиве для
-// обмена данными, если имеет соседа 
-// (если 2 соседа с обеих сторон,то +2 точки). 
+// обмена данными, если имеет соседа
+// (если 2 соседа с обеих сторон,то +2 точки).
 // Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
-void global_to_local_vars (consts *def)
+void global_to_local_vars(consts *def)
 {
 	(*def).locNx = (*def).Nx / (*def).sizex;
 
 	if ((*def).rank % (*def).sizex < (*def).Nx % (*def).sizex)
+	{
 		((*def).locNx) ++;
+	}
 
 	// Крайние процессоры получают по 1 точке для граничных данных,
 	// остальные - по 2 на обе границы
@@ -133,35 +149,51 @@ void global_to_local_vars (consts *def)
 	if ((*def).sizex > 1)
 	{
 		if (((*def).rank % (*def).sizex == 0) || ((*def).rank % (*def).sizex  == (*def).sizex - 1))
+		{
 			((*def).locNx) ++;
+		}
 		else
+		{
 			((*def).locNx) += 2;
+		}
 	}
 
 	(*def).locNy = (*def).Ny / (*def).sizey;
 
 	if (((*def).rank % ((*def).sizex) * (*def).sizey) / (*def).sizex < (*def).Ny % (*def).sizey)
+	{
 		((*def).locNy) ++;
+	}
 
 	if ((*def).sizey > 1)
 	{
 		if ((((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == 0) || (((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == (*def).sizey - 1))
+		{
 			((*def).locNy) ++;
+		}
 		else
+		{
 			((*def).locNy) += 2;
+		}
 	}
 
 	(*def).locNz = (*def).Nz / (*def).sizez;
 
 	if ((*def).rank / (*def).sizex / (*def).sizey < (*def).Nz % (*def).sizez)
+	{
 		((*def).locNz) ++;
+	}
 
 	if ((*def).sizez > 1)
 	{
 		if (((*def).rank / (*def).sizex / (*def).sizey == 0) || ((*def).rank / (*def).sizex / (*def).sizey == (*def).sizez - 1))
+		{
 			((*def).locNz) ++;
+		}
 		else
+		{
 			((*def).locNz) += 2;
+		}
 	}
 
 	test_positive((*def).locNx, __FILE__, __LINE__);
@@ -172,12 +204,16 @@ void global_to_local_vars (consts *def)
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
 int is_active_point(int i, int j, int k, consts def)
 {
-	if(((def.rank) % (def.sizex) != 0 && i == 0) || ((def.rank) % (def.sizex) != (def.sizex) - 1 && i == def.locNx - 1)
-		|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != 0 && j == 0)	|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != (def.sizey) - 1 && j == def.locNy - 1)
-		|| ((((def.rank) / (def.sizex) / (def.sizey) != 0 && k == 0) || ((def.rank) / (def.sizex) / (def.sizey) == (def.sizez) - 1 && k == def.locNz - 1)) && (def.sizez) > 1))
+	if (((def.rank) % (def.sizex) != 0 && i == 0) || ((def.rank) % (def.sizex) != (def.sizex) - 1 && i == def.locNx - 1)
+	    || (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != 0 && j == 0)	|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != (def.sizey) - 1 && j == def.locNy - 1)
+	    || ((((def.rank) / (def.sizex) / (def.sizey) != 0 && k == 0) || ((def.rank) / (def.sizex) / (def.sizey) == (def.sizez) - 1 && k == def.locNz - 1)) && (def.sizez) > 1))
+	{
 		return 0;
+	}
 	else
+	{
 		return 1;
+	}
 }
 
 // Применение начальных данных во всех точках
@@ -195,7 +231,7 @@ void blocks_initialization(consts *def)
 {
 	(*def).blocksX = 0;
 	(*def).blocksY = 0;
-	(*def).blocksZ = 0;	
+	(*def).blocksZ = 0;
 }
 
 // Функция вычисления "эффективной" плотности * g * hy
@@ -204,12 +240,12 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 
 #ifdef THREE_PHASE
-	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) 
-		+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-	+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.m[media]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
+	                  + HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+	                  + HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.m[media]) * (def.g_const) * (def.hy);
 #else
-	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] 
-	+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) *(def.locNy)] * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[media]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+	                  + HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[media]) * (def.g_const) * (def.hy);
 #endif
 	return ro_g_dy;
 }
@@ -223,21 +259,21 @@ void print_task_name(consts def)
 	// Нулевой процессор выводит название запускаемой задачи
 	if (!(def.rank))
 	{
-		#ifdef TWO_PHASE
-				std::cout << "Two phase filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
-		#endif
-		#ifdef THREE_PHASE
-				std::cout << "Three phase filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
-		#endif
-		#ifdef B_L
-				std::cout << "Backley-Leverett filtration by CAPAZ on "<<(def.size)<<" node(s).\n";
-		#endif
+#ifdef TWO_PHASE
+		std::cout << "Two phase filtration by CAPAZ on " << (def.size) << " node(s).\n";
+#endif
+#ifdef THREE_PHASE
+		std::cout << "Three phase filtration by CAPAZ on " << (def.size) << " node(s).\n";
+#endif
+#ifdef B_L
+		std::cout << "Backley-Leverett filtration by CAPAZ on " << (def.size) << " node(s).\n";
+#endif
 		read_version();
-	    fflush(stdout);
+		fflush(stdout);
 	}
 }
 
-// Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2), 
+// Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2),
 // инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
 // Для задачи Б-Л загрузка проницаемостей из файла.
 void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long int* time_counter, int argc, char* argv[], consts* def)
@@ -265,13 +301,15 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 
 	// Если процессор может открыть файл сохраненного состояния,
 	// то восстанавливаем состояние, иначе применяем начальные условия
-	if (f_save=fopen("save/save.dat","rb"))
+	if (f_save = fopen("save/save.dat", "rb"))
 	{
 		fclose(f_save);
 		restore(*HostArraysPtr, time_counter, *def);
 	}
 	else
-		data_initialization (*HostArraysPtr, time_counter, *def); // (4)
+	{
+		data_initialization(*HostArraysPtr, time_counter, *def);    // (4)
+	}
 
 #ifdef THREE_PHASE
 	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *def);
@@ -307,56 +345,58 @@ void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 }
 
 // Выделение памяти хоста под массив точек расчетной области
-void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)		
-{	
-	if (!(HostBuffer=new double[2 * ((def.locNy) * (def.locNz))]))
-		printf ("\nWarning! Memory for *HostBuffer is not allocated in function host_memory_alloc\n");
+void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
+{
+	if (!(HostBuffer = new double[2 * ((def.locNy) * (def.locNz))]))
+	{
+		printf("\nWarning! Memory for *HostBuffer is not allocated in function host_memory_alloc\n");
+	}
 
 	try
 	{
-		(*ArraysPtr).S_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).P_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).P_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ro_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ro_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ux_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uy_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uz_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ux_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uy_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uz_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).Xi_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).Xi_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_w_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_n=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_n_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).media=new int [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).S_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).P_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).P_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ro_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ro_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ux_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uy_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uz_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ux_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uy_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uz_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).Xi_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).Xi_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_w_old = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_n_old = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).media = new int [(def.locNx) * (def.locNy) * (def.locNz)];
 #ifdef B_L
-		(*ArraysPtr).K=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).K = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 #endif
 #ifdef THREE_PHASE
-		(*ArraysPtr).P_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).S_w=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ro_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).ux_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uy_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).uz_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).Xi_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_g=new double [(def.locNx)*(def.locNy)*(def.locNz)];
-		(*ArraysPtr).roS_g_old=new double [(def.locNx)*(def.locNy)*(def.locNz)];
+		(*ArraysPtr).P_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).S_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ro_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).ux_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uy_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).uz_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).Xi_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).roS_g_old = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 #endif
 	}
-	catch(...)
+	catch (...)
 	{
-		printf ("\nError! Not enough host memory\n");
+		printf("\nError! Not enough host memory\n");
 		exit(0);
 	}
 }
 
 // Освобожение памяти хоста из под массива точек расчетной области
 void host_memory_free(ptr_Arrays ArraysPtr)
-{ 
+{
 	delete HostBuffer;
 	delete[] ArraysPtr.P_w;
 	delete[] ArraysPtr.P_n;
@@ -417,10 +457,12 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	test_correct_P_S(HostArraysPtr, def);
 #endif
 #endif
-	
+
 	// Нулевой процессор создает директории, файлы и прописывает заголовки файлов
-	if ((def.rank)==0)
-		print_plots_top (t, def);
+	if ((def.rank) == 0)
+	{
+		print_plots_top(t, def);
+	}
 
 	// По очереди для каждого из процессоров вызываем функцию вывода на график
 	// своей части массива.
@@ -428,23 +470,25 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
-		if ((def.rank)==cpu)
-			print_plots(HostArraysPtr, t, def);	
+		if ((def.rank) == cpu)
+		{
+			print_plots(HostArraysPtr, t, def);
+		}
 	}
 }
 
-// Функция создания директорий, файлов для графиков и сохранения заголовков в них 
-void print_plots_top (double t, consts def)
+// Функция создания директорий, файлов для графиков и сохранения заголовков в них
+void print_plots_top(double t, consts def)
 {
 	char fname[30];
 	FILE *fp;
 
-	sprintf(fname,"plots/S=%012.4f.dat",t);
+	sprintf(fname, "plots/S=%012.4f.dat", t);
 
 #ifdef _WIN32
 	_mkdir("plots");
 #else
-	mkdir("plots",0000777);
+	mkdir("plots", 0000777);
 #endif
 
 	// Создание (или перезапись) файла с графиками
@@ -452,30 +496,32 @@ void print_plots_top (double t, consts def)
 	// 2. Для распределения давлений воды P_w
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
-	if(!(fp=fopen(fname,"wt")))
+	if (!(fp = fopen(fname, "wt")))
+	{
 		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
+	}
 
-	fprintf(fp,"TITLE =  \"Filtration in time=%5.2f\" \n", t); 
+	fprintf(fp, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
 
-	if((def.Nz) < 2)
+	if ((def.Nz) < 2)
 	{
 #ifdef THREE_PHASE
-//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"media\" \n");
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"media\" \n");
+		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"media\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"media\" \n");
 #else
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"media\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"media\" \n");
 #endif
-		fprintf(fp,"ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
+		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
 	}
 	else
 	{
 #ifdef THREE_PHASE
-//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\", \"u_y\",\"u_z\",\"media\" \n");
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"uw_z\",\"un_x\",\"un_y\",\"un_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"media\" \n");
+		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\", \"u_y\",\"u_z\",\"media\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"uw_z\",\"un_x\",\"un_y\",\"un_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"media\" \n");
 #else
-		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
 #endif
-		fprintf(fp,"ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny), (def.Nz));
+		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny), (def.Nz));
 	}
 
 	fclose(fp);
@@ -489,174 +535,178 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	FILE *fp;
 	int local;
 
-	sprintf(fname,"plots/S=%012.4f.dat",t);
-		
+	sprintf(fname, "plots/S=%012.4f.dat", t);
+
 	// Открытие на дозапись и сохранение графиков
 	// 1. Для распределения насыщенностей NAPL S_n
 	// 2. Для распределения давлений воды P_w
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
-	if(!(fp=fopen(fname,"at")))
+	if (!(fp = fopen(fname, "at")))
+	{
 		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
+	}
 
-	for(int i=0; i<def.locNx; i++)
-		for(int j=0; j<def.locNy; j++)
-			for(int k=0; k<def.locNz; k++)
-				if(is_active_point(i, j, k, def))
+	for (int i = 0; i < def.locNx; i++)
+		for (int j = 0; j < def.locNy; j++)
+			for (int k = 0; k < def.locNz; k++)
+				if (is_active_point(i, j, k, def))
 				{
-					local=i+j*def.locNx+k*def.locNx*def.locNy;
+					local = i + j * def.locNx + k * def.locNx * def.locNy;
 
 					// Преобразование локальных координат процессора к глобальным
-					int I=local_to_global(i, 'x', def);
+					int I = local_to_global(i, 'x', def);
 #ifdef THREE_PHASE
-					if(def.Nz < 2)
+					if (def.Nz < 2)
 					{
-/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
-							HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
-*/					
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
-							HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local], 
-							(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
-		
+						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),
+													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+													HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+						*/
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy),
+						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+						        HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
+						        (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
+
 					}
 
 					else
 					{
-/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
-							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
-*/
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy),  
-							HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
-							HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
-							HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
-							HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
+						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],
+													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+													HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]);
+						*/
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy),
+						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+						        HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
+						        HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
+						        HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.media[local]);
 
 					}
 #endif
 #ifdef TWO_PHASE
-					if(def.Nz < 2)
+					if (def.Nz < 2)
 					{
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 					}
 #endif
 #if B_L
-					if(def.Nz < 2)
+					if (def.Nz < 2)
 					{
-						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), k*(def.hz), (def.Ny-1-j)*(def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 					}
 #endif
 				}
 
-	
+
 	fclose(fp);
 }
 
 // Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
 void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 {
-/*
-	char *dname;
-	char *targetfuncs="r2d.bjn";
-	char *targetgrid="r2dgrid.bjn";
-	LPLPLPFLOAT F1;
-	double *F1D;
+	/*
+		char *dname;
+		char *targetfuncs="r2d.bjn";
+		char *targetgrid="r2dgrid.bjn";
+		LPLPLPFLOAT F1;
+		double *F1D;
 
-	F1 = alloc_float_mas_n1_n2_n3(def.locNx, def.locNy, def.locNz); 
-	if(F1 == NULL) exit(0);
+		F1 = alloc_float_mas_n1_n2_n3(def.locNx, def.locNy, def.locNz);
+		if(F1 == NULL) exit(0);
 
-	F1D = (double *)malloc(def.locNx, def.locNy, def.locNz*sizeof(double)); 
-	if(F1D == NULL) exit(0);
+		F1D = (double *)malloc(def.locNx, def.locNy, def.locNz*sizeof(double));
+		if(F1D == NULL) exit(0);
 
-	// Инициализация файла с данными функции
-	int err = WriteBjnGzippedScalar8RecInit(targetfuncs, "r2dgrid.bjn", def.Nx, def.Ny, def.Nz);   
-	if(err) 
-		fprintf(stderr, "Can't create file %s.\n", targetfuncs); 
+		// Инициализация файла с данными функции
+		int err = WriteBjnGzippedScalar8RecInit(targetfuncs, "r2dgrid.bjn", def.Nx, def.Ny, def.Nz);
+		if(err)
+			fprintf(stderr, "Can't create file %s.\n", targetfuncs);
 
-	// Запись блока данных значений функции
-	err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 5); // Поправить def.locNx*(def.rank) на точное смещение
-	if(err) 
-		fprintf(stderr, "Can't add func block data err %d\n", err);
+		// Запись блока данных значений функции
+		err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 5); // Поправить def.locNx*(def.rank) на точное смещение
+		if(err)
+			fprintf(stderr, "Can't add func block data err %d\n", err);
 
-	// Запись минимального и максимального значения сеточной функции S_n
-	err = WriteBjnGzippedScalar8RecFuncMinMax(targetfuncs, "S_n", 0, 1);
-	if(err) 
-		fprintf(stderr, "Can't add data about block err %d\n", err);
+		// Запись минимального и максимального значения сеточной функции S_n
+		err = WriteBjnGzippedScalar8RecFuncMinMax(targetfuncs, "S_n", 0, 1);
+		if(err)
+			fprintf(stderr, "Can't add data about block err %d\n", err);
 
-	// Инициализация файла сетки
-	err = WriteBjnGzippedScalar8RecInit(targetgrid, "", def.Nx, def.Ny, def.Nz);      
-	if(err) 
-		fprintf(stderr, "Can't create file %s.\n", targetgrid);
+		// Инициализация файла сетки
+		err = WriteBjnGzippedScalar8RecInit(targetgrid, "", def.Nx, def.Ny, def.Nz);
+		if(err)
+			fprintf(stderr, "Can't create file %s.\n", targetgrid);
 
-	// Для каждого из направлений
-	for(direct=0;direct<3;direct++)
-	{
-		for(i1=0; i1<m1; i1++)
-			for(i2=0; i2<m2; i2++)
-				for(i3=0; i3<m3; i3++)
-				{
-					for(i=0; i<n1; i++)     
-						for(j=0; j<n2; j++)     
-							for(k=0; k<n3; k++)
-							{
-								float x=(float)i1*(float)n1+(float)i;
-								float y=(float)i2*(float)n2+(float)j;
-								float z=(float)i3*(float)n3+(float)k;
-								switch(direct)
+		// Для каждого из направлений
+		for(direct=0;direct<3;direct++)
+		{
+			for(i1=0; i1<m1; i1++)
+				for(i2=0; i2<m2; i2++)
+					for(i3=0; i3<m3; i3++)
+					{
+						for(i=0; i<n1; i++)
+							for(j=0; j<n2; j++)
+								for(k=0; k<n3; k++)
 								{
-									case 0: F1[i][j][k] = (float)x; dname="x"; break;
-									case 1: F1[i][j][k] = (float)y; dname="y"; break;
-									case 2: F1[i][j][k] = (float)(ffmin+k*(ffmax-ffmin)/3.f); dname="z"; break;
+									float x=(float)i1*(float)n1+(float)i;
+									float y=(float)i2*(float)n2+(float)j;
+									float z=(float)i3*(float)n3+(float)k;
+									switch(direct)
+									{
+										case 0: F1[i][j][k] = (float)x; dname="x"; break;
+										case 1: F1[i][j][k] = (float)y; dname="y"; break;
+										case 2: F1[i][j][k] = (float)(ffmin+k*(ffmax-ffmin)/3.f); dname="z"; break;
+									}
+
+									fmin=minab(fmin,F1[i][j][k]);
+									fmax=maxab(fmax,F1[i][j][k]);
 								}
 
-								fmin=minab(fmin,F1[i][j][k]); 
-								fmax=maxab(fmax,F1[i][j][k]);
-							}
+					// Запись блока данных сетки
+					err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 9); // Поправить def.locNx*(def.rank) на точное смещение
+					if(err)
+						fprintf(stderr, "Can't add grid `%s` block data err %d\n", dname, err);
+					}
 
-				// Запись блока данных сетки
-				err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 9); // Поправить def.locNx*(def.rank) на точное смещение
-				if(err)
-					fprintf(stderr, "Can't add grid `%s` block data err %d\n", dname, err);
-				}
-
-		// Запись максимального и минимального значений сетки
-		err = WriteBjnGzippedScalar8RecFuncMinMax(targetgrid, dname, fmin, fmax);
-		if(err) 
-			fprintf(stderr, "Can't add data about block err %d\n", err);
-	}
-*/
+			// Запись максимального и минимального значений сетки
+			err = WriteBjnGzippedScalar8RecFuncMinMax(targetgrid, dname, fmin, fmax);
+			if(err)
+				fprintf(stderr, "Can't add data about block err %d\n", err);
+		}
+	*/
 }
 
 // Функция загрузки файла проницаемостей
 void load_permeability(double* K, consts def)
 {
 	FILE *input;
-	char *file="../porosity.dat";
+	char *file = "../porosity.dat";
 
-	for(int i=0; i<def.locNx; i++)
-		for(int j=0; j<def.locNy; j++)
-			for(int k=0; k<def.locNz; k++)
-				K[i+j*def.locNx+k*def.locNx*def.locNy]=6.64e-11;
+	for (int i = 0; i < def.locNx; i++)
+		for (int j = 0; j < def.locNy; j++)
+			for (int k = 0; k < def.locNz; k++)
+			{
+				K[i + j * def.locNx + k * def.locNx * def.locNy] = 6.64e-11;
+			}
 
-	
-	if(!(input=fopen(file,"rt")))
+
+	if (!(input = fopen(file, "rt")))
 	{
-		file="porosity.dat";
-		if(!(input=fopen(file,"rt")))
+		file = "porosity.dat";
+		if (!(input = fopen(file, "rt")))
 		{
-			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file,__FILE__,__LINE__);
+			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file, __FILE__, __LINE__);
 			fflush(stdout);
 		}
 	}
@@ -664,67 +714,67 @@ void load_permeability(double* K, consts def)
 	int Nx, Ny, Nz;
 	fscanf(input, "%d %d %d\n", &Nx, &Ny, &Nz);
 
-	if((Nx!=def.Nx) || (Ny!=def.Ny) || (Nz!=def.Nz))
+	if ((Nx != def.Nx) || (Ny != def.Ny) || (Nz != def.Nz))
 	{
-		printf("Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n",__FILE__,__LINE__);
+		printf("Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n", __FILE__, __LINE__);
 		fflush(stdout);
 	}
 
 	double s[6];
-	long int row=0, bigN=0;
-	int index=0;
-	int six=6;
-/*
-	while (row*six < def.Nx*(def.Ny)*(def.Nz))
-	{
-		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
-
-		for (index=0;index<six;index++)
+	long int row = 0, bigN = 0;
+	int index = 0;
+	int six = 6;
+	/*
+		while (row*six < def.Nx*(def.Ny)*(def.Nz))
 		{
-			bigN = six * row + index;
-			int k = bigN % def.Nz;
-			int j = (bigN/def.Nz) % def.Ny;
-			int i = bigN / (def.Ny * (def.Nz));
+			fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
 
-			K[i+j*def.Nx+k*def.Nx*def.Ny]=s[index];
+			for (index=0;index<six;index++)
+			{
+				bigN = six * row + index;
+				int k = bigN % def.Nz;
+				int j = (bigN/def.Nz) % def.Ny;
+				int i = bigN / (def.Ny * (def.Nz));
+
+				K[i+j*def.Nx+k*def.Nx*def.Ny]=s[index];
+			}
+			row++;
 		}
-		row++;
-	}
 
-*/
-	while (row*six < def.Nx*(def.Ny)*(def.Nz))
+	*/
+	while (row * six < def.Nx * (def.Ny) * (def.Nz))
 	{
-		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
+		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s + 1, s + 2, s + 3, s + 4, s + 5);
 
-		for (index=0;index<six;index++)
+		for (index = 0; index < six; index++)
 		{
 			bigN = six * row + index;
 			int i = bigN % def.Nx;
-			int k = (bigN/def.Nx) % def.Nz;
+			int k = (bigN / def.Nx) % def.Nz;
 			int j = bigN / (def.Nz * (def.Nx));
 
-			K[i+j*def.Nx+k*def.Nx*def.Ny]=6.64e-11 + s[index]*10e-13;
+			K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11 + s[index] * 10e-13;
 		}
 		row++;
 	}
-	
+
 	fclose(input);
 
 
 
 
 
-	
+
 
 	/*
 	char* str=new char[30*Nx];
-	
+
 	char value[30];
 	for(int j=0; j<Ny; j++)
 	{
 		int n=0;
 		fgets(str,30*Nx,input);
-		for(int i=0; i<Nx; i++)			
+		for(int i=0; i<Nx; i++)
 		{
 			int iter=0;
 			if(str[n]==' ')
@@ -761,16 +811,16 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 
 	FILE *f_save;
 
-	if ((def.rank)==0)
+	if ((def.rank) == 0)
 	{
 
 #ifdef _WIN32
 		_mkdir("save");
 #else
-		mkdir("save",0000777);
+		mkdir("save", 0000777);
 #endif
-	
-		if(!(f_save=fopen("save/save.dat","wb")))
+
+		if (!(f_save = fopen("save/save.dat", "wb")))
 		{
 			printf("\nError: Not open file \"save.dat\"!\n");
 			exit(0);
@@ -778,13 +828,13 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 		fclose(f_save);
 	}
 
-	for (int cpu=0; cpu<(def.sizex * (def.sizey) * (def.sizez));cpu++)
+	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
-		if ((def.rank)==cpu)
+		if ((def.rank) == cpu)
 		{
-			if(!(f_save=fopen("save/save.dat","ab")))
+			if (!(f_save = fopen("save/save.dat", "ab")))
 			{
 				printf("\nError: Not open file \"save.dat\"!\n");
 				exit(0);
@@ -810,10 +860,10 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 }
 
 // Восстановление состояния из файла
-void restore (ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
+void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 {
 	FILE *f_save;
-	for (int cpu=0; cpu<(def.sizex * (def.sizey) * (def.sizez));cpu++)
+	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
@@ -830,17 +880,17 @@ void restore (ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 		def_tmp.sizey = def.sizey;
 		def_tmp.sizez = def.sizez;
 
-		if ((def.rank)==cpu)
+		if ((def.rank) == cpu)
 		{
-			if(!(f_save=fopen("save/save.dat","rb")))
+			if (!(f_save = fopen("save/save.dat", "rb")))
 			{
-					printf("\nError: Not open file \"save.dat\"!\n");
-					exit(0);
+				printf("\nError: Not open file \"save.dat\"!\n");
+				exit(0);
 			}
-			for (int queue=0;queue<=(def.rank);queue++)
+			for (int queue = 0; queue <= (def.rank); queue++)
 			{
 				def_tmp.rank = queue;
-				global_to_local_vars(&def_tmp); 
+				global_to_local_vars(&def_tmp);
 				fread(time_counter, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
 				fread(HostArraysPtr.S_w, sizeof(double), (def_tmp.locNx) * (def_tmp.locNy) * (def_tmp.locNy), f_save);
@@ -871,16 +921,20 @@ void read_version(void)
 {
 
 	FILE *rev;
-	char str[250]="";
+	char str[250] = "";
 	int revision;
 
-	if(!(rev=fopen("../.svn/entries","rt")))
-		revision=0;
+	if (!(rev = fopen("../.svn/entries", "rt")))
+	{
+		revision = 0;
+	}
 	else
 	{
-		for(int i=0;i<4;i++)
-			fgets(str,250,rev);
-		revision=atoi(str);
+		for (int i = 0; i < 4; i++)
+		{
+			fgets(str, 250, rev);
+		}
+		revision = atoi(str);
 	}
 
 	printf("Version %s.%d compiled %s %s.\n\n", VERSION, revision, __DATE__, __TIME__);
@@ -891,34 +945,34 @@ void read_defines(int argc, char *argv[], consts* def)
 {
 
 #ifdef THREE_PHASE
-	(*def).aw[0]=aw[0];
-	(*def).aw[1]=aw[1];
-	(*def).bw[0]=bw[0];
-	(*def).bw[1]=bw[1];
-	(*def).ag[0]=ag[0];
-	(*def).ag[1]=ag[1];
-	(*def).bg[0]=bg[0];
-	(*def).bg[1]=bg[1];
-	(*def).S_w_range[0]=S_w_range[0];
-	(*def).S_w_range[1]=S_w_range[1];
-	(*def).S_w_range[2]=S_w_range[2];
-	(*def).S_g_range[0]=S_g_range[0];
-	(*def).S_g_range[1]=S_g_range[1];
-	(*def).S_g_range[2]=S_g_range[2];
+	(*def).aw[0] = aw[0];
+	(*def).aw[1] = aw[1];
+	(*def).bw[0] = bw[0];
+	(*def).bw[1] = bw[1];
+	(*def).ag[0] = ag[0];
+	(*def).ag[1] = ag[1];
+	(*def).bg[0] = bg[0];
+	(*def).bg[1] = bg[1];
+	(*def).S_w_range[0] = S_w_range[0];
+	(*def).S_w_range[1] = S_w_range[1];
+	(*def).S_w_range[2] = S_w_range[2];
+	(*def).S_g_range[0] = S_g_range[0];
+	(*def).S_g_range[1] = S_g_range[1];
+	(*def).S_g_range[2] = S_g_range[2];
 #endif
 
 	FILE *defs;
 	char *file;
-	char str[250]="", attr_name[50]="", attr_value[50]="";
+	char str[250] = "", attr_name[50] = "", attr_value[50] = "";
 
-	file=DEFINES_FILE;
+	file = DEFINES_FILE;
 
-	if(!(defs=fopen(file,"rt")))
+	if (!(defs = fopen(file, "rt")))
 	{
-		file="defines.ini";
-		if(!(defs=fopen(file,"rt")))
+		file = "defines.ini";
+		if (!(defs = fopen(file, "rt")))
 		{
-			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file,__FILE__,__LINE__);
+			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file, __FILE__, __LINE__);
 			fflush(stdout);
 			return;
 		}
@@ -926,140 +980,299 @@ void read_defines(int argc, char *argv[], consts* def)
 
 	while (!feof(defs))
 	{
-		unsigned int i,j,a;
-		fgets(str,250,defs);
-		if(str[0]=='#')
-			continue;
-
-		for (i=0;str[i]!='=';i++)
+		unsigned int i, j, a;
+		fgets(str, 250, defs);
+		if (str[0] == '#')
 		{
-			if (i>=strlen(str))
-				continue;
-			attr_name[i]=str[i];
+			continue;
 		}
 
-		attr_name[i]='\0';
-		a=strlen(str);
-		for(j=i+1;str[j]!=' ' && (j < a);j++)
-			attr_value[j-i-1]=str[j];
-		attr_value[j-i-1]='\0';
+		for (i = 0; str[i] != '='; i++)
+		{
+			if (i >= strlen(str))
+			{
+				continue;
+			}
+			attr_name[i] = str[i];
+		}
+
+		attr_name[i] = '\0';
+		a = strlen(str);
+		for (j = i + 1; str[j] != ' ' && (j < a); j++)
+		{
+			attr_value[j - i - 1] = str[j];
+		}
+		attr_value[j - i - 1] = '\0';
 
 		//std::cout << str <<"\n";
 
-		if(!strcmp(attr_name,"HX")) 
-			{(*def).hx = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"HY")) 
-			{(*def).hy = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"HZ")) 
-			{(*def).hz = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"TAU")) 
-			{(*def).tau = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"DT")) 
-			{(*def).dt = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"C_W")) 
-			{(*def).c_w = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"C_N")) 
-			{(*def).c_n = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"L")) 
-			{(*def).l = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"BETA_W")) 
-			{(*def).beta_w = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"BETA_N")) 
-			{(*def).beta_n = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"RO_W")) 
-			{(*def).ro0_w = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"RO_N")) 
-			{(*def).ro0_n = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"MU_W")) 
-			{(*def).mu_w = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"MU_N")) 
-			{(*def).mu_n = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"G_CONST")) 
-			{(*def).g_const = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_ATM")) 
-			{(*def).P_atm = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "HX"))
+		{
+			(*def).hx = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "HY"))
+		{
+			(*def).hy = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "HZ"))
+		{
+			(*def).hz = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "TAU"))
+		{
+			(*def).tau = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "DT"))
+		{
+			(*def).dt = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "C_W"))
+		{
+			(*def).c_w = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "C_N"))
+		{
+			(*def).c_n = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "L"))
+		{
+			(*def).l = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "BETA_W"))
+		{
+			(*def).beta_w = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "BETA_N"))
+		{
+			(*def).beta_n = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "RO_W"))
+		{
+			(*def).ro0_w = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "RO_N"))
+		{
+			(*def).ro0_n = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "MU_W"))
+		{
+			(*def).mu_w = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "MU_N"))
+		{
+			(*def).mu_n = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "G_CONST"))
+		{
+			(*def).g_const = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_ATM"))
+		{
+			(*def).P_atm = atof(attr_value);
+			continue;
+		}
 
-		if(!strcmp(attr_name,"LAMBDA_0")) 
-			{(*def).lambda[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"LAMBDA_1")) 
-			{(*def).lambda[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"M_0")) 
-			{(*def).m[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"M_1")) 
-			{(*def).m[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_WR_0")) 
-			{(*def).S_wr[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_WR_1")) 
-			{(*def).S_wr[1] = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "LAMBDA_0"))
+		{
+			(*def).lambda[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "LAMBDA_1"))
+		{
+			(*def).lambda[1] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "M_0"))
+		{
+			(*def).m[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "M_1"))
+		{
+			(*def).m[1] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_WR_0"))
+		{
+			(*def).S_wr[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_WR_1"))
+		{
+			(*def).S_wr[1] = atof(attr_value);
+			continue;
+		}
 
 #ifdef B_L
-		if(!strcmp(attr_name,"Q")) 
-		{(*def).Q = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "Q"))
+		{
+			(*def).Q = atof(attr_value);
+			continue;
+		}
 #endif
 
 #ifndef B_L
-		if(!strcmp(attr_name,"K_0")) 
-			{(*def).K[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"K_1")) 
-			{(*def).K[1] = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "K_0"))
+		{
+			(*def).K[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "K_1"))
+		{
+			(*def).K[1] = atof(attr_value);
+			continue;
+		}
 #endif
 #ifdef TWO_PHASE
-		if(!strcmp(attr_name,"P_D_0")) 
-			{(*def).P_d[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_D_1")) 
-			{(*def).P_d[1] = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "P_D_0"))
+		{
+			(*def).P_d[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_D_1"))
+		{
+			(*def).P_d[1] = atof(attr_value);
+			continue;
+		}
 #endif
 
 #ifdef THREE_PHASE
-		if(!strcmp(attr_name,"C_G")) 
-			{(*def).c_g = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"BETA_G")) 
-			{(*def).beta_g = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"RO_G")) 
-			{(*def).ro0_g = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"MU_G")) 
-			{(*def).mu_g = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_D_NW_0")) 
-			{(*def).P_d_nw[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_D_NW_1")) 
-			{(*def).P_d_nw[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_D_GN_0")) 
-			{(*def).P_d_gn[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"P_D_GN_1")) 
-			{(*def).P_d_gn[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_W_GR")) 
-			{(*def).S_w_gr = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_W_INIT")) 
-			{(*def).S_w_init = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_N_INIT")) 
-			{(*def).S_n_init = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_NR_0")) 
-			{(*def).S_nr[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_NR_1")) 
-			{(*def).S_nr[1] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_GR_0")) 
-			{(*def).S_gr[0] = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"S_GR_1")) 
-			{(*def).S_gr[1] = atof(attr_value); continue;}
+		if (!strcmp(attr_name, "C_G"))
+		{
+			(*def).c_g = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "BETA_G"))
+		{
+			(*def).beta_g = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "RO_G"))
+		{
+			(*def).ro0_g = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "MU_G"))
+		{
+			(*def).mu_g = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_D_NW_0"))
+		{
+			(*def).P_d_nw[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_D_NW_1"))
+		{
+			(*def).P_d_nw[1] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_D_GN_0"))
+		{
+			(*def).P_d_gn[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "P_D_GN_1"))
+		{
+			(*def).P_d_gn[1] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_W_GR"))
+		{
+			(*def).S_w_gr = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_W_INIT"))
+		{
+			(*def).S_w_init = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_N_INIT"))
+		{
+			(*def).S_n_init = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_NR_0"))
+		{
+			(*def).S_nr[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_NR_1"))
+		{
+			(*def).S_nr[1] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_GR_0"))
+		{
+			(*def).S_gr[0] = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "S_GR_1"))
+		{
+			(*def).S_gr[1] = atof(attr_value);
+			continue;
+		}
 #endif
-		if(!strcmp(attr_name,"S_N_GR")) 
-			{(*def).S_n_gr = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"SOURCE"))
-			{(*def).source = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"ITERATIONS"))
-			{(*def).newton_iterations = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"TIMEX"))
-			{(*def).timeX = atof(attr_value); continue;}
-		if(!strcmp(attr_name,"SAVE_PLOTS"))
-			{(*def).save_plots = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"PRINT_SCREEN"))
-			{(*def).print_screen = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"NX"))
-			{(*def).Nx = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"NY"))
-			{(*def).Ny = atoi(attr_value); continue;}
-		if(!strcmp(attr_name,"NZ"))
-			{(*def).Nz = atoi(attr_value); continue;}
+		if (!strcmp(attr_name, "S_N_GR"))
+		{
+			(*def).S_n_gr = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "SOURCE"))
+		{
+			(*def).source = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "ITERATIONS"))
+		{
+			(*def).newton_iterations = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "TIMEX"))
+		{
+			(*def).timeX = atof(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "SAVE_PLOTS"))
+		{
+			(*def).save_plots = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "PRINT_SCREEN"))
+		{
+			(*def).print_screen = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "NX"))
+		{
+			(*def).Nx = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "NY"))
+		{
+			(*def).Ny = atoi(attr_value);
+			continue;
+		}
+		if (!strcmp(attr_name, "NZ"))
+		{
+			(*def).Nz = atoi(attr_value);
+			continue;
+		}
 	}
 
 	fclose(defs);
