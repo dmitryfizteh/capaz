@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
@@ -145,6 +145,7 @@ extern void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def
 extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def);
 extern void read_defines(int argc, char *argv[], consts* def);
 extern void read_version(void);
+extern void print_error(char *error, char *file, int line);
 
 // Unit-тесты
 #ifndef THREE_PHASE

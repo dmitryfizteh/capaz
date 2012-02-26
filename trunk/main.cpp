@@ -121,7 +121,7 @@ int local_to_global(int local_index, char axis, consts def)
 	}
 	default:
 	{
-		printf("Error!");
+		print_error("Axis of [local to global] conversation is empty", __FILE__, __LINE__);
 	}
 	}
 	//some_test(global_index);
@@ -348,9 +348,7 @@ void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 {
 	if (!(HostBuffer = new double[2 * ((def.locNy) * (def.locNz))]))
-	{
-		printf("\nWarning! Memory for *HostBuffer is not allocated in function host_memory_alloc\n");
-	}
+		print_error("Memory for *HostBuffer is not allocated in function host_memory_alloc", __FILE__, __LINE__);
 
 	try
 	{
@@ -389,8 +387,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 	}
 	catch (...)
 	{
-		printf("\nError! Not enough host memory\n");
-		exit(0);
+		print_error("Not enough host memory for ArraysPtr", __FILE__, __LINE__);
 	}
 }
 
@@ -497,9 +494,7 @@ void print_plots_top(double t, consts def)
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
 	if (!(fp = fopen(fname, "wt")))
-	{
-		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
-	}
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
 	fprintf(fp, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
 
@@ -543,9 +538,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
 	if (!(fp = fopen(fname, "at")))
-	{
-		std::cout << "Not open file(s) in function SAVE_DATA_PLOTS! \n";
-	}
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
@@ -706,8 +699,9 @@ void load_permeability(double* K, consts def)
 		file = "porosity.dat";
 		if (!(input = fopen(file, "rt")))
 		{
-			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file, __FILE__, __LINE__);
-			fflush(stdout);
+			char error[30];
+			sprintf(error, "Not open file \"%s\"", file);
+			print_error(error, __FILE__, __LINE__);
 		}
 	}
 
@@ -716,7 +710,7 @@ void load_permeability(double* K, consts def)
 
 	if ((Nx != def.Nx) || (Ny != def.Ny) || (Nz != def.Nz))
 	{
-		printf("Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n", __FILE__, __LINE__);
+		printf("Warning: Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n", __FILE__, __LINE__);
 		fflush(stdout);
 	}
 
@@ -835,10 +829,8 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 		if ((def.rank) == cpu)
 		{
 			if (!(f_save = fopen("save/save.dat", "ab")))
-			{
-				printf("\nError: Not open file \"save.dat\"!\n");
-				exit(0);
-			}
+				print_error("Not open file \"save.dat\"", __FILE__, __LINE__);
+
 			fwrite(&time_counter, sizeof(int), 1, f_save);
 #ifdef THREE_PHASE
 			fwrite(HostArraysPtr.S_w, sizeof(double), (def.locNx) * (def.locNy) * (def.locNz), f_save);
@@ -883,10 +875,8 @@ void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 		if ((def.rank) == cpu)
 		{
 			if (!(f_save = fopen("save/save.dat", "rb")))
-			{
-				printf("\nError: Not open file \"save.dat\"!\n");
-				exit(0);
-			}
+				print_error("Not open file \"save.dat\"", __FILE__, __LINE__);
+
 			for (int queue = 0; queue <= (def.rank); queue++)
 			{
 				def_tmp.rank = queue;
@@ -972,9 +962,9 @@ void read_defines(int argc, char *argv[], consts* def)
 		file = "defines.ini";
 		if (!(defs = fopen(file, "rt")))
 		{
-			printf("Not open file \"%s\"!\nError in file \"%s\" at line %d\n", file, __FILE__, __LINE__);
-			fflush(stdout);
-			return;
+			char error[30];
+			sprintf(error, "Not open file \"%s\"", file);
+			print_error("Not open file \"save.dat\"", __FILE__, __LINE__);
 		}
 	}
 
