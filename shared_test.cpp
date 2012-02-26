@@ -11,6 +11,20 @@
 #endif
 #endif
 
+
+// Функция, вызываемая при ошибке
+void print_error(char *error, char *file, int line)
+{
+	printf("Error: %s\nFile: \"%s\"\nLine: %d\n\n", error, file, line);
+	fflush(stdout);
+#ifdef _WIN32
+	printf("\nPress <Enter> to exit...\n");
+	fflush(stdout);
+	getchar();
+#endif
+	exit(1);
+}
+
 // Функция проверки на выход из допустимого диапазона значений
 // во всех точках расчетной области процессора
 #ifndef THREE_PHASE
