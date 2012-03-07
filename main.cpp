@@ -241,8 +241,9 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 #ifdef THREE_PHASE
 	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
-	                  + HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-	                  + HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.m[media]) * (def.g_const) * (def.hy);
+					+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+					+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.g_const) * (def.hy);
+
 #else
 	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 	                  + HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[media]) * (def.g_const) * (def.hy);
@@ -933,24 +934,6 @@ void read_version(void)
 // —читывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)
 {
-
-#ifdef THREE_PHASE
-	(*def).aw[0] = aw[0];
-	(*def).aw[1] = aw[1];
-	(*def).bw[0] = bw[0];
-	(*def).bw[1] = bw[1];
-	(*def).ag[0] = ag[0];
-	(*def).ag[1] = ag[1];
-	(*def).bg[0] = bg[0];
-	(*def).bg[1] = bg[1];
-	(*def).S_w_range[0] = S_w_range[0];
-	(*def).S_w_range[1] = S_w_range[1];
-	(*def).S_w_range[2] = S_w_range[2];
-	(*def).S_g_range[0] = S_g_range[0];
-	(*def).S_g_range[1] = S_g_range[1];
-	(*def).S_g_range[2] = S_g_range[2];
-#endif
-
 	FILE *defs;
 	char *file;
 	char str[250] = "", attr_name[50] = "", attr_value[50] = "";

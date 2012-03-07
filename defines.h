@@ -44,17 +44,6 @@
 // Вывод графиков BjnIO
 //#include "bjnio.h"
 
-#ifdef THREE_PHASE
-// Коэффициенты прямых, продолжающих функции капиллярных давлений на границах интервала изменения насыщенностей [0,1]
-const double aw[2] = { -39640, -26530};
-const double bw[2] = {12560, 27110};
-const double ag[2] = {14170, 35380};
-const double bg[2] = {158, -2969};
-// Ключевые точки интервала изменения насыщенностей для вычисления проницаемостей и капиллярных давлений
-const double S_w_range[3] = {0.001, 0.1, 0.99};
-const double S_g_range[3] = {0.001, 0.005, 0.95};
-#endif
-
 struct ptr_Arrays_tag
 {
 	double *S_n, *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n, *roS_w, *roS_w_old, *roS_n, *roS_n_old;
