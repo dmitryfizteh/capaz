@@ -947,7 +947,7 @@ void read_defines(int argc, char *argv[], consts* def)
 		{
 			char error[30];
 			sprintf(error, "Not open file \"%s\"", file);
-			print_error("Not open file \"save.dat\"", __FILE__, __LINE__);
+			print_error("Not open file \"defines.ini\"", __FILE__, __LINE__);
 		}
 	}
 
