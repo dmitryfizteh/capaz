@@ -833,7 +833,7 @@ void device_initialization(consts* def)
 		printf("Max threads per block : %d\n", devProp.maxThreadsPerBlock);
 		printf("Total constant memory : %d\n", devProp.totalConstMem);
 		printf("Number of multiprocessors: %d\n",  devProp.multiProcessorCount);
-		printf("Kernel execution timeout: %s\n\n", (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
+		//printf("Kernel execution timeout: %s\n\n", (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
 		for (int i = 0; i < 3; ++i)
 		{
 			printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);

@@ -1,6 +1,7 @@
-#include <shmem++.h>
+#include <mpi.h>
+#include <shmem.h>
+#include <shmem-mpi.h>
 #include "defines.h"
-//#include <shmem.h>
 
 #define MX 20000
 static double *pf, *cf[MX];
