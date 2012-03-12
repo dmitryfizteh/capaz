@@ -1,6 +1,60 @@
 //#include "../defines.h"
 #include "../gpu.h"
 
+// Присвоение начальных условий
+void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
+{
+	*t = 0;
+	for (int i = 0; i < def.locNx; i++)
+		for (int j = 0; j < def.locNy; j++)
+			for (int k = 0; k < def.locNz; k++)
+				if (is_active_point(i, j, k, def))
+				{
+					// Преобразование локальных координат процессора к глобальным
+					int I = local_to_global(i, 'x', def);
+
+					HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
+					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = 0.7;
+					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
+
+					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy])]) * (def.g_const) * (def.hy);
+
+					// 6000 pound per square inch = 41 368 543.8 Паскаля
+					if (j == 0)
+					{
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm + 5000000;    // 50368543.8;
+					}
+					else
+					{
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
+					}
+
+
+					// В центре резервуара находится нагнетающая скважина
+					if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
+					{
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
+						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+					}
+
+					// В центре резервуара находится добывающая скважина
+					if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
+					{
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
+						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+					}
+
+
+					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+
+					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+				}
+}
+
 // Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
 __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, consts def)
 {

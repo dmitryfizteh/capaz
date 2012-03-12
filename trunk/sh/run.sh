@@ -4,7 +4,7 @@
 
 # Описание параметров запуска скрипта
 if [ -z "$5" ]; then
-    echo Use: ./$0 task_name architecture communication processors_count time_limit_in_minutes [debug]
+    echo Use: $0 task_name architecture communication processors_count time_limit_in_minutes [debug]
     echo task_name: 2ph,3ph,bl
     echo architecture: cpu,gpu
     echo communication: no,mpi,shmem
@@ -82,7 +82,16 @@ then
     comm_file="../shmem.cpp"
     compilator="shmemcc"
 else
-    compilator="mpicxx"
+   compilator="mpicxx"
+   if [ "$hostname" = "mvse" ]
+   then
+	if [ "$2" = "gpu" ]
+	then
+	  compilator="shmemcc"
+	else
+	  compilator="mpicc"
+	fi
+   fi
 fi
 
 echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px"

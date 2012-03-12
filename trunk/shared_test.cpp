@@ -121,7 +121,7 @@ void test_u(double u, char *file, int line)
 void test_arrowhead(double big, double small, char *file, int line)
 {
 #ifdef MY_TEST_1
-	if (abs(big / 30) < abs(small))
+	if (fabs(big / 30) < fabs(small))
 	{
 		printf("Warning: See task parameters.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
@@ -136,7 +136,7 @@ void test_tau(double S_old, double S_now, double S_new, int media, consts def, c
 	double L = def.m[media] * (S_new - S_old) / (2 * (def.dt));
 	double R = def.tau * (S_new - 2 * S_now + S_old) / ((def.dt) * (def.dt));
 
-	if (abs(L / 30) < abs(R))
+	if (fabs(L / 30) < fabs(R))
 	{
 		printf("Warning: parameter tau is very much.\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
