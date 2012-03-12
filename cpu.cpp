@@ -528,23 +528,23 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 			z2 = -(HostArraysPtr.P_w[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] - Pw) / def.hz;
 			z1 = -(Pw - HostArraysPtr.P_w[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)]) / def.hz;
 
-			f3 = (((z2 + abs(z2)) / 2.0 - (z1 - abs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-			      (z1 + abs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
-			      (z2 - abs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
+			f3 = (((z2 + fabs(z2)) / 2.0 - (z1 - fabs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+			      (z1 + fabs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
+			      (z2 - fabs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
 
 			z2 = -(HostArraysPtr.P_n[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] - Pn) / def.hz;
 			z1 = -(Pn - HostArraysPtr.P_n[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)]) / def.hz;
 
-			g3 = (((z2 + abs(z2)) / 2.0 - (z1 - abs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-			      (z1 + abs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
-			      (z2 - abs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
+			g3 = (((z2 + fabs(z2)) / 2.0 - (z1 - fabs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+			      (z1 + fabs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
+			      (z2 - fabs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
 #ifdef THREE_PHASE
 			z2 = -(HostArraysPtr.P_g[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] - Pg) / def.hz;
 			z1 = -(Pg - HostArraysPtr.P_g[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)]) / def.hz;
 
-			b3 = (((z2 + abs(z2)) / 2.0 - (z1 - abs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-			      (z1 + abs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
-			      (z2 - abs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
+			b3 = (((z2 + fabs(z2)) / 2.0 - (z1 - fabs(z1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+			      (z1 + fabs(z1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + (k - 1) * (def.locNx) * (def.locNy)] +
+			      (z2 - fabs(z2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + (k + 1) * (def.locNx) * (def.locNy)]) / def.hz;
 #endif
 		}
 
@@ -554,13 +554,13 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		y2 = -(HostArraysPtr.P_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pw) / def.hy + (def.g_const) * (HostArraysPtr.ro_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j + 1) - HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j) / def.hy;
 		y1 = -(Pw - HostArraysPtr.P_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy + (def.g_const) * (HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j - HostArraysPtr.ro_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j - 1)) / def.hy;
 
-		f1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (x1 + abs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (x2 - abs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
+		f1 = (((x2 + fabs(x2)) / 2.0 - (x1 - fabs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (x1 + fabs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (x2 - fabs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
 
-		f2 = (((y2 + abs(y2)) / 2.0 - (y1 - abs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (y1 + abs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (y2 - abs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
+		f2 = (((y2 + fabs(y2)) / 2.0 - (y1 - fabs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (y1 + fabs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (y2 - fabs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_w[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
 
 
 		x2 = -(HostArraysPtr.P_n[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pn) / def.hx;
@@ -569,13 +569,13 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		y2 = -(HostArraysPtr.P_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pn) / def.hy + (def.g_const) * (HostArraysPtr.ro_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j + 1) - HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j) / def.hy;
 		y1 = -(Pn - HostArraysPtr.P_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy + (def.g_const) * (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j - HostArraysPtr.ro_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j - 1)) / def.hy;
 
-		g1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (x1 + abs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (x2 - abs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
+		g1 = (((x2 + fabs(x2)) / 2.0 - (x1 - fabs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (x1 + fabs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (x2 - fabs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
 
-		g2 = (((y2 + abs(y2)) / 2.0 - (y1 - abs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (y1 + abs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (y2 - abs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
+		g2 = (((y2 + fabs(y2)) / 2.0 - (y1 - fabs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (y1 + fabs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (y2 - fabs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_n[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
 
 		A1 = HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / def.m[media]) * (q_w + f1 + f2 + f3);
 		A2 = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / def.m[media]) * (q_n + g1 + g2 + g3);
@@ -600,13 +600,13 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		y2 = -(HostArraysPtr.P_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pg) / def.hy + (def.g_const) * (HostArraysPtr.ro_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j + 1) - HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j) / def.hy;
 		y1 = -(Pg - HostArraysPtr.P_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy + (def.g_const) * (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * j - HostArraysPtr.ro_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * (j - 1)) / def.hy;
 
-		b1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (x1 + abs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (x2 - abs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
+		b1 = (((x2 + fabs(x2)) / 2.0 - (x1 - fabs(x1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (x1 + fabs(x1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (x2 - fabs(x2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
 
-		b2 = (((y2 + abs(y2)) / 2.0 - (y1 - abs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
-		      (y1 + abs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
-		      (y2 - abs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
+		b2 = (((y2 + fabs(y2)) / 2.0 - (y1 - fabs(y1)) / 2.0) * (-1) * HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] -
+		      (y1 + fabs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
+		      (y2 - fabs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
 
 		A3 = HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / def.m[media]) * (q_g + b1 + b2 + b3);
 

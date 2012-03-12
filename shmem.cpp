@@ -1,6 +1,11 @@
-#include <mpi.h>
-#include <shmem.h>
-#include <shmem-mpi.h>
+#define K100
+#ifdef K100
+	#include <mpi.h>
+	#include <shmem.h>
+	#include <shmem-mpi.h>
+#else
+	#include <shmem++.h>
+#endif
 #include "defines.h"
 
 #define MX 20000
@@ -76,7 +81,7 @@ void communication_initialization(int argc, char* argv[], consts* def)
 	(*def).rank=shmem_my_pe(); // The number of processor
 	std::cout << "size=" <<(*def).size<<"  "<<"rank= "<<(*def).rank<<"\n";
 
-	pf = (double*)emalloc( sizeof(double)*(*def.Ny)*(*def.Nz));
+	pf = (double*)emalloc( sizeof(double)*((*def).Ny)*((*def).Nz));
 	shmem_coarray_all( (void*)pf, (long)((*def).Ny*((*def).Nz)*sizeof(*pf)), (void**)cf );
 }
 
