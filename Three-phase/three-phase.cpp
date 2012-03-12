@@ -421,4 +421,3 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				}
 }
 
-
