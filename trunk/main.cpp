@@ -242,7 +242,7 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #ifdef THREE_PHASE
 	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
 					+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.g_const) * (def.hy);
+					+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.m[media]) * (def.g_const) * (def.hy);
 
 #else
 	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]

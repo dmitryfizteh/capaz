@@ -481,6 +481,25 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 #endif
 
 #ifdef THREE_PHASE
+
+		double q_g = 0, q = 0;
+
+		if (j == 1)
+		{
+			q_w = -0.02;
+			q_g = 0;
+			q_n = 0;
+		}
+
+		q = q_w + q_n + q_g;
+
+		if (j == (def.Ny) - 2)
+		{
+			q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+			q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+			q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		}
+
 		HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 		        * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
@@ -589,7 +608,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		      (y1 + abs(y1)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j - 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] +
 		      (y2 - abs(y2)) / 2.0 * (-1) * HostArraysPtr.Xi_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.ro_g[i + (j + 1) * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hy;
 
-		A3 = HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / def.m[media]) * (b1 + b2 + b3);
+		A3 = HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / def.m[media]) * (q_g + b1 + b2 + b3);
 
 		HostArraysPtr.roS_g_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = A3;
