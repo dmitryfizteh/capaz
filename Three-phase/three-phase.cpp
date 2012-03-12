@@ -322,6 +322,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_w_gr;
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_n_gr;
 	}
+
 }
 
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
@@ -352,7 +353,8 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	{
 		k1 --;
 	}
-
+/*
+// Если отдельно задаем значения на границах через градиент
 	if ((j != 0) && (j != (def.locNy) - 1))
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
@@ -365,6 +367,25 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];// + ro_eff_gdy(HostArraysPtr, i1, j1, k1, def);
 	}
+*/
+// Если отдельно задаем фиксированные значения на границах
+
+	if ((j != 0) && (j != (def.locNy) - 1))
+	{
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+	}
+	else if (j == 0)
+	{
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
+	}
+	else
+	{
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1.5 * def.P_atm;
+	}
+/*
+// Если внешний слой дублирует первый внутренний
+	HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+*/
 }
 
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
@@ -379,6 +400,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					int I = local_to_global(i, 'x', def);
 
 					int media = HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
+
+					// Линейное изменение насыщенностей в начальном распределении
 	/*				int j1 = def.locNy / 2;
 
 					if (j < j1)
@@ -388,7 +411,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 					else
 					*/
-					if (j == 0)
+					if ((j == 0) && ((def.source) > 0))
 					{
 						HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_w_gr;
 						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_gr;
@@ -399,7 +422,8 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_init;
 					}
 
-					if (j == 0)
+					// Если отдельно задаем значения на границах через градиент
+/*					if (j == 0)
 					{
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
 					}
@@ -407,7 +431,36 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					{
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
 					}
+*/
+					// Если отдельно задаем фиксированные значения на границах
 
+					if ((j != 0) && (j != (def.locNy) - 1))
+					{
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
+					}
+					else if (j == 0)
+					{
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
+					}
+					else
+					{
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 1.5 * def.P_atm;
+					}
+/*
+					// Если внешний слой дублирует первый внутренний
+					if (j <= 1)
+					{
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
+					}
+					else if (j < (def.Ny) - 1)
+					{
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
+					}
+					else
+					{
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy];
+					}
+*/
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 
 					///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
