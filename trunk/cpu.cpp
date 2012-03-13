@@ -356,22 +356,41 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 		double q_n = 0;
 
 #ifdef B_L
+		double k_w, k_n;
+		double S = 1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+
+		double S_wc = 0.2;
+		double S_wi = 0.2;
+		double S_or = 0.2;
+		double S_e = (S - S_wc) / (1 - S_wc - S_or);
+
+		k_w = S_e * S_e;
+		k_n = (1 - S_e) * (1 - S_e);
+
+		//krw(Sor) = kro(Swc) = 1.0
+
+		if (S < S_wc)
+		{
+			k_w = 0;
+			k_n = 1;
+		}
+
+		if (S > (1 - S_or))
+		{
+			k_w = 1;
+			k_n = 0;
+		}
 		double F_bl = 0;
-		// В левом нижнем углу нагнетающая скважина
-		if (((i == 0) && (j == def.Ny - 2)) || ((i == 1) && (j == def.Ny - 1)))
+		// В центре резервуара находится нагнетающая скважина
+		if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
 		{
 			q_w = def.Q;
 			q_n = 0;
 		}
 
-		// В правом верхнем углу добывающая скважина
-		if (((i == 0) && (j == def.Ny - 2)) || ((i == 1) && (j == def.Ny - 1)))
+		// В центре резервуара находится добывающая скважина
+		if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
 		{
-			//int media = HostArraysPtr.media[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)];
-			double S_e = (1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media]);
-			double k_w = pow(S_e, (2. + 3. * (def.lambda[media])) / def.lambda[media]);
-			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + def.lambda[media]) / def.lambda[media]));
-
 			F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
 			q_w = -1 * def.Q * F_bl;
 			q_n = -1 * def.Q * (1 - F_bl);
