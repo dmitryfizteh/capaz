@@ -55,13 +55,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 }
 
 // –асчет плотностей, давлени€ NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
-__global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr, consts def)
+__global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
 	int k = threadIdx.z + blockIdx.z * blockDim.z;
 
-	if ((i < ((*gpu_def).locNx)) && (j < ((*gpu_def).locNy)) && (k < ((*gpu_def).locNz)) && (device_is_active_point(i, j, k, def) == 1))
+	if ((i < ((*gpu_def).locNx)) && (j < ((*gpu_def).locNy)) && (k < ((*gpu_def).locNz)) && (device_is_active_point(i, j, k) == 1))
 	{
 		int media = DevArraysPtr.media[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 		double k_w, k_g, k_n, P_k_nw, P_k_gn;
@@ -259,7 +259,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 //«адание граничных условий отдельно дл€ (Sw,Sg),Pn
 
 // «адание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
-__global__ void Border_S_kernel(ptr_Arrays DevArraysPtr, consts def)
+__global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -305,7 +305,7 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr, consts def)
 	}
 }
 
-__global__ void Border_P_kernel(ptr_Arrays DevArraysPtr, consts def)
+__global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -348,22 +348,22 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr, consts def)
 	}
 	else
 	{
-		DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.P_w[i1 + j1 * ((*gpu_def).locNx) + k1 * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + cu_ro_eff_gdy(DevArraysPtr, i1, j1, k1, def);
+		DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.P_w[i1 + j1 * ((*gpu_def).locNx) + k1 * ((*gpu_def).locNx) * ((*gpu_def).locNy)] + cu_ro_eff_gdy(DevArraysPtr, i1, j1, k1);
 	}
 }
 
 // «апись начальных условий дл€ каждой точки сетки (независимо от остальных точек)
-__global__ void data_initialization(ptr_Arrays DevArraysPtr, long int* t, consts def)
+__global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 {
 	*t = 0;
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
 	int k = threadIdx.z + blockIdx.z * blockDim.z;
 
-	if (device_is_active_point(i, j, k, def))
+	if (device_is_active_point(i, j, k))
 	{
 		// ѕреобразование локальных координат процессора к глобальным
-		int I = device_local_to_global(i, 'x', def);
+		int I = device_local_to_global(i, 'x');
 
 		int media = DevArraysPtr.media[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = 0;
 		int j1 = (*gpu_def).locNy / 2;
@@ -385,7 +385,7 @@ __global__ void data_initialization(ptr_Arrays DevArraysPtr, long int* t, consts
 		}
 		else
 		{
-			DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = DevArraysPtr.P_w[i + (j - 1) * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j - 1, k, def);
+			DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = DevArraysPtr.P_w[i + (j - 1) * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
 		}
 
 		DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - (*gpu_def).P_atm));
