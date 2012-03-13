@@ -132,7 +132,7 @@ copy "$(CudaToolkitBinDir)\cudart32_*.dll" "$(TargetDir)"
     <CudaCompile>
       <Runtime>MDd</Runtime>
       <CodeGeneration>compute_20,sm_20</CodeGeneration>
-      <Defines>THREE_PHASE;</Defines>
+      <Defines>THREE_PHASE;MY_TEST</Defines>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
