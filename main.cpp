@@ -560,7 +560,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	if (!(fp = fopen(fname, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
-	if (!(fp_xz = fopen(fname, "at")))
+	if (!(fp_xz = fopen(fname_xz, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
 	for (int i = 0; i < def.locNx; i++)
@@ -625,6 +625,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #endif
 				}
 
+#if B_L
 	for (int i = 0; i < def.locNx; i++)
 		for (int k = 0; k < def.locNz; k++)
 		{
@@ -640,6 +641,8 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					fprintf(fp_xz, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.K[i + j1 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j2 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j3 * def.locNx + k * def.locNx * def.locNy]); // (1)
 				}
 		}
+
+#endif
 
 	fclose(fp);
 	fclose(fp_xz);
@@ -725,14 +728,14 @@ void load_permeability(double* K, consts def)
 {
 	FILE *input;
 	char *file = "../porosity.dat";
-
+/*
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
 			for (int k = 0; k < def.locNz; k++)
 			{
 				K[i + j * def.locNx + k * def.locNx * def.locNy] = 6.64e-11;
 			}
-
+*/
 
 	if (!(input = fopen(file, "rt")))
 	{
@@ -758,24 +761,7 @@ void load_permeability(double* K, consts def)
 	long int row = 0, bigN = 0;
 	int index = 0;
 	int six = 6;
-	/*
-		while (row*six < def.Nx*(def.Ny)*(def.Nz))
-		{
-			fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s+1, s+2, s+3, s+4, s+5);
 
-			for (index=0;index<six;index++)
-			{
-				bigN = six * row + index;
-				int k = bigN % def.Nz;
-				int j = (bigN/def.Nz) % def.Ny;
-				int i = bigN / (def.Ny * (def.Nz));
-
-				K[i+j*def.Nx+k*def.Nx*def.Ny]=s[index];
-			}
-			row++;
-		}
-
-	*/
 	while (row * six < def.Nx * (def.Ny) * (def.Nz))
 	{
 		fscanf(input, "%lf %lf %lf %lf %lf %lf\n", s, s + 1, s + 2, s + 3, s + 4, s + 5);
@@ -787,7 +773,8 @@ void load_permeability(double* K, consts def)
 			int k = (bigN / def.Nx) % def.Nz;
 			int j = bigN / (def.Nz * (def.Nx));
 
-			K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11 + s[index] * 10e-13;
+			//K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11+ s[index] * 10e-13;
+			K[i + j * def.Nx + k * def.Nx * def.Ny] = s[index];
 		}
 		row++;
 	}
