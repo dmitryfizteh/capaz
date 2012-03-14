@@ -483,6 +483,11 @@ void print_plots_top(double t, consts def)
 
 	sprintf(fname, "plots/S=%012.4f.dat", t);
 
+	char fname_xz[30];
+	FILE *fp_xz;
+
+	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
+
 #ifdef _WIN32
 	_mkdir("plots");
 #else
@@ -497,7 +502,12 @@ void print_plots_top(double t, consts def)
 	if (!(fp = fopen(fname, "wt")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
+	if (!(fp_xz = fopen(fname_xz, "wt")))
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
+
 	fprintf(fp, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
+
+	fprintf(fp_xz, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
 
 	if ((def.Nz) < 2)
 	{
@@ -505,7 +515,7 @@ void print_plots_top(double t, consts def)
 		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"media\" \n");
 		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"media\" \n");
 #else
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"media\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"media\", \"media\",\"media\" \n");
 #endif
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
 	}
@@ -516,11 +526,14 @@ void print_plots_top(double t, consts def)
 		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"Z\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"uw_z\",\"un_x\",\"un_y\",\"un_z\",\"ug_x\",\"ug_y\",\"ug_z\",\"media\" \n");
 #else
 		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"Z\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"u_z\", \"media\" \n");
+		fprintf(fp_xz, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"media1\", \"media2\",\"media3\" \n");
+		fprintf(fp_xz, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Nz));
 #endif
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny), (def.Nz));
 	}
 
 	fclose(fp);
+	fclose(fp_xz);
 }
 
 
@@ -529,9 +542,15 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 {
 	char fname[30];
 	FILE *fp;
+
+	char fname_xz[30];
+	FILE *fp_xz;
+
 	int local;
 
 	sprintf(fname, "plots/S=%012.4f.dat", t);
+
+	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
 
 	// Открытие на дозапись и сохранение графиков
 	// 1. Для распределения насыщенностей NAPL S_n
@@ -539,6 +558,9 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
 	if (!(fp = fopen(fname, "at")))
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
+
+	if (!(fp_xz = fopen(fname, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
 	for (int i = 0; i < def.locNx; i++)
@@ -599,11 +621,28 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					{
 						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 					}
+
 #endif
 				}
 
+	for (int i = 0; i < def.locNx; i++)
+		for (int k = 0; k < def.locNz; k++)
+		{
+			int j1=def.locNz/3;
+			int j2=def.locNz/2;
+			int j3=def.locNz/3*2;
+			// Если is_active_point(i, j1, k, def) правда, то и для j2, j3 тоже правда
+				if (is_active_point(i, j1, k, def))
+				{
+					local = i + j1 * def.locNx + k * def.locNx * def.locNy;
+					int I = local_to_global(i, 'x', def);
+
+					fprintf(fp_xz, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.K[i + j1 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j2 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j3 * def.locNx + k * def.locNx * def.locNy]); // (1)
+				}
+		}
 
 	fclose(fp);
+	fclose(fp_xz);
 }
 
 // Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
