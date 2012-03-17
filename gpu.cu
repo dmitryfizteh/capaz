@@ -23,24 +23,25 @@ __device__ int device_local_to_global(int local_index, char axis)
 	int global_index = local_index;
 	switch (axis)
 	{
-	case 'x':
-	{
-		global_index += (*gpu_def).rankx * (*gpu_def).Nx / (*gpu_def).sizex + min((*gpu_def).rankx, (*gpu_def).Nx % (*gpu_def).sizex);
-		break;
-	}
-	case 'y':
-	{
-		global_index += (*gpu_def).ranky * (*gpu_def).Ny / (*gpu_def).sizey + min((*gpu_def).ranky, (*gpu_def).Ny % (*gpu_def).sizey);
-		break;
-	}
-	case 'z':
-	{
-		global_index += (*gpu_def).rankz * (*gpu_def).Nz / (*gpu_def).sizez + min((*gpu_def).rankz, (*gpu_def).Nz % (*gpu_def).sizez);
-		break;
-	}
-	default:
-	{
-		CUPRINTF("Error!");}
+		case 'x':
+		{
+			global_index += (*gpu_def).rankx * (*gpu_def).Nx / (*gpu_def).sizex + min((*gpu_def).rankx, (*gpu_def).Nx % (*gpu_def).sizex);
+			break;
+		}
+		case 'y':
+		{
+			global_index += (*gpu_def).ranky * (*gpu_def).Ny / (*gpu_def).sizey + min((*gpu_def).ranky, (*gpu_def).Ny % (*gpu_def).sizey);
+			break;
+		}
+		case 'z':
+		{
+			global_index += (*gpu_def).rankz * (*gpu_def).Nz / (*gpu_def).sizez + min((*gpu_def).rankz, (*gpu_def).Nz % (*gpu_def).sizez);
+			break;
+		}
+		default:
+		{
+			//CUPRINTF("Error!");
+		}
 	}
 	//some_test(global_index);
 	return global_index;
