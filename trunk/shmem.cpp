@@ -1,4 +1,4 @@
-#define K100
+#define MVSE
 #ifdef K100
 	#include <mpi.h>
 	#include <shmem.h>

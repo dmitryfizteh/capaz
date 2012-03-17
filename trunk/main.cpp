@@ -728,14 +728,6 @@ void load_permeability(double* K, consts def)
 {
 	FILE *input;
 	char *file = "../porosity.dat";
-/*
-	for (int i = 0; i < def.locNx; i++)
-		for (int j = 0; j < def.locNy; j++)
-			for (int k = 0; k < def.locNz; k++)
-			{
-				K[i + j * def.locNx + k * def.locNx * def.locNy] = 6.64e-11;
-			}
-*/
 
 	if (!(input = fopen(file, "rt")))
 	{
@@ -744,7 +736,15 @@ void load_permeability(double* K, consts def)
 		{
 			char error[30];
 			sprintf(error, "Not open file \"%s\"", file);
-			print_error(error, __FILE__, __LINE__);
+			//print_error(error, __FILE__, __LINE__);
+
+			for (int i = 0; i < def.locNx; i++)
+				for (int j = 0; j < def.locNy; j++)
+					for (int k = 0; k < def.locNz; k++)
+					{
+						K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0];
+						return;
+					}
 		}
 	}
 
@@ -1125,7 +1125,6 @@ void read_defines(int argc, char *argv[], consts* def)
 		}
 #endif
 
-#ifndef B_L
 		if (!strcmp(attr_name, "K_0"))
 		{
 			(*def).K[0] = atof(attr_value);
@@ -1136,7 +1135,7 @@ void read_defines(int argc, char *argv[], consts* def)
 			(*def).K[1] = atof(attr_value);
 			continue;
 		}
-#endif
+
 #ifdef TWO_PHASE
 		if (!strcmp(attr_name, "P_D_0"))
 		{
