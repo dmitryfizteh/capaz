@@ -67,11 +67,9 @@ struct consts_tag
 	double S_n_gr;
 	int Nx, Ny, Nz;
 	int source, save_plots, print_screen, newton_iterations;
+	double K[2];
 #ifdef B_L
 	double Q; // Дебит скважины
-#endif
-#ifndef B_L
-	double K[2];
 #endif
 #ifdef TWO_PHASE
 	double P_d[2];

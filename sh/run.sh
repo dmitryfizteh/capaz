@@ -46,6 +46,7 @@ if [ "$hostname" = "mvse" ]
 then
     ARCH=13
     PPN=1
+	lib_path="-L/common/cuda/lib -lcudart"
     maxtime="-maxtime $5"
 else 	if [ "$hostname" = "k100" ]
 	then
@@ -124,16 +125,12 @@ then
       compilator="mpicxx"
    fi
 else 	if [ "$hostname" = "mvse" ]
-	then
-	    if [ "$2" = "gpu" ]
-            then
-		compilator="shmemcc"
-            else
-		compilator="mpicc"
-            fi
+	then		
 	    if [ "$3" = "shmem" ]
    	    then
       		compilator="shmemcc"
+		else
+			compilator="mpicc"
 	    fi
 	else
 	    if [ "$3" = "mpi" ]
