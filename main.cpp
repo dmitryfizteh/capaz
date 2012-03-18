@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
-	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
+	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 
 	task_time = clock();
 
@@ -619,7 +619,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					}
 					else
 					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), 1-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 					}
 
 #endif
@@ -773,8 +773,8 @@ void load_permeability(double* K, consts def)
 			int k = (bigN / def.Nx) % def.Nz;
 			int j = bigN / (def.Nz * (def.Nx));
 
-			//K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11+ s[index] * 10e-13;
-			K[i + j * def.Nx + k * def.Nx * def.Ny] = s[index];
+			K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11+ s[index] * 10e-13;
+			//K[i + j * def.Nx + k * def.Nx * def.Ny] = s[index];
 		}
 		row++;
 	}
