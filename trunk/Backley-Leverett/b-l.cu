@@ -1,5 +1,6 @@
 //#include "../defines.h"
 #include "../gpu.h"
+#include "b-l.h"
 
 //****************************
 //TODO: copy to another place
@@ -9,14 +10,14 @@
 double Injection_well_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	// 10000psi in Pa
-	return def.P_atm + 10000000; //68947572.9;
+	return INJECTION_WELL_Pw; //68947572.9;
 }
 
 // Давление на добывающей скважине
 double Production_well_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	// 4000psi in Pa
-	return def.P_atm;//27579029.16;
+	return OUTPUT_WELL_Pw;//27579029.16;
 }
 
 // Присвоение начальных условий
@@ -32,7 +33,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					int I = local_to_global(i, 'x', def);
 
 					HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
-					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = 0.7;
+					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
 					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
@@ -41,14 +42,14 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// 6000 pound per square inch = 41 368 543.8 Паскаля
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm + 5000000;    // 50368543.8;
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Pw; //+ 5000000;    // 50368543.8;
 					}
 					else
 					{
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
 					}
 
-
+					
 					// В центре резервуара находится нагнетающая скважина
 					if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
 					{
@@ -62,7 +63,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
 					}
-
+					
 
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
@@ -197,14 +198,14 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 __device__ double device_Injection_well_P(ptr_Arrays DevArraysPtr, int i, int j, int k)
 {
 	// 10000psi in Pa
-	return (*gpu_def).P_atm + 10000000; //68947572.9;
+	return INJECTION_WELL_Pw;//(*gpu_def).P_atm + 10000000; //68947572.9;
 }
 
 // Давление на добывающей скважине
 __device__ double device_Production_well_P(ptr_Arrays DevArraysPtr, int i, int j, int k)
 {
 	// 4000psi in Pa
-	return (*gpu_def).P_atm;//27579029.16;
+	return OUTPUT_WELL_Pw;//(*gpu_def).P_atm;//27579029.16;
 }
 
 // Присвоение начальных условий для каждой точки сетки (независимо от остальных точек)
@@ -229,14 +230,14 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 		// 6000 pound per square inch = 41 368 543.8 Паскаля
 		if (j == 0)
 		{
-			DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = (*gpu_def).P_atm + 5000000;    // 50368543.8;
+			DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = (*gpu_def).P_atm; //+ 5000000;    // 50368543.8;
 		}
 		else
 		{
 			DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = DevArraysPtr.P_w[i + (j - 1) * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] + ro_g_dy;
 		}
 
-
+		/*
 		// В центре резервуара находится нагнетающая скважина
 		if ((i == (*gpu_def).Nx / 2) && (j == (*gpu_def).Ny - 3) && (k == (*gpu_def).Nz / 2))
 		{
@@ -250,7 +251,7 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 			DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = device_Production_well_P(DevArraysPtr, i, j, k);
 			//DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = 0.5;
 		}
-
+		*/
 
 		DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = (*gpu_def).ro0_w * (1. + ((*gpu_def).beta_w) * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - (*gpu_def).P_atm));
 		DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = (*gpu_def).ro0_n * (1. + ((*gpu_def).beta_n) * (DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - (*gpu_def).P_atm));
