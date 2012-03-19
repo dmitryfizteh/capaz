@@ -483,11 +483,6 @@ void print_plots_top(double t, consts def)
 
 	sprintf(fname, "plots/S=%012.4f.dat", t);
 
-	char fname_xz[30];
-	FILE *fp_xz;
-
-	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
-
 #ifdef _WIN32
 	_mkdir("plots");
 #else
@@ -502,12 +497,7 @@ void print_plots_top(double t, consts def)
 	if (!(fp = fopen(fname, "wt")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
-	if (!(fp_xz = fopen(fname_xz, "wt")))
-		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
-
 	fprintf(fp, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
-
-	fprintf(fp_xz, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
 
 	if ((def.Nz) < 2)
 	{
@@ -532,10 +522,20 @@ void print_plots_top(double t, consts def)
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny), (def.Nz));
 	}
 
-	fclose(fp);
-	fclose(fp_xz);
-}
+#ifdef B_L
+	char fname_xz[30];
+	FILE *fp_xz;
 
+	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
+	if (!(fp_xz = fopen(fname_xz, "wt")))
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
+
+	fprintf(fp_xz, "TITLE =  \"Filtration in time=%5.2f\" \n", t);
+	fclose(fp_xz);
+#endif
+
+	fclose(fp);
+}
 
 // Функция сохранения данных в файлы графиков
 void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
@@ -543,14 +543,9 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	char fname[30];
 	FILE *fp;
 
-	char fname_xz[30];
-	FILE *fp_xz;
-
 	int local;
 
 	sprintf(fname, "plots/S=%012.4f.dat", t);
-
-	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
 
 	// Открытие на дозапись и сохранение графиков
 	// 1. Для распределения насыщенностей NAPL S_n
@@ -558,9 +553,6 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	// 3. Для распределения скоростей {u_x, u_y, u_z}
 	// 4. Для распределения типов грунтов
 	if (!(fp = fopen(fname, "at")))
-		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
-
-	if (!(fp_xz = fopen(fname_xz, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
 	for (int i = 0; i < def.locNx; i++)
@@ -611,7 +603,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.media[local]); // (1)
 					}
 #endif
-#if B_L
+#ifdef B_L
 					if (def.Nz < 2)
 					{
 						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
@@ -625,7 +617,17 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #endif
 				}
 
-#if B_L
+	fclose(fp);
+
+#ifdef B_L
+	char fname_xz[30];
+	FILE *fp_xz;
+
+	sprintf(fname_xz, "plots/xz=%012.4f.dat", t);
+
+	if (!(fp_xz = fopen(fname_xz, "at")))
+		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
+
 	for (int i = 0; i < def.locNx; i++)
 		for (int k = 0; k < def.locNz; k++)
 		{
@@ -641,11 +643,8 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					fprintf(fp_xz, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.K[i + j1 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j2 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j3 * def.locNx + k * def.locNx * def.locNy]); // (1)
 				}
 		}
-
-#endif
-
-	fclose(fp);
 	fclose(fp_xz);
+#endif
 }
 
 // Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]

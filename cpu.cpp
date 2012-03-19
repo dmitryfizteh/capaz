@@ -505,18 +505,22 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 
 		if (j == 1)
 		{
-			q_w = -0.02;
-			q_g = 0;
+			q_w = 0.02;
+			q_g = 0.005;
 			q_n = 0;
-		}
 
-		q = q_w + q_n + q_g;
+			q = q_w + q_n + q_g;
 
-		if (j == (def.Ny) - 2)
-		{
 			q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 			q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 			q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		}
+
+		if (j == (def.Ny) - 2)
+		{
+			q_w = 0.02;
+			q_g = 0.005;
+			q_n = 0;
 		}
 
 		HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
