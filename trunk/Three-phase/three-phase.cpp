@@ -2,18 +2,18 @@
 #include "three-phase.h"
 
 // Коэффициенты прямых, продолжающих функции капиллярных давлений на границах интервала изменения насыщенностей [0,1]
-const double aw[2] = { -396.40, -265.30};
-const double bw[2] = {125.60, 271.10};
-const double ag[2] = {141.70, 353.80};
-const double bg[2] = {1.58, -29.69};
+static const double aw[2] = { -396.40, -265.30};
+static const double bw[2] = {125.60, 271.10};
+static const double ag[2] = {141.70, 353.80};
+static const double bg[2] = {1.58, -29.69};
 // Ключевые точки интервала изменения насыщенностей для вычисления проницаемостей и капиллярных давлений
-const double S_w_range[3] = {0.001, 0.1, 0.99};
-const double S_g_range[3] = {0.001, 0.005, 0.95};
+static const double S_w_range[3] = {0.001, 0.1, 0.99};
+static const double S_g_range[3] = {0.001, 0.005, 0.95};
 
 // Функции вычисления капиллярных давлений
 // По краям интервала [0, 1] функции капиллярных давлений гладко заменяем линейными, производные меняются соответственно.
 // Описание можно посмотреть в файле mathcad.
-double assign_P_k_nw(double S_w_e, int media, consts def)
+static double assign_P_k_nw(double S_w_e, int media, consts def)
 {
 	double P_k_nw = 0;
 	double A = def.lambda[media];
@@ -34,7 +34,7 @@ double assign_P_k_nw(double S_w_e, int media, consts def)
 	return P_k_nw;
 }
 
-double assign_P_k_gn(double S_g_e, int media, consts def)
+static double assign_P_k_gn(double S_g_e, int media, consts def)
 {
 	double P_k_gn = 0;
 	double A = def.lambda[media];
@@ -56,7 +56,7 @@ double assign_P_k_gn(double S_g_e, int media, consts def)
 }
 
 // Функции вычисления производных капиллярных давлений по насыщенностям
-double assign_P_k_nw_S(double S_w_e, int media, consts def)
+static double assign_P_k_nw_S(double S_w_e, int media, consts def)
 {
 	double PkSw = 0;
 	double A = def.lambda[media];                                                                                                                                                                                                                                                                  /*2*/
@@ -78,7 +78,7 @@ double assign_P_k_nw_S(double S_w_e, int media, consts def)
 	return PkSw;
 }
 
-double assign_P_k_gn_S(double S_g_e, int media, consts def)
+static double assign_P_k_gn_S(double S_g_e, int media, consts def)
 {
 	double PkSn = 0;
 	double A = def.lambda[media];
@@ -100,7 +100,7 @@ double assign_P_k_gn_S(double S_g_e, int media, consts def)
 }
 
 // Функции вычисления относительных проницаемостей
-double assign_k_w(double S_w_e, int media, consts def)
+static double assign_k_w(double S_w_e, int media, consts def)
 {
 	double A = def.lambda[media];
 	double k_w = 0;
@@ -113,7 +113,7 @@ double assign_k_w(double S_w_e, int media, consts def)
 	return k_w;
 }
 
-double assign_k_g(double S_g_e, int media, consts def)
+static double assign_k_g(double S_g_e, int media, consts def)
 {
 	double A = def.lambda[media];
 	double k_g = 0;
@@ -126,7 +126,7 @@ double assign_k_g(double S_g_e, int media, consts def)
 	return k_g;
 }
 
-double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
+static double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
 {
 	double A = def.lambda[media];
 	double k_n = 0;
@@ -185,7 +185,7 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 // Вспомогательная функции для метода Ньютона:
 // Нахождение обратной матрицы 3*3;
-void reverse_matrix(double* a)
+static void reverse_matrix(double* a)
 {
 	int n = 3;
 	double b[9], det = 0;
