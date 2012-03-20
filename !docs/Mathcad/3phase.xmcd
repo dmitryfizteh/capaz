@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?validation-md5-digest f357612286a0867525c0fb088fcd7ce6?>
+<?validation-md5-digest 2a0cc5060b200023a56764ae9fb8260f?>
 <worksheet version="3.0.3" xmlns="http://schemas.mathsoft.com/worksheet30" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ws="http://schemas.mathsoft.com/worksheet30" xmlns:ml="http://schemas.mathsoft.com/math30" xmlns:u="http://schemas.mathsoft.com/units10" xmlns:p="http://schemas.mathsoft.com/provenance10">
 	<pointReleaseData/>
 	<metadata>
@@ -13,9 +13,9 @@
 			<revisedBy>anastasiya</revisedBy>
 		</userData>
 		<identityInfo>
-			<revision>43</revision>
+			<revision>44</revision>
 			<documentID>2B11C96B-0972-4B0C-8380-0F21FE994B7D</documentID>
-			<versionID>D44A62DC-A232-4F49-A513-47EC706E9CA0</versionID>
+			<versionID>FC066420-A2B0-4355-B93D-06AB20DBA8A7</versionID>
 			<parentVersionID>00000000-0000-0000-0000-000000000000</parentVersionID>
 			<branchID>00000000-0000-0000-0000-000000000000</branchID>
 		</identityInfo>
@@ -111,7 +111,7 @@
 		</editor>
 		<fileFormat image-type="image/png" image-quality="75" save-numeric-results="true" exclude-large-results="true" save-text-images="false" screen-dpi="96"/>
 		<miscellaneous>
-			<handbook handbook-region-tag-ub="405" can-delete-original-handbook-regions="true" can-delete-user-regions="true" can-print="true" can-copy="true" can-save="true" file-permission-mask="4294967295"/>
+			<handbook handbook-region-tag-ub="409" can-delete-original-handbook-regions="true" can-delete-user-regions="true" can-print="true" can-copy="true" can-save="true" file-permission-mask="4294967295"/>
 		</miscellaneous>
 	</settings>
 	<regions>
@@ -1753,6 +1753,11 @@
 			<plot disable-calc="false" item-idref="65"/>
 			<rendering item-idref="66"/>
 		</region>
+		<region region-id="409" left="6" top="1514.25" width="451.5" height="12" align-x="21.75" align-y="1524" show-border="false" show-highlight="false" is-protected="true" z-order="0" background-color="inherit" tag="">
+			<text use-page-width="false" push-down="false" lock-width="true">
+				<p style="Normal" margin-left="inherit" margin-right="inherit" text-indent="inherit" text-align="inherit" list-style-type="inherit" tabs="inherit">Модель проницаемостей из "Подземной гидромеханики" + лин. комбинация для нефти из ECLIPSE</p>
+			</text>
+		</region>
 	</regions>
 	<binaryContent>
 		<item item-id="1" content-encoding="gzip">H4sIAAAAAAAA/2yQwW6CQBCGZ1wqSFG89NI1wWfwCXowTQ+NJvoAZItUMRIbSpMe++b0n9k9
@@ -2164,17 +2169,17 @@ VW1ARWa/4yKwacHXelh/Kio7fraJ5E7RXBaAZZoMTXaDmG3SbRgNAQhAAAIQiEXAn8dZNDJK
 aa5Yjr5tO4jZ27qWgUEAAhCAAARCCPjF7LB4q0B0lE0TQhz4+GMQs4+fAgCAAAQgAIFnE1hq
 vsq6r9PvNnNA5rdqpbWSQ9tun5u8y8gdqBxgjan69202gIgM60JziNkL8DgVAhCAAAQgAAEI
 QKAsgf8DhLh2+R82bMYAAAAASUVORK5CYII=</item>
-		<item item-id="21" content-encoding="gzip">H4sIAAAAAAAA/2xTzW7TQBCetZ3YTvNjQlJIncSh/JzBAgl6KlWFOBSo0jOqXMdtg5omuC70
-aPEAnLlx4REQdx4AXsl8O+OmBbHW7Mx8+83szO66TkQKsgepsW1idpL34+RoOj+tkB6PIe5k
-HgtmMfZM02bxm4N3SZwxQmOONzBXz44XW/MLgXcgNoDxkvgKsgveF+gTpPulrnw93kI8YAYZ
-JlfXXm7+PMvS6cF5lihmbkBadH1YG+t/+RVOYGVpkvgMhJDGgs1q2PtJlFfs8Cv0ZtURbbui
-nZpodyU0sEmG87GU+YQe4qM6Y9+BGUo90jmZnLvNUFe01dCVsfmpwZt5Yfs31p0bHDjxUJq1
-SzGd0kc0GH5GSblHN3n1W5vINPb0CkZHMttdKaezKrp7i7kfVrkElHSb/R9Ln3oS2F2TknqA
-fCmpx4n74nTYGQi5OpTsg0D0cCTNB5eN3pHGg+Uu6xI4vCu76OO/J4nlJu5LS4Orlh7wI2lN
-wv2jNFoc7x/O01mU2czu6rfG8HaURXKHa+VdGiNMZvlin0JGbGuvFl1Mz15wHnmffUhTlVzu
-MC+KAm7//+jOJSqjwLdMbmdpFCfhtslLfkkMlEfKV4W2lPLRUhEoQ/kmQgNlKt8qNGKBQwWM
-Cjj5JpaqmqOjbObAcDRHk12dR4fXwOHwFXA4vA4Ohzd4LxhN5sBoaY4mS7mt1+ezJJ3G0Ykc
-iMNlv4RMaIrPLH+aWnma/4z6decPAAAA//8DAE4tg2ogBAAA</item>
+		<item item-id="21" content-encoding="gzip">H4sIAAAAAAAA/2xTzW7TQBCetZ3YTvNHSAqpkziUnzNYIEFPpaoQhwJVekaV67itUdME14Ue
+Ix6AMzcuPALizgPAK5lvZ1y3INaanZlvv5md2V3XiUhB9iA1tk3MTvx+Eh8l89MK6fEY4k7n
+kWAWY880bRa9OXgXRxkjNOF4A3P17HixNb8QeAdiA5iUxFeQXfC+QJ8g3S915evxtijKIMNk
+o1Nu/jzL0uTgPIsVMzcgLbo+rI31v/wKJ7CyNI49BgJIY8FmNej/JFpW7OAr9GbVEW27op2a
+aHclMLBJhvOxlPmEHuKjOmPfgRlKPdI5mbx0m4GuaKuhK2PzU4M3awed31h3bnDgtI3SrF2K
+6JQ+osHgM0patukmr37rEJnGnl7B6EpmuyfldFdF924x98Mql4CSbrP/o/SpL4G9NSmpD8iT
+kvqceCBOl52hkKsjyT70RY/G0rx/2egdadwvd1mXwNFd2UUf/z1JLDdxX1oaXrX0gB9Jaxrs
+H6Xh4nj/cJ7Owsxmdk+/NYa3wyyUO1wr7tIYYzKLx/EUMmZbe7XwIjl7wXnkfQ4gTVVwucNl
+nudwB/9Hdy5RGTm+MrmdpWEUB9smL3kF0VdtUp7KtaWUh5ZyXxnKMxHqK1N5Vq4RCxzKYVTA
+WW5iqao5OspmDgxHczTZ1Xl0eA0cDl8Bh8Pr4HB4g/eC0WQOjJbmaLKU23p9PovTJApP5EAc
+LvslZEoJPrP4aWrFaf4z6tedPwAAAP//AwAO0l1BIAQAAA==</item>
 		<item item-id="22">iVBORw0KGgoAAAANSUhEUgAAAhwAAAE1CAYAAACstTkfAAAAAXNSR0IArs4c6QAAAARnQU1B
 AACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAADjeSURBVHhe7Z2LmesoDIVTVwpKHVtC
 qkkzKSZr/IjBARvbOpno8s/3Ze9OBmQ4EtIxL11e/IAACIAACIAACICAGIGLWD7iQQAEQAAE
@@ -2932,15 +2937,15 @@ uDrS9wXwS2cOgLft3HtjNwCGr9uizW9fZ5aqcC6AmaJq37cBL2P21wLSudLwt9aLtk3hDGmo
 nAhMBCYCH0fgD2lJHKstVOvaAAAAAElFTkSuQmCC</item>
 		<item item-id="39" content-encoding="gzip">H4sIAAAAAAAA/2xTzW7TQBCetZ3YSZMmhKSQOolD+TlTiws9lapCHApU6RWpch03DSJNcF3U
 Y8QD8ApceATEnRfgOXgL882MmxbEWrM78+03f7vrGhEZyBGkKrqN2Us+jpLJdH5eIh7PIJXx
-PFbMEew502bx25P3SZwJQiPxtzCXL84We/MrhQ8gLoDRivgacgjeb2Q+Rbi+fWPzeAdpQrfI
-sqW61ir5iyxLpyeXWaLUHUiDbg9nZ+svuyQBnCxNEl+AEFJfiFoOuz+JliU3/Ip1t+zp6lZ0
-9aq6VtZCC0kynI9j7G16io9qgn0HZhmzzTGFvKysh1zRXp0rE/VzXZI1w9Yv7Ht3xHHcRGnO
-IcU0oXM0GH5BScsm3ZXdby0i2zrCHo+2RnY7Wk57Q9fOPeF+2pASUNJ9sX+sbOqqY2dTS+oC
-8rWkrgTuqdEWo6/k8kCj9wNdB0NtPrhu9IE2HqyybKnj4KFm4eN/pIH1Jh5rS/2blp7II2mM
-w+NJGi3Ojk/n6SzKXGF3+K0JvB9lkd7hZnGX1hCTXbxYfoBD0dmqRlfTi5cSR99nD7JuCq50
-uMzzHGbv/+jBNaojx7cK7mZpFCfhvi1bfkEMTJOMb3LWjPHRUh4Yy/g2XANjG9/JGXHAoRxK
-CZzlLrbKzGEvVzhQPOYwucJx2L0KjrivgSPuNXDEvS65oKwLB0qDOUzWchtvLmdJOo2jD3og
-npT9CjKmKT67+GmqxWn+M2q3jT8AAAD//wMAPKvWtSAEAAA=</item>
+PFbMEew502bx25P3SZwJQiPxtzCXL84We/MrhQ8gLoDRivgacgjeb2Q+Rbi+fWPzeFcUZZFl
+i9JaJX+RZen05DJLlLoDadDt4exs/WWXJICTpUniCxBC6gtRy2H3J9Gy5IZfse6WPV3diq5e
+VdfKWmghSYbzcYy9TU/xUU2w78AsY7Y5ppCXlfWQK9qrc2Wifq5LsmbY+oV97444jpsozTmk
+mCZ0jgbDLyhp2aS7svutRWRbR9jj0dbIbkfLaW/o2rkn3E8bUgJKui/2j5VNXXXsbGpJXUC+
+ltSVwD012mL0lVweaPR+oOtgqM0H140+0MaDVZYtdRw81Cx8/I80sN7EY22pf9PSE3kkjXF4
+PEmjxdnx6TydRZkr7A6/NYH3oyzSO9ws7tIaYrKLx8EPcCg6W9XoanrxUuLo++xB1k3BlQ6X
+eZ7D7P0fPbhGdeT4VsHdLI3iJNy3ZcsviIFpkvFNzpoxPlrKA2MZ34ZrYGzjOzkjDjiUQymB
+s9zFVpk57OUKB4rHHCZXOA67V8ER9zVwxL0GjrjXJReUdeFAaTCHyVpu483lLEmncfRBD8ST
+sl9BxjTFZxc/TbU4zX9G7bbxBwAA//8DAHxUCJ4gBAAA</item>
 		<item item-id="40">iVBORw0KGgoAAAANSUhEUgAAAhYAAAE1CAYAAAC7l6nWAAAAAXNSR0IArs4c6QAAAARnQU1B
 AACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAADW2SURBVHhe7Z2Nlau6DkZTVwpKHaeE
 VJNmUgwH8xOMsUGAxCDYs9ZZ790ZUJzPsrSxjfWo+EEBFEABFEABFEABJQUeSnYwgwIogAIo
