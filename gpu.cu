@@ -156,50 +156,48 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr)
 		{
 			if (j == 0)
 			{
-				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_w * (
-				            (DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (P_w - DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)) / (*gpu_def).hy;
-
-				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_n * (
-				            (DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (P_n - DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)) / (*gpu_def).hy;
 #ifdef THREE_PHASE
-				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_g * (
-				            (DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (P_g - DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)) / (*gpu_def).hy;
+				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 #endif
+				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
+				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 			}
-
 			if (j == ((*gpu_def).locNy) - 1)
 			{
-				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_w * (
-				            (P_w - DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)
-				            - (DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (*gpu_def).hy;
-
-				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_n * (
-				            (P_n - DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)
-				            - (DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (*gpu_def).hy;
 #ifdef THREE_PHASE
-				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_g * (
-				            (P_g - DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * j * (*gpu_def).hy)
-				            - (DevArraysPtr.P_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (*gpu_def).hy;
+				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 #endif
+				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
+				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+					- DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 			}
+
 			if ((j != 0) && (j != ((*gpu_def).locNy) - 1))
 			{
-				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_w * (
-				            (DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (2 * (*gpu_def).hy);
-
-				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_n * (
-				            (DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (2 * (*gpu_def).hy);
+				DevArraysPtr.uy_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (2 * (*gpu_def).hy)
+					- DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
+				DevArraysPtr.uy_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (2 * (*gpu_def).hy)
+					- DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 #ifdef THREE_PHASE
-				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = Xi_g * (
-				            (DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j + 1) * (*gpu_def).hy)
-				            - (DevArraysPtr.P_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] - DevArraysPtr.ro_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * (*gpu_def).locNy] * (*gpu_def).g_const * (j - 1) * (*gpu_def).hy)) / (2 * (*gpu_def).hy);
+				DevArraysPtr.uy_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = DevArraysPtr.Xi_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] *
+					((DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - DevArraysPtr.P_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (2 * (*gpu_def).hy)
+					- DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * ((*gpu_def).g_const));
 #endif
 			}
+						
 		}
 		else
 		{
@@ -402,8 +400,10 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		x2 = -(DevArraysPtr.P_w[i + 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P1) / (*gpu_def).hx;
 		x1 = -(P1 - DevArraysPtr.P_w[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hx;
 
-		y2 = -(DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P1) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j + 1) - DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j);
-		y1 = -(P1 - DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j - DevArraysPtr.ro_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j - 1));
+		y2 = -(DevArraysPtr.P_w[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P1) / (*gpu_def).hy
+				+ (*gpu_def).g_const * DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
+		y1 = -(P1 - DevArraysPtr.P_w[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+				+ (*gpu_def).g_const * DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 
 		f1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * DevArraysPtr.Xi_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] -
 		      (x1 + abs(x1)) / 2.0 * (-1) * DevArraysPtr.Xi_w[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_w[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] +
@@ -417,8 +417,10 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		x2 = -(DevArraysPtr.P_n[i + 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P2) / (*gpu_def).hx;
 		x1 = -(P2 - DevArraysPtr.P_n[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hx;
 
-		y2 = -(DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P2) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j + 1) - DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j);
-		y1 = -(P2 - DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j - DevArraysPtr.ro_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j - 1));
+		y2 = -(DevArraysPtr.P_n[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P2) / (*gpu_def).hy
+				+ (*gpu_def).g_const * DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
+		y1 = -(P2 - DevArraysPtr.P_n[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+				+ (*gpu_def).g_const * DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 
 		g1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * DevArraysPtr.Xi_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] -
 		      (x1 + abs(x1)) / 2.0 * (-1) * DevArraysPtr.Xi_n[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_n[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] +
@@ -441,8 +443,10 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		x2 = -(DevArraysPtr.P_g[i + 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P3) / (*gpu_def).hx;
 		x1 = -(P3 - DevArraysPtr.P_g[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hx;
 
-		y2 = -(DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P3) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j + 1) - DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j);
-		y1 = -(P3 - DevArraysPtr.P_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy + (*gpu_def).g_const * (DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * j - DevArraysPtr.ro_g[i + (j - 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * (j - 1));
+		y2 = -(DevArraysPtr.P_g[i + (j + 1) * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - P3) / (*gpu_def).hy
+			+ (*gpu_def).g_const * DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
+		y1 = -(P3 - DevArraysPtr.P_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]) / (*gpu_def).hy
+			+ (*gpu_def).g_const * DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
 
 		b1 = (((x2 + abs(x2)) / 2.0 - (x1 - abs(x1)) / 2.0) * (-1) * DevArraysPtr.Xi_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_g[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] -
 		      (x1 + abs(x1)) / 2.0 * (-1) * DevArraysPtr.Xi_g[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] * DevArraysPtr.ro_g[i - 1 + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] +
