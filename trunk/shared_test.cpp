@@ -27,9 +27,10 @@ void print_error(char *error, char *file, int line)
 
 // Функция проверки на выход из допустимого диапазона значений
 // во всех точках расчетной области процессора
-#ifndef THREE_PHASE
+
 void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 {
+#ifdef TWO_PHASE_1
 	for (int i = 0; i < (def.locNx); i++)
 		for (int j = 0; j < (def.locNy); j++)
 			for (int k = 0; k < (def.locNz); k++)
@@ -40,8 +41,8 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 				test_nan(HostArraysPtr.uy_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 				test_nan(HostArraysPtr.uz_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 			}
-}
 #endif
+}
 
 // Тест на NaN
 // Синтаксис вызова test_nan(x, __FILE__, __LINE__);
