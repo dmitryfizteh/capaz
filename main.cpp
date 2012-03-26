@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
-	//save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
+	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 
 	task_time = clock();
 
@@ -505,7 +505,7 @@ void print_plots_top(double t, consts def)
 		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"porosity\" \n");
 		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
 #else
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\",\"u_z\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"porosity\" \n");
 #endif
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
 	}
@@ -606,7 +606,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #ifdef B_L
 					if (def.Nz < 2)
 					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), j * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 
 					}
 					else
@@ -726,7 +726,7 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 void load_permeability(double* K, consts def)
 {
 	FILE *input;
-	char *file = "../porosity.dat";
+	char *file = "../noise.dat";
 
 	if (!(input = fopen(file, "rt")))
 	{
@@ -748,14 +748,20 @@ void load_permeability(double* K, consts def)
 	}
 
 	int Nx, Ny, Nz;
-	fscanf(input, "%d %d %d\n", &Nx, &Ny, &Nz);
+	if (def.Nz < 2)
+	{
+		fscanf(input, "%d %d\n", &Nx, &Ny);
+		Nz=1;
+	}
+	else
+		fscanf(input, "%d %d %d\n", &Nx, &Ny, &Nz);
 
 	if ((Nx != def.Nx) || (Ny != def.Ny) || (Nz != def.Nz))
 	{
 		printf("Warning: Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n", __FILE__, __LINE__);
 		fflush(stdout);
 	}
-
+	/*
 	double s[6];
 	long int row = 0, bigN = 0;
 	int index = 0;
@@ -772,13 +778,15 @@ void load_permeability(double* K, consts def)
 			int k = (bigN / def.Nx) % def.Nz;
 			int j = bigN / (def.Nz * (def.Nx));
 
-			K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11+ s[index] * 10e-13;
+			//K[i + j * def.Nx + k * def.Nx * def.Ny] = 6.64e-11+ s[index] * 10e-13;
 			//K[i + j * def.Nx + k * def.Nx * def.Ny] = s[index];
+			K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(s[index]);
 		}
 		row++;
 	}
 
 	fclose(input);
+	*/
 /*
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
@@ -788,12 +796,6 @@ void load_permeability(double* K, consts def)
 			}
 */
 
-
-
-
-
-
-	/*
 	char* str=new char[30*Nx];
 
 	char value[30];
@@ -819,7 +821,7 @@ void load_permeability(double* K, consts def)
 	}
 
 	fclose(input);
-	*/
+	
 }
 
 // Сохранение состояния в файл
