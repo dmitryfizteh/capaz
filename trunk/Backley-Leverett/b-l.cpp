@@ -3,7 +3,7 @@
 
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 	double k_w, k_n;
 	double S = 1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 
@@ -42,7 +42,11 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
-	{
+	{/*
+		if(! HostArraysPtr.m[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
+		{
+			return;
+		}*/
 		double A1 = HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		double A2 = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		double a = def.beta_w * (def.beta_n);
@@ -108,19 +112,19 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 
-
+	
 	// В центре резервуара находится нагнетательная скважина
-	if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
+	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
 	{
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = INJECTION_WELL_Sn;
 	}
 
 	// В центре резервуара находится добывающая скважина
-	if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
+	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
 	{
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = OUTPUT_WELL_Sn;
 	}
-
+	
 
 	test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 }
@@ -178,24 +182,24 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	else
 	{
 		double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-		                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy])]) * (def.g_const) * (def.hy);
+		                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
 
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_g_dy;//HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 
-
+	
 	// В центре резервуара находится нагнетающая скважина
-	if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
+	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
 	}
 
 	// В центре резервуара находится добывающая скважина
-	if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
+	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 	}
-
+	
 
 	test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 }
@@ -203,21 +207,32 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Присвоение начальных условий
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
+
+	for (int i = 0; i < def.locNx; i++)
+		for (int j = 0; j < def.locNy; j++)
+			for (int k = 0; k < def.locNz; k++)
+			{
+				if (! HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy])
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=0.01;
+					//std::cout << "m[" << i << ","<< j << "," << k <<"] = " << HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy] << "\n";
+			}
+
 	*t = 0;
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
+
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
-					HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
+					//HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
 					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
 					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy])]) * (def.g_const) * (def.hy);
+					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
 
 					// 6000 pound per square inch = 41 368 543.8 Паскаля
 					if (j == 0)
@@ -231,14 +246,14 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					
 					// В центре резервуара находится нагнетающая скважина
-					if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
+					if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
 					}
 
 					// В центре резервуара находится добывающая скважина
-					if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
+					if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
@@ -250,7 +265,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
 }
 

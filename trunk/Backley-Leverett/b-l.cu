@@ -32,12 +32,12 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
-					HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
+					//HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
 					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
 					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy])]) * (def.g_const) * (def.hy);
+					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (def.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
 
 					// 6000 pound per square inch = 41 368 543.8 Паскаля
 					if (j == 0)
@@ -51,14 +51,14 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					
 					// В центре резервуара находится нагнетающая скважина
-					if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
+					if ((i == def.Nx / 2) && (j == def.Ny / 2) && (k == def.Nz / 2))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
 					}
 
 					// В центре резервуара находится добывающая скважина
-					if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
+					if ((i == def.Nx - 3) && (j == def.Ny / 2) && (k == def.Nz - 3))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
@@ -70,7 +70,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
 }
 
@@ -194,7 +194,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// Давление на нагнетающей скважине
+// Давление на нагнетательной скважине
 __device__ double device_Injection_well_P(ptr_Arrays DevArraysPtr, int i, int j, int k)
 {
 	// 10000psi in Pa
@@ -220,12 +220,12 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 		// Преобразование локальных координат процессора к глобальным
 		int I = device_local_to_global(i, 'x');
 
-		DevArraysPtr.media[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = 0;
+		//DevArraysPtr.m[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = 0;
 		DevArraysPtr.S_n[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy] = 0.7;
 		//DevArraysPtr.S_n[i+j*(*gpu_def).locNx+k*(*gpu_def).locNx*(*gpu_def).locNy] =0.3 + 0.3 * j / (*gpu_def).Ny;
 
 		double ro_g_dy = ((*gpu_def).ro0_n * DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]
-		                  + (*gpu_def).ro0_w * (1 - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)])) * ((*gpu_def).m[(DevArraysPtr.media[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy])]) * ((*gpu_def).g_const) * ((*gpu_def).hy);
+		                  + (*gpu_def).ro0_w * (1 - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)])) * ((*gpu_def).m[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy]) * ((*gpu_def).g_const) * ((*gpu_def).hy);
 
 		// 6000 pound per square inch = 41 368 543.8 Паскаля
 		if (j == 0)
@@ -238,15 +238,15 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 		}
 
 		/*
-		// В центре резервуара находится нагнетающая скважина
-		if ((i == (*gpu_def).Nx / 2) && (j == (*gpu_def).Ny - 3) && (k == (*gpu_def).Nz / 2))
+		// В центре резервуара находится нагнетательная скважина
+		if ((i == (*gpu_def).Nx / 2) && (j == (*gpu_def).Ny / 2) && (k == (*gpu_def).Nz / 2))
 		{
 			DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = device_Injection_well_P(DevArraysPtr, i, j, k);
 			//DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = 0.5;
 		}
 
 		// В центре резервуара находится добывающая скважина
-		if ((i == (*gpu_def).Nx - 3) && (j == 3) && (k == (*gpu_def).Nz - 3))
+		if ((i == (*gpu_def).Nx - 3) && (j == (*gpu_def).Ny / 2) && (k == (*gpu_def).Nz - 3))
 		{
 			DevArraysPtr.P_w[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = device_Production_well_P(DevArraysPtr, i, j, k);
 			//DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] = 0.5;
@@ -258,7 +258,7 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 
 		device_test_nan(DevArraysPtr.S_n[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.P_w[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.media[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.m[i + j * (*gpu_def).locNx + k * (*gpu_def).locNx * (*gpu_def).locNy], __FILE__, __LINE__);
 	}
 }
 

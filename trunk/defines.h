@@ -47,7 +47,7 @@
 struct ptr_Arrays_tag
 {
 	double *S_n, *P_w, *P_n, *ro_w, *ro_n, *ux_w, *uy_w, *uz_w, *ux_n, *uy_n, *uz_n, *Xi_w, *Xi_n, *roS_w, *roS_w_old, *roS_n, *roS_n_old;
-	int *media;
+	double *m;
 #ifdef THREE_PHASE
 	double *P_g, *S_w, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
 #endif
@@ -144,7 +144,7 @@ extern void test_positive(double x, char *file, int line);
 extern void test_S(double S, char *file, int line);
 extern void test_u(double u, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
-extern void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line);
+extern void test_tau(double S_old, double S_now, double S_new, int local, consts def, char *file, int line);
 extern void read_defines_test(consts def);
 
 

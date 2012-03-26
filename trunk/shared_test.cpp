@@ -130,10 +130,10 @@ void test_arrowhead(double big, double small, char *file, int line)
 
 // ‘ункци€ провер€ет, что первое слагаемое уравнени€ неразрывности много больше (по модулю) второго
 // ≈сли это не так, печатаетс€ предупреждение
-void test_tau(double S_old, double S_now, double S_new, int media, consts def, char *file, int line)
+void test_tau(double S_old, double S_now, double S_new, int local, consts def, char *file, int line)
 {
 #ifdef MY_TEST_1
-	double L = def.m[media] * (S_new - S_old) / (2 * (def.dt));
+	double L = HostArraysPtr.m[local] * (S_new - S_old) / (2 * (def.dt));
 	double R = def.tau * (S_new - 2 * S_now + S_old) / ((def.dt) * (def.dt));
 
 	if (fabs(L / 30) < fabs(R))
