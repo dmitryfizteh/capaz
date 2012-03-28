@@ -3,6 +3,8 @@
 
 void assing_k(double* k_w, double* k_n, double S_w)
 {
+	/*
+	// SPE-постановка
 	double S_wc = 0.2;
 	double S_or = 0.2;
 	double S_e = (S_w - S_wc) / (1. - S_wc - S_or);
@@ -21,6 +23,31 @@ void assing_k(double* k_w, double* k_n, double S_w)
 		*k_w = 1.;
 		*k_n = 0.;
 	}
+	*/
+	
+	// постановка ИПМ
+	double S_sv = 0.1;
+	double S_zv = 0.8;
+	double S_1 = 0.70324;
+
+	if ((S_sv<=S_w) && (S_w<=S_zv))
+		*k_n=((S_zv-S_w)/(S_zv-S_sv))*((S_zv-S_w)/(S_zv-S_sv));
+	else
+		if ((0<=S_w) && (S_w<=S_sv))
+			*k_n=1.;
+		else //S_zv<S<=1
+			*k_n=0.;
+
+	if ((S_sv<=S_w) && (S_w<=S_1))
+		*k_w=((S_w-S_sv)/(S_zv-S_sv))*((S_w-S_sv)/(S_zv-S_sv));
+	else
+		if ((0<=S_w) && (S_w<=S_sv))
+			*k_w=0.;
+		else 
+			if ((S_1<=S_w) && (S_w<=S_zv))
+				*k_w=0.8*pow((S_w-S_sv)/(S_zv-S_sv), 0.5);
+			else//S_zv<S<=1
+				*k_w=1.;
 
 	test_S(*k_n, __FILE__, __LINE__);
 	test_S(*k_w, __FILE__, __LINE__);
