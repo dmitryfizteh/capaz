@@ -4,7 +4,7 @@
 int is_injection_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
-	if ((i == 1) && (j == 1))// && (k == def.Nz / 2))
+	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 #endif
 #ifdef THREE_PHASE
 	if (j == (def.Ny) - 2)
@@ -18,7 +18,7 @@ int is_injection_well(int i, int j, int k, consts def)
 int is_output_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
-	if ((i == def.Nx - 2) && (j == def.Ny - 2))// && (k == def.Nz - 3))
+	if (((i == def.Nx - 2) && (j == def.Ny - 2)) || ((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 #endif
 #ifdef THREE_PHASE
 	if (j == 1)
@@ -36,8 +36,8 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 	if (is_injection_well(i, j, k, def))
 	{
 		*q_w = def.Q;
-		*q_n = 0;
-		*q_g = 0;
+		*q_n = 0.;
+		*q_g = 0.;
 	}
 
 	// добывающая скважина
@@ -431,9 +431,9 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 		test_arrowhead(Tx1 + Ty1 + Tz1, divgrad1, __FILE__, __LINE__);
 		test_arrowhead(Tx2 + Ty2 + Tz2, divgrad2, __FILE__, __LINE__);
 
-		double q_w = 0;
-		double q_n = 0;
-		double q_g = 0;
+		double q_w = 0.;
+		double q_n = 0.;
+		double q_g = 0.;
 
 		// Значения q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
@@ -494,9 +494,9 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		if(! HostArraysPtr.m[local])
 			return;
 
-		double q_w = 0;
-		double q_n = 0;
-		double q_g = 0;
+		double q_w = 0.;
+		double q_n = 0.;
+		double q_g = 0.;
 
 		// Значения q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
@@ -581,12 +581,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 
 		A1 = HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / HostArraysPtr.m[local]) * (q_w + f1 + f2 + f3);
 		A2 = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - (def.dt / HostArraysPtr.m[local]) * (q_n + g1 + g2 + g3);
-		/*
-				if ((q_w + f1 + f2 + f3)==0)
-					std::cout <<"error";
-				if ((q_n + g1 + g2 + g3)==0)
-					std::cout <<"error";
-		*/
+
 		HostArraysPtr.roS_w_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		HostArraysPtr.roS_n_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = A1;

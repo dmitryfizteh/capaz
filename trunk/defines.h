@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define GTEST
+//#define GTEST
 
 #ifdef GTEST
 #include "gtest/gtest.h"

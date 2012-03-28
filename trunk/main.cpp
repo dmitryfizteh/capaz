@@ -510,7 +510,7 @@ void print_plots_top(double t, consts def)
 		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"porosity\" \n");
 		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
 #else
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_n\",\"P_w\",\"u_x\", \"u_y\", \"porosity\" \n");
+		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"P_w\",\"u_x\", \"u_y\", \"porosity\" \n");
 #endif
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
 	}
@@ -525,7 +525,7 @@ void print_plots_top(double t, consts def)
 		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d,I=%d, F = POINT\n", (def.Nx), (def.Ny), (def.Nz));
 	}
 
-#ifdef B_L
+#ifdef B_L_1
 	char fname_xz[30];
 	FILE *fp_xz;
 
@@ -611,7 +611,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #ifdef B_L
 					if (def.Nz < 2)
 					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), j * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), j * (def.hy), 1.-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 
 					}
 					else
@@ -624,7 +624,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 
 	fclose(fp);
 
-#ifdef B_L
+#ifdef B_L_1
 	char fname_xz[30];
 	FILE *fp_xz;
 
@@ -738,15 +738,15 @@ void load_permeability(double* K, consts def)
 		file = "noise.dat";
 		if (!(input = fopen(file, "rt")))
 		{
-			char error[30];
-			sprintf(error, "Not open file \"%s\"", file);
-			std::cout << error;
+			char err[60];
+			sprintf(err, "Not open file \"%s\", using value from def.K[0]\n", file);
+			std::cout << err;
 			//print_error(error, __FILE__, __LINE__);
 
 			for (int i = 0; i < def.locNx; i++)
 				for (int j = 0; j < def.locNy; j++)
 					for (int k = 0; k < def.locNz; k++)
-						K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0]*1e-2;
+						K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0];
 			return;
 
 		}
@@ -824,7 +824,7 @@ void load_permeability(double* K, consts def)
 			n++;
 
 			for (int k=0;k<def.locNz;k++)
-				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value))* 1e-2;
+				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value));
 		}
 }
 
