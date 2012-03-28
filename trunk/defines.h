@@ -1,6 +1,12 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#define GTEST
+
+#ifdef GTEST
+#include "gtest/gtest.h"
+#endif
+
 #define VERSION "0.5"
 
 #ifdef TWO_PHASE
