@@ -45,18 +45,18 @@ hostname=`hostname`
 if [ "$hostname" = "mvse" ]
 then
     ARCH=13
-    PPN=1
+    PPN="-ppn 1"
 	lib_path="-L/common/cuda/lib -lcudart"
     maxtime="-maxtime $5"
 else 	if [ "$hostname" = "k100" ]
 	then
 	    ARCH=20
-	    PPN=3
+	    PPN="-ppn 3"
 	    lib_path="-L/common/cuda/lib64 -lcudart"
 	    maxtime="-maxtime $5"
 	else
 	    ARCH=20
-	    PPN=1
+	    PPN="-ppn 1"
 	    lib_path="-L/usr/local/cuda/lib64 -lcudart"
 	fi
 fi
@@ -93,7 +93,8 @@ then
 else if [ "$2" = "cpu" ]
      then
     	arch_file="../cpu.cpp ../$project_folder/$project_file"
-	lib_path=""
+	    lib_path=""
+		PPN=""
      else
 	echo "Error in architecture: $2 is not supported by CAPAZ"
 	exit
@@ -149,6 +150,6 @@ echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_t
 
 cd ../$project_folder/Debug
 echo "mpirun -ppn $PPN -np $4 $maxtime ../$project_folder/Debug/$2_$3$debug_name.px"
-mpirun -ppn $PPN -np $4 $maxtime ./$2_$3$debug_name.px
+mpirun $PPN -np $4 $maxtime ./$2_$3$debug_name.px
 
 exit
