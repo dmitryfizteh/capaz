@@ -1,5 +1,73 @@
 #include "defines.h"
 
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
+{
+#ifdef B_L
+	// В центре резервуара находится нагнетающая скважина
+	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+	{
+		*q_w = def.Q;
+		*q_n = 0;
+		*q_g = 0;
+	}
+
+	// В центре резервуара находится добывающая скважина
+	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+	{
+		*q_g = 0;
+		double S = 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		double S_wc = 0.2;
+		double S_or = 0.2;
+		double S_e = (S - S_wc) / (1 - S_wc - S_or);
+
+		double k_w = S_e * S_e;
+		double k_n = (1. - S_e) * (1. - S_e);
+
+		if (S < S_wc)
+		{
+			k_w = 0.;
+			k_n = 1.;
+		}
+
+		if (S > (1 - S_or))
+		{
+			k_w = 1.;
+			k_n = 0.;
+		}
+
+		double F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
+		*q_w = -1. * def.Q * F_bl;
+		*q_n = -1. * def.Q * (1. - F_bl);
+	}
+#endif
+
+#ifdef THREE_PHASE
+/*
+	double q = 0;
+		if (j == 1)
+		{
+			*q_w = 0.02;
+			*q_g = 0.005;
+			*q_n = 0;
+
+			q = *q_w + *q_n + *q_g;
+
+			*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+			*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+			*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		}
+
+		if (j == (def.Ny) - 2)
+		{
+			*q_w = 0.02;
+			*q_g = 0.005;
+			*q_n = 0;
+		}
+*/
+#endif
+}
+
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	for (int i = 0; i < (def.locNx); i++)
@@ -354,48 +422,9 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 
 		double q_w = 0;
 		double q_n = 0;
+		double q_g = 0;
 
-#ifdef B_L
-		double k_w, k_n;
-		double S = 1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-
-		double S_wc = 0.2;
-		double S_wi = 0.2;
-		double S_or = 0.2;
-		double S_e = (S - S_wc) / (1 - S_wc - S_or);
-
-		k_w = S_e * S_e;
-		k_n = (1 - S_e) * (1 - S_e);
-
-		//krw(Sor) = kro(Swc) = 1.0
-
-		if (S < S_wc)
-		{
-			k_w = 0;
-			k_n = 1;
-		}
-
-		if (S > (1 - S_or))
-		{
-			k_w = 1;
-			k_n = 0;
-		}
-		double F_bl = 0;
-		// В центре резервуара находится нагнетающая скважина
-		if ((i == def.Nx / 2) && (j == def.Ny - 3) && (k == def.Nz / 2))
-		{
-			q_w = def.Q;
-			q_n = 0;
-		}
-
-		// В центре резервуара находится добывающая скважина
-		if ((i == def.Nx - 3) && (j == 3) && (k == def.Nz - 3))
-		{
-			F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
-			q_w = -1 * def.Q * F_bl;
-			q_n = -1 * def.Q * (1 - F_bl);
-		}
-#endif
+		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 		if ((t < 2 * (def.dt)) || TWO_LAYERS)
 		{
@@ -410,7 +439,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 			A1 = (1. / ((HostArraysPtr.m[local]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_w + divgrad1 - Tx1 - Ty1 - Tz1)
 			        + ((HostArraysPtr.m[local]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_w_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 			        + 4 * (def.tau) * HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
-			A2 = (1. / ((HostArraysPtr.m[local]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_n + divgrad1 - Tx1 - Ty1 - Tz1)
+			A2 = (1. / ((HostArraysPtr.m[local]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_n + divgrad2 - Tx2 - Ty2 - Tz2)
 			        + ((HostArraysPtr.m[local]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_n_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 			        + 4 * (def.tau) * HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 
@@ -418,7 +447,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 			test_tau(HostArraysPtr.roS_n_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], A2, i + j * (def.locNx) + k * (def.locNx) * (def.locNy), def, __FILE__, __LINE__);
 
 #ifdef THREE_PHASE
-			A3 = (1. / ((HostArraysPtr.m[local]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (divgrad1 - Tx1 - Ty1 - Tz1)
+			A3 = (1. / ((HostArraysPtr.m[local]) * (def.dt) + 2 * (def.tau))) * (2 * (def.dt) * (def.dt) * (q_g + divgrad3 - Tx3 - Ty3 - Tz3)
 			        + ((HostArraysPtr.m[local]) * (def.dt) - 2 * (def.tau)) * HostArraysPtr.roS_g_old[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 			        + 4 * (def.tau) * HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 #endif
@@ -455,79 +484,11 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 
 		double q_w = 0;
 		double q_n = 0;
+		double q_g = 0;
 
-#ifdef B_L
-
-		double k_w, k_n;
-		double S = 1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-
-		double S_wc = 0.2;
-		double S_wi = 0.2;
-		double S_or = 0.2;
-		double S_e = (S - S_wc) / (1 - S_wc - S_or);
-
-		k_w = S_e * S_e;
-		k_n = (1 - S_e) * (1 - S_e);
-
-		//krw(Sor) = kro(Swc) = 1.0
-
-		if (S < S_wc)
-		{
-			k_w = 0;
-			k_n = 1;
-		}
-
-		if (S > (1 - S_or))
-		{
-			k_w = 1;
-			k_n = 0;
-		}
-
-
-		double F_bl = 0;
-		// В центре резервуара находится нагнетающая скважина
-		if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
-		{
-			q_w = def.Q;
-			q_n = 0;
-		}
-
-		// В центре резервуара находится добывающая скважина
-		if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
-		{
-			F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
-			q_w = -1 * def.Q * F_bl;
-			q_n = -1 * def.Q * (1 - F_bl);
-		}
-
-#endif
+		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 #ifdef THREE_PHASE
-
-		double q_g = 0, q = 0;
-
-/*
-		if (j == 1)
-		{
-			q_w = 0.02;
-			q_g = 0.005;
-			q_n = 0;
-
-			q = q_w + q_n + q_g;
-
-			q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
-			q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-		}
-
-		if (j == (def.Ny) - 2)
-		{
-			q_w = 0.02;
-			q_g = 0.005;
-			q_n = 0;
-		}
-*/
-
 		HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 		        * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
