@@ -171,5 +171,8 @@ extern void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doub
 extern void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def);
 extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def);
 
+extern int is_injection_well(int i, int j, int k, consts def);
+extern int is_output_well(int i, int j, int k, consts def);
+
 #endif
 
