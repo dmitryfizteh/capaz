@@ -1,11 +1,11 @@
 #ifndef B_L_H
 #define B_L_H
 
-#define INJECTION_WELL_Pw 41368543+41368543*10/40
-#define OUTPUT_WELL_Pw 41368543
-#define BACKGROUND_Pw 41368543+41368543*6/40
-#define INJECTION_WELL_Sn 0.3
-#define OUTPUT_WELL_Sn 0.7
-#define BACKGROUND_Sn 0.7
+#define INJECTION_WELL_Pw 1e5
+#define OUTPUT_WELL_Pw 1e5
+#define BACKGROUND_Pw 1e5
+#define INJECTION_WELL_Sn 0.2
+#define OUTPUT_WELL_Sn 1
+#define BACKGROUND_Sn 0.5
 
 #endif

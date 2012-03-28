@@ -4,7 +4,7 @@
 int is_injection_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
-	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+	if ((i == 1) && (j == 1))// && (k == def.Nz / 2))
 #endif
 #ifdef THREE_PHASE
 	if (j == (def.Ny) - 2)
@@ -18,7 +18,7 @@ int is_injection_well(int i, int j, int k, consts def)
 int is_output_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
-	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+	if ((i == def.Nx - 2) && (j == def.Ny - 2))// && (k == def.Nz - 3))
 #endif
 #ifdef THREE_PHASE
 	if (j == 1)
@@ -44,25 +44,8 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 	if (is_output_well(i, j, k, def))
 	{
 		*q_g = 0;
-		double S = 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-		double S_wc = 0.2;
-		double S_or = 0.2;
-		double S_e = (S - S_wc) / (1 - S_wc - S_or);
-
-		double k_w = S_e * S_e;
-		double k_n = (1. - S_e) * (1. - S_e);
-
-		if (S < S_wc)
-		{
-			k_w = 0.;
-			k_n = 1.;
-		}
-
-		if (S > (1 - S_or))
-		{
-			k_w = 1.;
-			k_n = 0.;
-		}
+		double k_w=0., k_n=0.;
+		assing_k(&k_w, &k_n, 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 
 		double F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
 		*q_w = -1. * def.Q * F_bl;

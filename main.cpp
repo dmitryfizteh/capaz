@@ -735,15 +735,15 @@ void load_permeability(double* K, consts def)
 		{
 			char error[30];
 			sprintf(error, "Not open file \"%s\"", file);
+			std::cout << error;
 			//print_error(error, __FILE__, __LINE__);
 
 			for (int i = 0; i < def.locNx; i++)
 				for (int j = 0; j < def.locNy; j++)
 					for (int k = 0; k < def.locNz; k++)
-					{
-						K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0];
-						return;
-					}
+						K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0]*1e-2;
+			return;
+
 		}
 	}
 
@@ -819,12 +819,17 @@ void load_permeability(double* K, consts def)
 			n++;
 
 			for (int k=0;k<def.locNz;k++)
-				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value));
+				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value))* 1e-2;
 		}
 }
 
 fclose(input);
-	
+
+for (int i = 0; i < def.locNx; i++)
+	for (int j = 0; j < def.locNy; j++)
+		for (int k = 0; k < def.locNz; k++)
+			test_positive(K[i+j*def.locNx+k*def.locNx*def.locNy], __FILE__, __LINE__);
+
 }
 
 // Сохранение состояния в файл
