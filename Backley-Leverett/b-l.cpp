@@ -114,13 +114,13 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	
 	// В центре резервуара находится нагнетательная скважина
-	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+	if (is_injection_well(i, j, k, def))
 	{
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = INJECTION_WELL_Sn;
 	}
 
 	// В центре резервуара находится добывающая скважина
-	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+	if (is_output_well(i, j, k, def))
 	{
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = OUTPUT_WELL_Sn;
 	}
@@ -189,13 +189,13 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	
 	// В центре резервуара находится нагнетающая скважина
-	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+	if (is_injection_well(i, j, k, def))
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
 	}
 
 	// В центре резервуара находится добывающая скважина
-	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+	if (is_output_well(i, j, k, def))
 	{
 		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 	}

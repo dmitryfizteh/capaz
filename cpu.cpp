@@ -1,19 +1,47 @@
 #include "defines.h"
 
+// явл€етс€ ли точка нагнетательной скважиной
+int is_injection_well(int i, int j, int k, consts def)
+{
+#ifdef B_L
+	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+#endif
+#ifdef THREE_PHASE
+	if (j == (def.Ny) - 2)
+#endif
+		return 1;
+	else
+		return 0;
+}
+
+// явл€етс€ ли точка добывающей скважиной
+int is_output_well(int i, int j, int k, consts def)
+{
+#ifdef B_L
+	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+#endif
+#ifdef THREE_PHASE
+	if (j == 1)
+#endif
+		return 1;
+	else
+		return 0;
+}
+
 // ”станавливает значени€ втекаемых/вытекаемых жидкостей q_i на скважинах
 void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
 {
 #ifdef B_L
-	// ¬ центре резервуара находитс€ нагнетающа€ скважина
-	if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+	// нагнетательна€ скважина
+	if (is_injection_well(i, j, k, def))
 	{
 		*q_w = def.Q;
 		*q_n = 0;
 		*q_g = 0;
 	}
 
-	// ¬ центре резервуара находитс€ добывающа€ скважина
-	if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+	// добывающа€ скважина
+	if (is_output_well(i, j, k, def))
 	{
 		*q_g = 0;
 		double S = 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
@@ -45,25 +73,25 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 #ifdef THREE_PHASE
 /*
 	double q = 0;
-		if (j == 1)
-		{
-			*q_w = 0.02;
-			*q_g = 0.005;
-			*q_n = 0;
+	if (is_output_well(i, j, k, def))
+	{
+	*q_w = 0.02;
+	*q_g = 0.005;
+	*q_n = 0;
 
-			q = *q_w + *q_n + *q_g;
+	q = *q_w + *q_n + *q_g;
 
-			*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
-			*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-		}
+	*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+	*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	}
 
-		if (j == (def.Ny) - 2)
-		{
-			*q_w = 0.02;
-			*q_g = 0.005;
-			*q_n = 0;
-		}
+	if (is_injection_well(i, j, k, def))
+	{
+	*q_w = 0.02;
+	*q_g = 0.005;
+	*q_n = 0;
+	}
 */
 #endif
 }
@@ -424,6 +452,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 		double q_n = 0;
 		double q_g = 0;
 
+		// «начени€ q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 		if ((t < 2 * (def.dt)) || TWO_LAYERS)
@@ -486,6 +515,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		double q_n = 0;
 		double q_g = 0;
 
+		// «начени€ q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 #ifdef THREE_PHASE
