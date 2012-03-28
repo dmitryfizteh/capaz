@@ -11,6 +11,13 @@
 #endif
 #endif
 
+#ifdef GTEST
+// "Тестовый тест" google test'а
+TEST(FirstClass,Summ)
+{
+	EXPECT_EQ(4, 2+2);
+}
+#endif
 
 // Функция, вызываемая при ошибке
 void print_error(char *error, char *file, int line)

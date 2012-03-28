@@ -6,6 +6,11 @@ double *DevBuffer;
 
 int main(int argc, char* argv[])
 {
+#ifdef GTEST
+	::testing::InitGoogleTest(&argc, argv);
+	RUN_ALL_TESTS();
+#endif
+
 	consts def;
 	read_defines(argc, argv, &def);
 
