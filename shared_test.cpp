@@ -108,7 +108,7 @@ void test_S(double S, char *file, int line)
 // Синтаксис вызова test_u(x, __FILE__, __LINE__);
 void test_u(double u, char *file, int line)
 {
-#ifdef MY_TEST_2
+#ifdef MY_TEST
 	if (isnan(u))
 	{
 		printf("Error: u=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
