@@ -1,6 +1,7 @@
 #include "../defines.h"
 #include "b-l.h"
 
+// Расчет относительных проницаемостей в точке
 void assing_k(double* k_w, double* k_n, double S_w)
 {
 	/*
@@ -97,13 +98,6 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 
 		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / (def.ro0_n * (1 + def.beta_n * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm)));
-		/*
-		if ( HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] < 0.2)
-			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0.2;
-
-		if ( HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] > 0.8)
-			HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0.8;
-		*/
 
 		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
@@ -160,20 +154,6 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 }
 
-// Давление на нагнетательной скважине
-double Injection_well_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
-{
-	// 10000psi in Pa
-	return INJECTION_WELL_Pw;//def.P_atm + 100000; //68947572.9;
-}
-
-// Давление на добывающей скважине
-double Production_well_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
-{
-	// 4000psi in Pa
-	return OUTPUT_WELL_Pw;//def.P_atm;//27579029.16;
-}
-
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
@@ -220,17 +200,17 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	
 	// В центре резервуара находится нагнетающая скважина
-	//if (is_injection_well(i, j, k, def))
-	if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
+	if (is_injection_well(i, j, k, def))
+	//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = INJECTION_WELL_Pw;
 	}
 
 	// В центре резервуара находится добывающая скважина
-	//if (is_output_well(i, j, k, def))
-	if (((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
+	if (is_output_well(i, j, k, def))
+	//if (((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = OUTPUT_WELL_Pw;
 	}
 	
 
@@ -246,18 +226,12 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-
-					// Преобразование локальных координат процессора к глобальным
-					int I = local_to_global(i, 'x', def);
-
 					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
 					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
-					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
 
-					// 6000 pound per square inch = 41 368 543.8 Паскаля
 					if (j == 0)
 					{
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;

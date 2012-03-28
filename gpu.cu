@@ -281,32 +281,6 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		double q_n = 0;
 
 #ifdef B_L
-		double k_w, k_n;
-		double S = 1 - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
-
-		double S_wc = 0.2;
-		double S_or = 0.2;
-		double S_e = (S - S_wc) / (1 - S_wc - S_or);
-
-		k_w = S_e * S_e;
-		k_n = (1 - S_e) * (1 - S_e);
-
-		//krw(Sor) = kro(Swc) = 1.0
-
-		if (S < S_wc)
-		{
-			k_w = 0;
-			k_n = 1;
-		}
-
-		if (S > (1 - S_or))
-		{
-			k_w = 1;
-			k_n = 0;
-		}
-
-
-		double F_bl = 0;
 		// В центре резервуара находится нагнетающая скважина
 		if ((i == (*gpu_def).Nx / 2) && (j == (*gpu_def).Ny - 3) && (k == (*gpu_def).Nz / 2))
 		{
@@ -317,33 +291,13 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		// В центре резервуара находится добывающая скважина
 		if ((i == (*gpu_def).Nx - 3) && (j == 3) && (k == (*gpu_def).Nz - 3))
 		{
+			double k_w=0., k_n=0.;
+			assing_k(&k_w, &k_n, 1. - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]);
+			double F_bl = 0;
 			F_bl = (k_w / (*gpu_def).mu_w) / (k_w / (*gpu_def).mu_w + k_n / (*gpu_def).mu_n);
 			q_w = -1 * (*gpu_def).Q * F_bl;
 			q_n = -1 * (*gpu_def).Q * (1 - F_bl);
 		}
-
-		/*
-		double F_bl=0;
-		// В левом нижнем углу нагнетающая скважина
-		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
-		{
-			q_w=(*gpu_def).Q;
-			q_n=0;
-		}
-
-		// В правом верхнем углу добывающая скважина
-		if (((i==0) && (j==(*gpu_def).Ny-2)) || ((i==1) && (j==(*gpu_def).Ny-1)))
-		{
-			int media = DevArraysPtr.media[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)];
-			double S_e = (1. - DevArraysPtr.S_n[i+j*((*gpu_def).locNx)+k*((*gpu_def).locNx)*((*gpu_def).locNy)] - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
-			double k_w = pow(S_e, (2. + 3. * ((*gpu_def).lambda[media])) / (*gpu_def).lambda[media]);
-			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
-
-			F_bl = (k_w/((*gpu_def).mu_w)) / (k_w/((*gpu_def).mu_w) + k_n/((*gpu_def).mu_n));
-			q_w=-1 * (*gpu_def).Q * F_bl;
-			q_n=-1 * (*gpu_def).Q * (1-F_bl);
-		}
-		*/
 #endif
 
 		double S2 = DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)];
@@ -512,23 +466,20 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, double t)
 		double q_n = 0;
 
 #ifdef B_L
-		double F_bl = 0;
-		// В левом нижнем углу нагнетающая скважина
-		if (((i == 0) && (j == (*gpu_def).Ny - 2)) || ((i == 1) && (j == (*gpu_def).Ny - 1)))
+		// В центре резервуара находится нагнетающая скважина
+		if ((i == (*gpu_def).Nx / 2) && (j == (*gpu_def).Ny - 3) && (k == (*gpu_def).Nz / 2))
 		{
 			q_w = (*gpu_def).Q;
 			q_n = 0;
 		}
 
-		// В правом верхнем углу добывающая скважина
-		if (((i == 0) && (j == (*gpu_def).Ny - 2)) || ((i == 1) && (j == (*gpu_def).Ny - 1)))
+		// В центре резервуара находится добывающая скважина
+		if ((i == (*gpu_def).Nx - 3) && (j == 3) && (k == (*gpu_def).Nz - 3))
 		{
-			int media = 0;
-			double S_e = (1. - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)] - (*gpu_def).S_wr[media]) / (1. - (*gpu_def).S_wr[media]);
-			double k_w = pow(S_e, (2. + 3. * ((*gpu_def).lambda[media])) / (*gpu_def).lambda[media]);
-			double k_n = (1. - S_e) * (1. - S_e) * (1 - pow(S_e, (2. + (*gpu_def).lambda[media]) / (*gpu_def).lambda[media]));
-
-			F_bl = (k_w / ((*gpu_def).mu_w)) / (k_w / ((*gpu_def).mu_w) + k_n / ((*gpu_def).mu_n));
+			double k_w=0., k_n=0.;
+			assing_k(&k_w, &k_n, 1. - DevArraysPtr.S_n[i + j * ((*gpu_def).locNx) + k * ((*gpu_def).locNx) * ((*gpu_def).locNy)]);
+			double F_bl = 0;
+			F_bl = (k_w / (*gpu_def).mu_w) / (k_w / (*gpu_def).mu_w + k_n / (*gpu_def).mu_n);
 			q_w = -1 * (*gpu_def).Q * F_bl;
 			q_n = -1 * (*gpu_def).Q * (1 - F_bl);
 		}

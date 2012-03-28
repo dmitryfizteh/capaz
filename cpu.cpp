@@ -132,23 +132,14 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
-	for (int k = 0; k < (def.locNz); k++)
-		for (int i = 0; i < (def.locNx); i++)
-		{
-			int j;
-			for (j = 1; j < (def.locNy); j++)
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+			for (int k = 0; k < (def.locNz); k++)
 				if (is_active_point(i, j, k, def))
 				{
 					Border_S(HostArraysPtr, i, j, k, def);
 					Border_P(HostArraysPtr, i, j, k, def);
 				}
-			j = 0;
-			if (is_active_point(i, j, k, def))
-			{
-				Border_S(HostArraysPtr, i, j, k, def);
-				Border_P(HostArraysPtr, i, j, k, def);
-			}
-		}
 }
 
 void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)

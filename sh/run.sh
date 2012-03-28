@@ -149,7 +149,7 @@ echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_t
       $compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px
 
 cd ../$project_folder/Debug
-echo "mpirun -ppn $PPN -np $4 $maxtime ../$project_folder/Debug/$2_$3$debug_name.px"
+echo "mpirun $PPN -np $4 $maxtime ../$project_folder/Debug/$2_$3$debug_name.px"
 mpirun $PPN -np $4 $maxtime ./$2_$3$debug_name.px
 
 exit
