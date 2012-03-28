@@ -54,10 +54,10 @@ void test_nan(double x, char *file, int line)
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
 	// Тестовое более жесткое ограничение именно для этой задачи
-	if (x > 1e12)
+/*	if (x > 1e12)
 	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
-	}
+	}*/
 #endif
 }
 
@@ -101,16 +101,16 @@ void test_S(double S, char *file, int line)
 // Синтаксис вызова test_u(x, __FILE__, __LINE__);
 void test_u(double u, char *file, int line)
 {
-#ifdef MY_TEST
+#ifdef MY_TEST_2
 	if (isnan(u))
 	{
 		printf("Error: u=NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
-	if (u < -10)
+	if (u < -1e8)
 	{
 		printf("Error: u<-100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
-	if (u > 10)
+	if (u > 1e8)
 	{
 		printf("Error: u>100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}

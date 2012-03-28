@@ -1,33 +1,37 @@
 #include "../defines.h"
 #include "b-l.h"
 
+void assing_k(double* k_w, double* k_n, double S_w)
+{
+	double S_wc = 0.2;
+	double S_or = 0.2;
+	double S_e = (S_w - S_wc) / (1. - S_wc - S_or);
+
+	*k_w = S_e * S_e;
+	*k_n = (1. - S_e) * (1. - S_e);
+
+	if (S_w < S_wc)
+	{
+		*k_w = 0.;
+		*k_n = 1.;
+	}
+
+	if (S_w > (1 - S_or))
+	{
+		*k_w = 1.;
+		*k_n = 0.;
+	}
+
+	test_S(*k_n, __FILE__, __LINE__);
+	test_S(*k_w, __FILE__, __LINE__);
+}
+
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-	double k_w, k_n;
-	double S = 1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	double k_w=0., k_n=0.;
 
-	double S_wc = 0.2;
-	double S_wi = 0.2;
-	double S_or = 0.2;
-	double S_e = (S - S_wc) / (1 - S_wc - S_or);
-
-	k_w = S_e * S_e;
-	k_n = (1 - S_e) * (1 - S_e);
-
-	//krw(Sor) = kro(Swc) = 1.0
-
-	if (S < S_wc)
-	{
-		k_w = 0;
-		k_n = 1;
-	}
-
-	if (S > (1 - S_or))
-	{
-		k_w = 1;
-		k_n = 0;
-	}
+	assing_k(&k_w, &k_n, 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 
 	HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 	HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = -1. * (HostArraysPtr.K[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * k_w / def.mu_w;
@@ -207,16 +211,6 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Присвоение начальных условий
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
-
-	for (int i = 0; i < def.locNx; i++)
-		for (int j = 0; j < def.locNy; j++)
-			for (int k = 0; k < def.locNz; k++)
-			{
-				if (! HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy])
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=0.01;
-					//std::cout << "m[" << i << ","<< j << "," << k <<"] = " << HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy] << "\n";
-			}
-
 	*t = 0;
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
@@ -227,7 +221,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
-					//HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
 					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
 					//HostArraysPtr.S_n[i+j*def.locNx+k*def.locNx*def.locNy] =0.3 + 0.3 * j / def.Ny;
 
@@ -237,7 +231,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// 6000 pound per square inch = 41 368 543.8 Паскаля
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Pw;//def.P_atm + 50000;    // 50368543.8;
+						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
 					}
 					else
 					{
@@ -245,15 +239,15 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 
 					
-					// В центре резервуара находится нагнетающая скважина
-					if ((i == def.Nx / 2) /*&& (j == def.Ny / 2)*/ && (k == def.Nz / 2))
+					// нагнетательная скважина
+					if (is_injection_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
 					}
 
-					// В центре резервуара находится добывающая скважина
-					if ((i == def.Nx - 3) /*&& (j == def.Ny / 2)*/ && (k == def.Nz - 3))
+					// добывающая скважина
+					if (is_output_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
 						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
@@ -263,9 +257,9 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 
-					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_S(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
 }
 

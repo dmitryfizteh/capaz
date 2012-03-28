@@ -173,6 +173,7 @@ extern void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double
 
 extern int is_injection_well(int i, int j, int k, consts def);
 extern int is_output_well(int i, int j, int k, consts def);
+extern void assing_k(double* k_w, double* k_n, double S_w);
 
 #endif
 
