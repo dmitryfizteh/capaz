@@ -730,7 +730,7 @@ void load_permeability(double* K, consts def)
 
 	if (!(input = fopen(file, "rt")))
 	{
-		file = "porosity.dat";
+		file = "noise.dat";
 		if (!(input = fopen(file, "rt")))
 		{
 			char error[30];
@@ -761,7 +761,9 @@ void load_permeability(double* K, consts def)
 		printf("Warning: Nx/Ny/Nz from noise.dat not equal\nError in file \"%s\" at line %d\n", __FILE__, __LINE__);
 		fflush(stdout);
 	}
+
 	/*
+	// Версия для считывания файлов SPE-10 
 	double s[6];
 	long int row = 0, bigN = 0;
 	int index = 0;
@@ -796,6 +798,7 @@ void load_permeability(double* K, consts def)
 			}
 */
 
+	// версия для считывания файлов от Антона
 	char* str=new char[30*Nx];
 
 	char value[30];
@@ -818,9 +821,9 @@ void load_permeability(double* K, consts def)
 			for (int k=0;k<def.locNz;k++)
 				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value));
 		}
-	}
+}
 
-	fclose(input);
+fclose(input);
 	
 }
 
