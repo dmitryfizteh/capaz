@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-//#define GTEST
+#define GTEST
 
 #ifdef GTEST
 #include "gtest/gtest.h"
@@ -44,8 +44,9 @@
 #include <sys/stat.h>
 #endif
 
-// Псевдо-функция минимума
+// Псевдо-функция минимума/максимума
 #define min(a,b) (((a) < (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))
 
 // Вывод графиков BjnIO
 //#include "bjnio.h"
@@ -66,6 +67,7 @@ typedef struct ptr_Arrays_tag ptr_Arrays;
 // Структура параметров сред и характерных размеров задачи
 struct consts_tag
 {
+	double upscale_l, upscale_t;
 	double lambda[2];
 	double S_wr[2];
 	double m[2];
@@ -75,7 +77,7 @@ struct consts_tag
 	int source, save_plots, print_screen, newton_iterations;
 	double K[2];
 #ifdef B_L
-	double Q; // Дебит скважины
+	double Q, InjWell_Pw, InjWell_Sn, OutWell_Pw, OutWell_Sn, Background_Sn, Background_Pw; // Дебит скважины
 #endif
 #ifdef TWO_PHASE
 	double P_d[2];

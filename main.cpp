@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	{
 		if ((time_counter % (def.print_screen) == 0) && (def.rank) == 0) // (2)
 		{
-			printf("t=%.3f\n", time_counter * (def.dt));
+			printf("t=%.3f\n", time_counter * (def.dt) /def.upscale_t);
 			fflush(stdout);
 		}
 
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 		{
 			// Следующие 2 функции вызываются строго в таком порядке,
 			// т.к. save использует данные, загруженные save_data_plots
-			save_data_plots(HostArraysPtr, DevArraysPtr, time_counter * (def.dt), def); // (**)
+			save_data_plots(HostArraysPtr, DevArraysPtr, time_counter * (def.dt) /def.upscale_t, def); // (**)
 			//save(HostArraysPtr, DevArraysPtr, time_counter, def); // (***)
 		}
 	}
@@ -824,7 +824,7 @@ void load_permeability(double* K, consts def)
 			n++;
 
 			for (int k=0;k<def.locNz;k++)
-				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value));
+				K[i+j*def.locNx+k*def.locNx*def.locNy]=1e-10 * exp(atof(value)) * pow(def.upscale_l, 2);
 		}
 }
 
@@ -977,6 +977,109 @@ void read_version(void)
 
 	printf("Version %s.%d compiled %s %s.\n\n", VERSION, revision, __DATE__, __TIME__);
 }
+
+// Масштабирование размерностей входных данных
+void resize_defines(consts* def, double l, double t)
+{
+	// h_i - максимум из hx, hy, hz
+	double h_i = max(def->hx, def->hy);
+	if (def->Nz > 1)
+		h_i = max(h_i, def->hz);
+
+	l=l/h_i;
+	t=t/def->dt;
+	double m=1.;
+
+	def->upscale_l=l;
+	def->upscale_t=t;
+
+	def->dt *= t;
+	def->hx *= l;
+	def->hy *= l;
+	def->hz *= l;
+	def->P_atm *= m/(l*l);
+	def->Background_Pw *= m/(l*l);
+	def->InjWell_Pw *= m/(l*l);
+	def->OutWell_Pw *= m/(l*l);
+	def->beta_w *= (l*l)/m;
+	def->beta_n *= (l*l)/m;
+	def->g_const *= l/(t*t);
+	def->K[0] *= l*l;
+	def->K[1] *= l*l;
+	def->Q *= m/(t * l*l*l);
+	def->mu_w *= m*t/(l*l);
+	def->mu_n *= m*t/(l*l);
+	def->ro0_n *= m/(pow(l,3));
+	def->ro0_w *= m/(pow(l,3));
+	def->l *= l;
+	def->c_n *= l/t;
+	def->c_w *= l/t;
+	def->tau *= t;
+	def->timeX *= t;
+
+#ifdef THREE_PHASE
+	def->beta_g *= (l*l)/m;
+	def->ro0_g *= m/(pow(l,3));
+	def->c_g *= l/t;
+#endif
+}
+
+#ifdef GTEST
+// Тест функции resize_defines
+TEST(Main,ResizeDefines)
+{
+	consts tdef;
+	tdef.hx = 1.;
+	tdef.hy = 1.;
+	tdef.P_atm = 1.;
+	tdef.Background_Pw = 1.;
+	tdef.OutWell_Pw = 1.;
+	tdef.InjWell_Pw = 1.;
+	tdef.dt = 1.;
+	tdef.beta_n = 1.;
+	tdef.beta_w = 2.;
+	tdef.g_const = 9.8;
+	tdef.K[0] = 1;
+	tdef.K[1] = 0.3;
+	tdef.Q = 1.;
+	tdef.mu_n = 1.;
+	tdef.mu_w = 0.5;
+	tdef.ro0_w = 1000.;
+	tdef.ro0_n = 800.;
+	tdef.l = 1e-5;
+	tdef.c_n = 1.;
+	tdef.c_w = 5.;
+	tdef.tau = 1.;
+	tdef.timeX = 100;
+
+	resize_defines(&tdef, 0.1, 0.01);
+	EXPECT_DOUBLE_EQ(0.1, tdef.hx);
+	EXPECT_DOUBLE_EQ(0.1, tdef.hy);
+	EXPECT_DOUBLE_EQ(0.01, tdef.dt);
+	EXPECT_DOUBLE_EQ(100., tdef.P_atm);
+	EXPECT_DOUBLE_EQ(100., tdef.Background_Pw);
+	EXPECT_DOUBLE_EQ(100., tdef.OutWell_Pw);
+	EXPECT_DOUBLE_EQ(100., tdef.InjWell_Pw);
+	EXPECT_DOUBLE_EQ(0.01, tdef.beta_n);
+	EXPECT_DOUBLE_EQ(0.02, tdef.beta_w);
+	EXPECT_DOUBLE_EQ(9800, tdef.g_const);
+	EXPECT_DOUBLE_EQ(1e-2, tdef.K[0]);
+	EXPECT_DOUBLE_EQ(3e-3, tdef.K[1]);
+	EXPECT_DOUBLE_EQ(1e5, tdef.Q);
+	EXPECT_DOUBLE_EQ(1, tdef.mu_n);
+	EXPECT_DOUBLE_EQ(0.5, tdef.mu_w);
+	EXPECT_DOUBLE_EQ(1e6, tdef.ro0_w);
+	EXPECT_DOUBLE_EQ(8e5, tdef.ro0_n);
+	EXPECT_DOUBLE_EQ(1e-6, tdef.l);
+	EXPECT_DOUBLE_EQ(50, tdef.c_w);
+	EXPECT_DOUBLE_EQ(10, tdef.c_n);
+	EXPECT_DOUBLE_EQ(0.01, tdef.tau);
+	EXPECT_DOUBLE_EQ(1, tdef.timeX);
+	EXPECT_DOUBLE_EQ(0.1, tdef.upscale_l);
+	EXPECT_DOUBLE_EQ(0.01, tdef.upscale_t);
+}
+#endif
+
 
 // Считывание параметров задачи из файла
 void read_defines(int argc, char *argv[], consts* def)
@@ -1141,7 +1244,43 @@ void read_defines(int argc, char *argv[], consts* def)
 #ifdef B_L
 		if (!strcmp(attr_name, "Q"))
 		{
-			(*def).Q = atof(attr_value);
+			def->Q = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "BACKGROUND_Pw"))
+		{
+			def->Background_Pw = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "BACKGROUND_Sn"))
+		{
+			def->Background_Sn = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "INJECTION_WELL_Pw"))
+		{
+			def->InjWell_Pw = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "INJECTION_WELL_Sn"))
+		{
+			def->InjWell_Sn = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "OUTPUT_WELL_Pw"))
+		{
+			def->OutWell_Pw = atof(attr_value);
+			continue;
+		}
+
+		if (!strcmp(attr_name, "OUTPUT_WELL_Sn"))
+		{
+			def->OutWell_Sn = atof(attr_value);
 			continue;
 		}
 #endif
@@ -1296,6 +1435,13 @@ void read_defines(int argc, char *argv[], consts* def)
 
 	fclose(defs);
 
+	// Если нет масштабирования, то 1
+	def->upscale_l=1;
+	def->upscale_t=1;
+
+	read_defines_test(*def);
+
+	resize_defines(def, 0.15, 0.01);
 	read_defines_test(*def);
 }
 
