@@ -183,15 +183,21 @@ void read_defines_test(consts def)
 
 #ifdef B_L
 	test_positive(def.Q, __FILE__, __LINE__);
+	test_positive(def.Background_Pw, __FILE__, __LINE__);
+	test_S(def.Background_Sn, __FILE__, __LINE__);
+	test_positive(def.InjWell_Pw, __FILE__, __LINE__);
+	test_S(def.InjWell_Sn, __FILE__, __LINE__);
+	test_positive(def.OutWell_Pw, __FILE__, __LINE__);
+	test_S(def.OutWell_Sn, __FILE__, __LINE__);
 #endif
 #ifdef THREE_PHASE
 	test_positive(def.c_g, __FILE__, __LINE__);
 	test_positive(def.beta_g, __FILE__, __LINE__);
 	test_positive(def.ro0_g, __FILE__, __LINE__);
 	test_positive(def.mu_g, __FILE__, __LINE__);
-	test_positive(def.S_w_gr, __FILE__, __LINE__);
+	test_S(def.S_w_gr, __FILE__, __LINE__);
 #endif
-	test_positive(def.S_n_gr, __FILE__, __LINE__);
+	test_S(def.S_n_gr, __FILE__, __LINE__);
 #endif
 
 }

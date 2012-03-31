@@ -203,14 +203,14 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	if (is_injection_well(i, j, k, def))
 	//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = INJECTION_WELL_Pw;
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.InjWell_Pw;
 	}
 
 	// В центре резервуара находится добывающая скважина
 	if (is_output_well(i, j, k, def))
 	//if (((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = OUTPUT_WELL_Pw;
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.OutWell_Pw;
 	}
 	
 
@@ -227,7 +227,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				if (is_active_point(i, j, k, def))
 				{
 					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
-					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = BACKGROUND_Sn;
+					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.Background_Sn;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
 					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
