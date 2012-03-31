@@ -1,13 +1,13 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define GTEST
+//#define GTEST
 
 #ifdef GTEST
 #include "gtest/gtest.h"
 #endif
 
-#define VERSION "0.5"
+#define VERSION "0.52"
 
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
