@@ -76,9 +76,7 @@ struct consts_tag
 	int Nx, Ny, Nz;
 	int source, save_plots, print_screen, newton_iterations;
 	double K[2];
-#ifdef B_L
 	double Q, InjWell_Pw, InjWell_Sn, OutWell_Pw, OutWell_Sn, Background_Sn, Background_Pw; // Дебит скважины
-#endif
 #ifdef TWO_PHASE
 	double P_d[2];
 #endif
@@ -88,10 +86,7 @@ struct consts_tag
 	double S_gr[2];
 	double P_d_nw[2];
 	double P_d_gn[2];
-	double c_g, beta_g, mu_g, ro0_g, S_w_gr, S_g_gr;
-	double aw[2], bw[2], ag[2], bg[2];
-	double S_w_range[3];
-	double S_g_range[3];
+	double c_g, beta_g, mu_g, ro0_g, S_w_gr;
 #endif
 	// Локальные размеры
 	int locNx, locNy, locNz;

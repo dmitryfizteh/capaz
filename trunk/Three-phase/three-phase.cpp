@@ -146,7 +146,7 @@ static double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 
-	int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	int media = 0;
 	double k_w, k_g, k_n, P_k_nw, P_k_gn;
 	double A = def.lambda[media];
 	double S_w_e = (HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -219,7 +219,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		int media = 0;
 		double S_w_e, S_g_e, S_n_e, P_k_nw, P_k_gn, PkSw, PkSn, Sg, F1, F2, F3;
 		double dF[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -390,8 +390,6 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
-					int media = HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
-
 					// Линейное изменение насыщенностей в начальном распределении
 	/*				int j1 = def.locNy / 2;
 
@@ -456,11 +454,10 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					///!!!! Не учитываются каппилярные силы! Или надо считать перед этим шагом P_w, P_g
 					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_g * (1. + (def.beta_g) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+					HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_g * HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / def.P_atm;
 
 					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
 }

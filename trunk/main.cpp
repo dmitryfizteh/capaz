@@ -1021,6 +1021,7 @@ void resize_defines(consts* def, double l, double t)
 	def->beta_g *= (l*l)/m;
 	def->ro0_g *= m/(pow(l,3));
 	def->c_g *= l/t;
+	def->mu_g *= m*t/(l*l);
 #endif
 }
 
@@ -1241,7 +1242,6 @@ void read_defines(int argc, char *argv[], consts* def)
 			continue;
 		}
 
-#ifdef B_L
 		if (!strcmp(attr_name, "Q"))
 		{
 			def->Q = atof(attr_value);
@@ -1283,7 +1283,6 @@ void read_defines(int argc, char *argv[], consts* def)
 			def->OutWell_Sn = atof(attr_value);
 			continue;
 		}
-#endif
 
 		if (!strcmp(attr_name, "K_0"))
 		{
@@ -1441,7 +1440,7 @@ void read_defines(int argc, char *argv[], consts* def)
 
 	read_defines_test(*def);
 
-	resize_defines(def, 0.15, 0.01);
+	//resize_defines(def, 0.15, 0.01);
 	read_defines_test(*def);
 }
 
