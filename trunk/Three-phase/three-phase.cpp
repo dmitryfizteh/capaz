@@ -390,6 +390,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
 					// Линейное изменение насыщенностей в начальном распределении
 	/*				int j1 = def.locNy / 2;
 
@@ -411,6 +412,10 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_init;
 					}
 
+					double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
+					+ def.ro0_w * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+					+ def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (HostArraysPtr.m[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.g_const) * (def.hy);
+
 					// Если отдельно задаем значения на границах через градиент
 /*					if (j == 0)
 					{
@@ -425,7 +430,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					if ((j != 0) && (j != (def.locNy) - 1))
 					{
-						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
+						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
 					}
 					else if (j == 0)
 					{
