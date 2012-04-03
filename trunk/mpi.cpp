@@ -1,6 +1,52 @@
 #include <mpi.h>
 #include "defines.h"
 
+/*
+// Недописанная функция оптимального деления сетки по процессорам
+void kak_delit(void)
+{
+	unsigned int Nx=250, Ny=240;
+	unsigned int size=4;
+	double t_l=0.001;
+	double t_p=1;
+	double t_r=2;
+	double T=0;
+	unsigned int N1=1;
+	unsigned int N2=min(Nx, Ny);
+	unsigned int N3=max(Nx, Ny);
+
+	double T_max=2e50;
+	unsigned int s2_max, s3_max;
+	unsigned int flag=0;
+
+	unsigned int s1=1;
+	unsigned int s2, s3;
+	for(s2=1;s2<size && s2<N2;s2++)
+		for(s3=1;s3<size/s2 && s3<N3;s3++)
+		{
+			T=t_l + N2*t_p + t_r*(N1*N2*N3/(s1*s2*s3));
+			if (T<T_max)
+			{
+				T_max=T;
+				flag=1;
+				s2_max=s2;
+				s3_max=s3;
+			}
+
+			T=2*t_l + (N2 / s2 + N3 / s3)*t_p + t_r*(N1*N2*N3/(s1*s2*s3));
+			if (T<T_max)
+			{
+				T_max=T;
+				flag=2;
+				s2_max=s2;
+				s3_max=s3;
+			}
+		}
+
+		std::cout<<"s2="<<s2<<"  s3="<<s3<<"  flag="<<flag<<"\n";
+}
+*/
+
 // Передача и прием данных правой границе
 void right_send_recv(double* HostBuffer, int destination_rank, int send_recv_id, consts def)
 {

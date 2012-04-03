@@ -1220,12 +1220,12 @@ void read_defines(int argc, char *argv[], consts* def)
 		}
 		if (!strcmp(attr_name, "M_0"))
 		{
-			(*def).m[0] = atof(attr_value);
+			(*def).porosity[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "M_1"))
 		{
-			(*def).m[1] = atof(attr_value);
+			(*def).porosity[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_WR_0"))

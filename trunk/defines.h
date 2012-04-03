@@ -67,7 +67,7 @@ struct consts_tag
 	double upscale_l, upscale_t;
 	double lambda[2];
 	double S_wr[2];
-	double m[2];
+	double porosity[2];
 	double hx, hy, hz, dt, tau, l, c_w, c_n, beta_w, beta_n, P_atm, g_const, mu_w, mu_n, ro0_w, ro0_n, timeX;
 	double S_n_gr;
 	int Nx, Ny, Nz;
