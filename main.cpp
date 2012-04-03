@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
 // 8. Обмен между процессорами пограничными значениями P1 и S2
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t)
 {
+	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
 	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (8)
 	ro_P_Xi_calculation(HostArraysPtr, DevArraysPtr, def); // (1)
 	P_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (2)
@@ -95,8 +96,6 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (4)
 	roS_calculation(HostArraysPtr, DevArraysPtr, t, def); // (5)
 	P_S_calculation(HostArraysPtr, DevArraysPtr, def); // (6)
-	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
-
 }
 
 // Преобразование локальных координат процессора к глобальным
