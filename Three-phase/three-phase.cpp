@@ -277,30 +277,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	if (i == 0)
-	{
-		i1 ++;
-	}
-	if (i == (def.locNx) - 1)
-	{
-		i1 --;
-	}
-	if (j == 0)
-	{
-		j1 ++;
-	}
-	if (j == (def.locNy) - 1)
-	{
-		j1 --;
-	}
-	if ((k == 0) && ((def.locNz) > 2))
-	{
-		k1 ++;
-	}
-	if ((k == (def.locNz) - 1) && ((def.locNz) > 2))
-	{
-		k1 --;
-	}
+	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
 
 	if ((j != 0) || ((def.source) <= 0))
 	{
@@ -320,30 +297,8 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	if (i == 0)
-	{
-		i1 ++;
-	}
-	if (i == (def.locNx) - 1)
-	{
-		i1 --;
-	}
-	if (j == 0)
-	{
-		j1 ++;
-	}
-	if (j == (def.locNy) - 1)
-	{
-		j1 --;
-	}
-	if ((k == 0) && ((def.locNz) > 2))
-	{
-		k1 ++;
-	}
-	if ((k == (def.locNz) - 1) && ((def.locNz) > 2))
-	{
-		k1 --;
-	}
+	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
+
 /*
 // Если отдельно задаем значения на границах через градиент
 	if ((j != 0) && (j != (def.locNy) - 1))
