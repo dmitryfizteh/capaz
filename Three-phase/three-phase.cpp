@@ -335,7 +335,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
 
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
 					// Линейное изменение насыщенностей в начальном распределении
 	/*				int j1 = def.locNy / 2;
 

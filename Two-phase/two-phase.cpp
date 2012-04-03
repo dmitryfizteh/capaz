@@ -114,7 +114,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				{
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
 
 					// Если точка на верхней границе, не далее (def.source) точек от центра,
 					// то в ней начальная насыщенность. Иначе, нулевая

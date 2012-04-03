@@ -34,7 +34,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* time_counter, const
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
 					}
 
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy] = def.m[0];
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy] = def.porosity[0];
 
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 
@@ -166,7 +166,7 @@ __global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
 			DevArraysPtr.P_w[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = DevArraysPtr.P_w[i + (j - 1) * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
 		}
 
-		DevArraysPtr.m[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = gpu_def->m[0];
+		DevArraysPtr.m[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = gpu_def->porosity[0];
 
 		DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_w * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm));
 

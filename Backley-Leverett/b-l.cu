@@ -15,7 +15,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
 					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.Background_Sn;
 
 					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
