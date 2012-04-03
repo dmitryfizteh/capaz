@@ -707,8 +707,8 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts 
 	cudaMalloc((void**) & ((*ArraysPtr).roS_n), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).roS_w_old), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).roS_n_old), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
-	cudaMalloc((void**) & ((*ArraysPtr).m), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(int));
-
+	cudaMalloc((void**) & ((*ArraysPtr).m), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
+	cudaMalloc((void**) & ((*ArraysPtr).K), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 #ifdef THREE_PHASE
 	cudaMalloc((void**) & ((*ArraysPtr).P_g), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).S_w), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
@@ -719,10 +719,6 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts 
 	cudaMalloc((void**) & ((*ArraysPtr).Xi_g), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).roS_g), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).roS_g_old), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
-#endif
-
-#ifdef B_L
-	cudaMalloc((void**) & ((*ArraysPtr).K), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 #endif
 
 	checkErrors("memory allocation", __FILE__, __LINE__);
@@ -750,7 +746,7 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 	cudaFree(DevArraysPtr.roS_w_old);
 	cudaFree(DevArraysPtr.roS_n_old);
 	cudaFree(DevArraysPtr.m);
-
+	cudaFree(DevArraysPtr.K);
 #ifdef THREE_PHASE
 	cudaFree(DevArraysPtr.P_g);
 	cudaFree(DevArraysPtr.S_w);
@@ -763,11 +759,7 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 	cudaFree(DevArraysPtr.roS_g_old);
 #endif
 
-#ifdef B_L
-	cudaFree(DevArraysPtr.K);
-#endif
-
-	checkErrors("memory reliase", __FILE__, __LINE__);
+	checkErrors("memory release", __FILE__, __LINE__);
 }
 
 // Инициализация ускорителя

@@ -373,9 +373,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 		(*ArraysPtr).roS_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).roS_n_old = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).m = new double [(def.locNx) * (def.locNy) * (def.locNz)];
-#ifdef B_L
 		(*ArraysPtr).K = new double [(def.locNx) * (def.locNy) * (def.locNz)];
-#endif
 #ifdef THREE_PHASE
 		(*ArraysPtr).P_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).S_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
@@ -415,9 +413,7 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.roS_n;
 	delete[] ArraysPtr.roS_n_old;
 	delete[] ArraysPtr.m;
-#ifdef B_L
 	delete[] ArraysPtr.K;
-#endif
 #ifdef THREE_PHASE
 	delete[] ArraysPtr.P_g;
 	delete[] ArraysPtr.S_w;
