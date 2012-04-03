@@ -7,7 +7,7 @@
 static double assign_P_k_nw(double S_w_e, int media, consts def)
 {
 	double P_k_nw = 0;
-	double A = def.lambda[media];
+/*	double A = def.lambda[media];
 
 	if (S_w_e <= S_w_range[1])
 	{
@@ -21,14 +21,14 @@ static double assign_P_k_nw(double S_w_e, int media, consts def)
 	{
 		P_k_nw = def.P_d_nw[media] * pow((pow(S_w_e, A / (1. - A)) - 1.), 1. / A);
 	}
-
+*/
 	return P_k_nw;
 }
 
 static double assign_P_k_gn(double S_g_e, int media, consts def)
 {
 	double P_k_gn = 0;
-	double A = def.lambda[media];
+/*	double A = def.lambda[media];
 
 	if (S_g_e <= S_g_range[1])
 	{
@@ -42,7 +42,7 @@ static double assign_P_k_gn(double S_g_e, int media, consts def)
 	{
 		P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);
 	}
-
+*/
 	return P_k_gn;
 }
 
@@ -50,7 +50,7 @@ static double assign_P_k_gn(double S_g_e, int media, consts def)
 static double assign_P_k_nw_S(double S_w_e, int media, consts def)
 {
 	double PkSw = 0;
-	double A = def.lambda[media];                                                                                                                                                                                                                                                                  /*2*/
+/*	double A = def.lambda[media];
 
 	if (S_w_e <= S_w_range[1])
 	{
@@ -65,14 +65,14 @@ static double assign_P_k_nw_S(double S_w_e, int media, consts def)
 		PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)
 			/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
 	}
-
+*/
 	return PkSw;
 }
 
 static double assign_P_k_gn_S(double S_g_e, int media, consts def)
 {
 	double PkSn = 0;
-	double A = def.lambda[media];
+/*	double A = def.lambda[media];
 
 	if (S_g_e <= S_g_range[1])
 	{
@@ -87,7 +87,7 @@ static double assign_P_k_gn_S(double S_g_e, int media, consts def)
 		PkSn = def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)
 			/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
 	}
-	return PkSn;
+*/	return PkSn;
 }
 
 // Функции вычисления относительных проницаемостей
@@ -145,7 +145,6 @@ static double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
 
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-
 	int media = 0;
 	double k_w, k_g, k_n, P_k_nw, P_k_gn;
 	double A = def.lambda[media];
@@ -157,15 +156,18 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	k_g = assign_k_g(S_g_e, media, def);
 	k_n = assign_k_n(S_w_e, S_n_e, media, def);
 
-	P_k_nw = assign_P_k_nw(S_w_e, media, def);
-	P_k_gn = assign_P_k_gn(S_g_e, media, def);
-
-	HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
-	HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
-
 	HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_w / def.mu_w;
 	HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_n / def.mu_n;
 	HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_g / def.mu_g;
+
+	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	{
+		P_k_nw = assign_P_k_nw(S_w_e, media, def);
+		P_k_gn = assign_P_k_gn(S_g_e, media, def);
+
+		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
+		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
+	}
 
 	test_positive(HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
@@ -308,15 +310,15 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 	else if (j == 0)
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 	else
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 /*
 // Если внешний слой дублирует первый внутренний
