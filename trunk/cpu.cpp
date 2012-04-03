@@ -9,8 +9,10 @@ int is_injection_well(int i, int j, int k, consts def)
 #ifdef THREE_PHASE
 	if (j == (def.Ny) - 2)
 #endif
+#ifndef TWO_PHASE
 		return 1;
 	else
+#endif
 		return 0;
 }
 
@@ -23,8 +25,10 @@ int is_output_well(int i, int j, int k, consts def)
 #ifdef THREE_PHASE
 	if (j == 1)
 #endif
+#ifndef TWO_PHASE
 		return 1;
 	else
+#endif
 		return 0;
 }
 

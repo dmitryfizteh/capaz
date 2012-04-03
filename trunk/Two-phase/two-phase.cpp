@@ -3,7 +3,7 @@
 
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	int media = 0;
 	double S_e = (1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media]);
 	//if (S_e<0)
 	//	S_e=0;
@@ -25,7 +25,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		int media = HostArraysPtr.media[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		int media = 0;
 		double S_e, P_k, AAA, F1, F2, PkS, F1P, F2P, F1S, F2S, det;
 
 		for (int w = 1; w <= def.newton_iterations; w++)
@@ -114,6 +114,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				{
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
+					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.m[0];
 
 					// Если точка на верхней границе, не далее (def.source) точек от центра,
 					// то в ней начальная насыщенность. Иначе, нулевая
@@ -134,8 +135,6 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					{
 						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_eff_gdy(HostArraysPtr, i, j - 1, k, def);
 					}
-
-					HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy] = 0;
 
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 
@@ -160,7 +159,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					test_nan(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_nan(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_nan(HostArraysPtr.media[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_nan(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
 }
 

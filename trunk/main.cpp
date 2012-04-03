@@ -299,10 +299,8 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 
 	memory_allocation(HostArraysPtr, DevArraysPtr, *def); // (3)
 
-#ifdef B_L
 	load_permeability((*HostArraysPtr).K, *def); // (5)
 	load_data_to_device((*HostArraysPtr).K, (*DevArraysPtr).K, *def);
-#endif
 
 	// ≈сли процессор может открыть файл сохраненного состо€ни€,
 	// то восстанавливаем состо€ние, иначе примен€ем начальные услови€
@@ -571,11 +569,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #ifdef THREE_PHASE
 					if (def.Nz < 2)
 					{
-						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), (def.Ny-1-j)*(def.hy),
+						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), (def.Ny-1-j)*(def.hy),
 													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 													HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 						*/
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy),
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy),
 						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 						        HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
 						        (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
@@ -584,11 +582,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 
 					else
 					{
-						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],
+						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],
 													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 													HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 						*/
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy),
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy),
 						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 						        HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
 						        HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
@@ -599,12 +597,12 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #ifdef TWO_PHASE
 					if (def.Nz < 2)
 					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %d\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
 					}
 #endif
 #ifdef B_L
