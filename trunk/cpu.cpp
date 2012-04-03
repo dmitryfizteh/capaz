@@ -142,6 +142,35 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 				}
 }
 
+// Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
+void set_boundary_basic_coordinate(ptr_Arrays HostArraysPtr, int i, int j, int k, int* i1, int* j1, int* k1, consts def)
+{
+	if (i == 0)
+	{
+		(*i1) ++;
+	}
+	if (i == (def.locNx) - 1)
+	{
+		(*i1) --;
+	}
+	if (j == 0)
+	{
+		(*j1) ++;
+	}
+	if (j == (def.locNy) - 1)
+	{
+		(*j1) --;
+	}
+	if ((k == 0) && ((def.locNz) > 2))
+	{
+		(*k1) ++;
+	}
+	if ((k == (def.locNz) - 1) && ((def.locNz) > 2))
+	{
+		(*k1) --;
+	}
+}
+
 void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
