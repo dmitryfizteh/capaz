@@ -147,7 +147,7 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 }
 
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
-void set_boundary_basic_coordinate(ptr_Arrays HostArraysPtr, int i, int j, int k, int* i1, int* j1, int* k1, consts def)
+void set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1, consts def)
 {
 	if (i == 0)
 	{
@@ -349,9 +349,9 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		if (k == 0)
 		{
 			HostArraysPtr.uz_w[local] = HostArraysPtr.Xi_w[local] * right_difference (HostArraysPtr.P_w+local, 'z', def);
-			HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * right_difference (HostArraysPtr.P_w+local, 'z', def);
+			HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * right_difference (HostArraysPtr.P_n+local, 'z', def);
 #ifdef THREE_PHASE
-			HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * right_difference (HostArraysPtr.P_w+local, 'z', def);
+			HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * right_difference (HostArraysPtr.P_g+local, 'z', def);
 #endif
 		}
 		else
@@ -359,17 +359,17 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			if (k == (def.locNz) - 1)
 			{
 				HostArraysPtr.uz_w[local] = HostArraysPtr.Xi_w[local] * left_difference (HostArraysPtr.P_w+local, 'z', def);
-				HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * left_difference (HostArraysPtr.P_w+local, 'z', def);
+				HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * left_difference (HostArraysPtr.P_n+local, 'z', def);
 #ifdef THREE_PHASE
-				HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * left_difference (HostArraysPtr.P_w+local, 'z', def);
+				HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * left_difference (HostArraysPtr.P_g+local, 'z', def);
 #endif
 			}
 			else
 			{
 				HostArraysPtr.uz_w[local] = HostArraysPtr.Xi_w[local] * central_difference (HostArraysPtr.P_w+local, 'z', def);
-				HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * central_difference (HostArraysPtr.P_w+local, 'z', def);
+				HostArraysPtr.uz_n[local] = HostArraysPtr.Xi_n[local] * central_difference (HostArraysPtr.P_n+local, 'z', def);
 #ifdef THREE_PHASE
-				HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * central_difference (HostArraysPtr.P_w+local, 'z', def);
+				HostArraysPtr.uz_g[local] = HostArraysPtr.Xi_g[local] * central_difference (HostArraysPtr.P_g+local, 'z', def);
 #endif
 			}
 		}

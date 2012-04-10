@@ -58,7 +58,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
+	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
 	if ((j != 0) || ((def.source) <= 0))
 	{
@@ -86,7 +86,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
+	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
 	if ((j != 0) && (j != (def.locNy) - 1))
 	{
