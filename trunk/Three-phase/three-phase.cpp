@@ -168,6 +168,11 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
 		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
 	}
+	else 
+	{
+		assign_border_P(HostArraysPtr.P_n, HostArraysPtr.ro_n, i, j, k, def);
+		assign_border_P(HostArraysPtr.P_g, HostArraysPtr.ro_g, i, j, k, def);
+	}
 
 	test_positive(HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
@@ -279,7 +284,7 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
+	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
 	if ((j != 0) || ((def.source) <= 0))
 	{
@@ -294,36 +299,32 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 
 }
-
-void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+void assign_border_P(double* P, double* ro, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
-	set_boundary_basic_coordinate(HostArraysPtr, i, j, k, &i1, &j1, &k1, def);
+	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
 	// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
 	if ((j != 0) && (j != (def.locNy) - 1))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 	}
 	else if (j == 0)
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
+				- ro[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 	else
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + HostArraysPtr.ro_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
+				+ ro[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
-/*
-// ≈сли внешний слой дублирует первый внутренний
-	HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-*/
+}
+
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	assign_border_P(HostArraysPtr.P_w, HostArraysPtr.ro_w, i, j, k, def);
 }
 
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
@@ -378,7 +379,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 
 					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
 					HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_g * HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / def.P_atm;
 
 					test_S(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
@@ -390,5 +391,6 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					test_positive(HostArraysPtr.ro_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_positive(HostArraysPtr.ro_g[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
+	boundary_conditions(HostArraysPtr, HostArraysPtr, def);
 }
 
