@@ -160,19 +160,11 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_n / def.mu_n;
 	HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_g / def.mu_g;
 
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
-	{
-		P_k_nw = assign_P_k_nw(S_w_e, media, def);
-		P_k_gn = assign_P_k_gn(S_g_e, media, def);
+	P_k_nw = assign_P_k_nw(S_w_e, media, def);
+	P_k_gn = assign_P_k_gn(S_g_e, media, def);
 
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
-	}
-	else 
-	{
-		assign_border_P(HostArraysPtr.P_n, HostArraysPtr.ro_n, i, j, k, def);
-		assign_border_P(HostArraysPtr.P_g, HostArraysPtr.ro_g, i, j, k, def);
-	}
+	HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
+	HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
 
 	test_positive(HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
@@ -313,12 +305,12 @@ void assign_border_P(double* P, double* ro, int i, int j, int k, consts def)
 	else if (j == 0)
 	{
 		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-				- ro[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+				- ro[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 	else
 	{
 		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-				+ ro[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+				+ ro[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
 	}
 }
 
@@ -391,6 +383,5 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					test_positive(HostArraysPtr.ro_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 					test_positive(HostArraysPtr.ro_g[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
 				}
-	boundary_conditions(HostArraysPtr, HostArraysPtr, def);
 }
 

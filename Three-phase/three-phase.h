@@ -10,7 +10,5 @@ static const double bg[2] = {1.58, -29.69};
 static const double S_w_range[3] = {0.001, 0.1, 0.99};
 static const double S_g_range[3] = {0.001, 0.005, 0.95};
 
-extern void assign_border_P(double* P, double* ro, int i, int j, int k, consts def);
-
 #endif
 
