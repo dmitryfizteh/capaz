@@ -59,16 +59,16 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 	double k_w=0., k_n=0.;
 
-	assing_k(&k_w, &k_n, 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+	assing_k(&k_w, &k_n, 1. - HostArraysPtr.S_n[local]);
 
-	HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-	HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = -1. * (HostArraysPtr.K[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * k_w / def.mu_w;
-	HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = -1. * (HostArraysPtr.K[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * k_n / def.mu_n;
+	HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local];
+	HostArraysPtr.Xi_w[local] = -1. * (HostArraysPtr.K[local]) * k_w / def.mu_w;
+	HostArraysPtr.Xi_n[local] = -1. * (HostArraysPtr.K[local]) * k_n / def.mu_n;
 
 	//	test_S(S_e, __FILE__, __LINE__);
-	test_positive(HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_nan(HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_nan(HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.Xi_w[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.Xi_n[local], __FILE__, __LINE__);
 }
 
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
