@@ -154,6 +154,10 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
 void set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1, consts def)
 {
+	(*i1) = i;
+	(*j1) = j;
+	(*k1) = k;
+
 	if (i == 0)
 	{
 		(*i1) ++;
