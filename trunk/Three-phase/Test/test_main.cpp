@@ -66,8 +66,12 @@ void unit_test_reverse_matrix()
 	compare_matrix(a, b);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+#ifdef GTEST
+	::testing::InitGoogleTest(&argc, argv);
+	RUN_ALL_TESTS();
+#endif
 	unit_test_reverse_matrix();
 
 #ifdef _WIN32
