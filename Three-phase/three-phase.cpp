@@ -1,6 +1,19 @@
 #include "../defines.h"
 #include "three-phase.h"
 
+// Функции вычисления эффективных значений насыщенностей
+double assign_S_w_e(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	int media = 0;
+	return (HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+}
+
+double assign_S_n_e(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	int media = 0;
+	return (HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_nr[media]) / (1. - def.S_nr[media] - def.S_nr[media] - def.S_nr[media]);
+}
+
 // Функции вычисления капиллярных давлений
 // По краям интервала [0, 1] функции капиллярных давлений гладко заменяем линейными, производные меняются соответственно.
 // Описание можно посмотреть в файле mathcad.
@@ -147,9 +160,8 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int media = 0;
 	double k_w, k_g, k_n, P_k_nw, P_k_gn;
-	double A = def.lambda[media];
-	double S_w_e = (HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
-	double S_n_e = (HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_nr[media]) / (1. - def.S_nr[media] - def.S_nr[media] - def.S_nr[media]);
+	double S_w_e = assign_S_w_e(HostArraysPtr, i, j, k, def);
+	double S_n_e = assign_S_n_e(HostArraysPtr, i, j, k, def);
 	double S_g_e = 1. - S_w_e - S_n_e;
 
 	k_w = assign_k_w(S_w_e, media, def);
@@ -291,32 +303,39 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 
 }
-void assign_border_P(double* P, double* ro, int i, int j, int k, consts def)
+
+void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int i1 = i, j1 = j, k1 = k;
 
 	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
+	int media = 0;
+	double S_w_e = assign_S_w_e(HostArraysPtr, i1, j1, k1, def);
+	double S_n_e = assign_S_n_e(HostArraysPtr, i1, j1, k1, def);
+	double S_g_e = 1. - S_w_e - S_n_e;
+
+	double P_k_nw = assign_P_k_nw(S_w_e, media, def);
+	double P_k_gn = assign_P_k_gn(S_g_e, media, def);
+	double ro_w_in = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - def.P_atm));
+	double ro_n_in = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] - def.P_atm));
+	double ro_g_in = def.ro0_g * HostArraysPtr.P_g[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] / def.P_atm;
+
 	// Если отдельно задаем значения на границах через градиент (условия непротекания)
 	if ((j != 0) && (j != (def.locNy) - 1))
 	{
-		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 	}
 	else if (j == 0)
 	{
-		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-				- ro[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
+		- ro_w_in * (def.g_const) * (def.hy);
 	}
 	else
 	{
-		P[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-				+ ro[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
+		+ ro_w_in * (def.g_const) * (def.hy);
 	}
-}
-
-void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
-{
-	assign_border_P(HostArraysPtr.P_w, HostArraysPtr.ro_w, i, j, k, def);
 }
 
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
