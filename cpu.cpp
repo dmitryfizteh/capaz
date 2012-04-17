@@ -649,15 +649,15 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		{
 			z2 = -1. * right_difference (HostArraysPtr.P_w+local, 'z', def);
 			z1 = -1. * left_difference (HostArraysPtr.P_w+local, 'z', def);
-			fz_w = directed_difference (y1, y2, HostArraysPtr.Xi_w+local, HostArraysPtr.ro_w+local, 'z', def);
+			fz_w = directed_difference (z1, z2, HostArraysPtr.Xi_w+local, HostArraysPtr.ro_w+local, 'z', def);
 
 			z2 = -1. * right_difference (HostArraysPtr.P_n+local, 'z', def); 
 			z1 = -1. * left_difference (HostArraysPtr.P_n+local, 'z', def); 
-			fz_n = directed_difference (y1, y2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'z', def);
+			fz_n = directed_difference (z1, z2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'z', def);
 #ifdef THREE_PHASE
 			z2 = -1. * right_difference (HostArraysPtr.P_g+local, 'z', def); 
 			z1 = -1. * left_difference (HostArraysPtr.P_g+local, 'z', def); 
-			fz_n = directed_difference (y1, y2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'z', def);
+			fz_n = directed_difference (z1, z2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'z', def);
 #endif
 		}
 
