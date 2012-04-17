@@ -93,11 +93,6 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 				{
 					assign_P_Xi(HostArraysPtr, i, j, k, def);
 					assign_ro(HostArraysPtr, i, j, k, def);
-#ifdef THREE_PHASE
-					assign_border_P(HostArraysPtr.P_w, HostArraysPtr.ro_w, i, j, k, def);
-					assign_border_P(HostArraysPtr.P_n, HostArraysPtr.ro_n, i, j, k, def);
-					assign_border_P(HostArraysPtr.P_g, HostArraysPtr.ro_g, i, j, k, def);
-#endif
 				}
 			}
 }
@@ -349,20 +344,20 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	{
 		if (j == 0)
 		{
-			HostArraysPtr.uy_w[local] = HostArraysPtr.Xi_w[local] * (right_difference (HostArraysPtr.P_w+local, 'y', def) - HostArraysPtr.ro_w[local + 1] * (def.g_const));
-			HostArraysPtr.uy_n[local] = HostArraysPtr.Xi_n[local] * (right_difference (HostArraysPtr.P_n+local, 'y', def) - HostArraysPtr.ro_n[local + 1] * (def.g_const));
+			HostArraysPtr.uy_w[local] = HostArraysPtr.Xi_w[local] * (right_difference (HostArraysPtr.P_w+local, 'y', def) - HostArraysPtr.ro_w[local + def.locNx] * (def.g_const));
+			HostArraysPtr.uy_n[local] = HostArraysPtr.Xi_n[local] * (right_difference (HostArraysPtr.P_n+local, 'y', def) - HostArraysPtr.ro_n[local + def.locNx] * (def.g_const));
 #ifdef THREE_PHASE
-			HostArraysPtr.uy_g[local] = HostArraysPtr.Xi_g[local] * (right_difference (HostArraysPtr.P_g+local, 'y', def) - HostArraysPtr.ro_g[local + 1] * (def.g_const));
+			HostArraysPtr.uy_g[local] = HostArraysPtr.Xi_g[local] * (right_difference (HostArraysPtr.P_g+local, 'y', def) - HostArraysPtr.ro_g[local + def.locNx] * (def.g_const));
 #endif
 		}
 		else
 		{
 			if (j == (def.locNy) - 1)
 			{
-				HostArraysPtr.uy_w[local] = HostArraysPtr.Xi_w[local] * (left_difference (HostArraysPtr.P_w+local, 'y', def) - HostArraysPtr.ro_w[local - 1] * (def.g_const));
-				HostArraysPtr.uy_n[local] = HostArraysPtr.Xi_n[local] * (left_difference (HostArraysPtr.P_n+local, 'y', def) - HostArraysPtr.ro_n[local - 1] * (def.g_const));
+				HostArraysPtr.uy_w[local] = HostArraysPtr.Xi_w[local] * (left_difference (HostArraysPtr.P_w+local, 'y', def) - HostArraysPtr.ro_w[local - def.locNx] * (def.g_const));
+				HostArraysPtr.uy_n[local] = HostArraysPtr.Xi_n[local] * (left_difference (HostArraysPtr.P_n+local, 'y', def) - HostArraysPtr.ro_n[local - def.locNx] * (def.g_const));
 #ifdef THREE_PHASE
-				HostArraysPtr.uy_g[local] = HostArraysPtr.Xi_g[local] * (left_difference (HostArraysPtr.P_g+local, 'y', def) - HostArraysPtr.ro_g[local - 1] * (def.g_const));
+				HostArraysPtr.uy_g[local] = HostArraysPtr.Xi_g[local] * (left_difference (HostArraysPtr.P_g+local, 'y', def) - HostArraysPtr.ro_g[local - def.locNx] * (def.g_const));
 #endif
 			}
 			else

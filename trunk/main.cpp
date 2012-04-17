@@ -1125,113 +1125,113 @@ void read_defines(int argc, char *argv[], consts* def)
 
 		if (!strcmp(attr_name, "HX"))
 		{
-			(*def).hx = atof(attr_value);
+			def->hx = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "HY"))
 		{
-			(*def).hy = atof(attr_value);
+			def->hy = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "HZ"))
 		{
-			(*def).hz = atof(attr_value);
+			def->hz = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "TAU"))
 		{
-			(*def).tau = atof(attr_value);
+			def->tau = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "DT"))
 		{
-			(*def).dt = atof(attr_value);
+			def->dt = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "C_W"))
 		{
-			(*def).c_w = atof(attr_value);
+			def->c_w = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "C_N"))
 		{
-			(*def).c_n = atof(attr_value);
+			def->c_n = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "L"))
 		{
-			(*def).l = atof(attr_value);
+			def->l = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "BETA_W"))
 		{
-			(*def).beta_w = atof(attr_value);
+			def->beta_w = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "BETA_N"))
 		{
-			(*def).beta_n = atof(attr_value);
+			def->beta_n = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "RO_W"))
 		{
-			(*def).ro0_w = atof(attr_value);
+			def->ro0_w = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "RO_N"))
 		{
-			(*def).ro0_n = atof(attr_value);
+			def->ro0_n = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "MU_W"))
 		{
-			(*def).mu_w = atof(attr_value);
+			def->mu_w = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "MU_N"))
 		{
-			(*def).mu_n = atof(attr_value);
+			def->mu_n = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "G_CONST"))
 		{
-			(*def).g_const = atof(attr_value);
+			def->g_const = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_ATM"))
 		{
-			(*def).P_atm = atof(attr_value);
+			def->P_atm = atof(attr_value);
 			continue;
 		}
 
 		if (!strcmp(attr_name, "LAMBDA_0"))
 		{
-			(*def).lambda[0] = atof(attr_value);
+			def->lambda[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "LAMBDA_1"))
 		{
-			(*def).lambda[1] = atof(attr_value);
+			def->lambda[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "M_0"))
 		{
-			(*def).porosity[0] = atof(attr_value);
+			def->porosity[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "M_1"))
 		{
-			(*def).porosity[1] = atof(attr_value);
+			def->porosity[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_WR_0"))
 		{
-			(*def).S_wr[0] = atof(attr_value);
+			def->S_wr[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_WR_1"))
 		{
-			(*def).S_wr[1] = atof(attr_value);
+			def->S_wr[1] = atof(attr_value);
 			continue;
 		}
 
@@ -1279,24 +1279,24 @@ void read_defines(int argc, char *argv[], consts* def)
 
 		if (!strcmp(attr_name, "K_0"))
 		{
-			(*def).K[0] = atof(attr_value);
+			def->K[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "K_1"))
 		{
-			(*def).K[1] = atof(attr_value);
+			def->K[1] = atof(attr_value);
 			continue;
 		}
 
 #ifdef TWO_PHASE
 		if (!strcmp(attr_name, "P_D_0"))
 		{
-			(*def).P_d[0] = atof(attr_value);
+			def->P_d[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_D_1"))
 		{
-			(*def).P_d[1] = atof(attr_value);
+			def->P_d[1] = atof(attr_value);
 			continue;
 		}
 #endif
@@ -1304,123 +1304,123 @@ void read_defines(int argc, char *argv[], consts* def)
 #ifdef THREE_PHASE
 		if (!strcmp(attr_name, "C_G"))
 		{
-			(*def).c_g = atof(attr_value);
+			def->c_g = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "BETA_G"))
 		{
-			(*def).beta_g = atof(attr_value);
+			def->beta_g = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "RO_G"))
 		{
-			(*def).ro0_g = atof(attr_value);
+			def->ro0_g = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "MU_G"))
 		{
-			(*def).mu_g = atof(attr_value);
+			def->mu_g = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_D_NW_0"))
 		{
-			(*def).P_d_nw[0] = atof(attr_value);
+			def->P_d_nw[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_D_NW_1"))
 		{
-			(*def).P_d_nw[1] = atof(attr_value);
+			def->P_d_nw[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_D_GN_0"))
 		{
-			(*def).P_d_gn[0] = atof(attr_value);
+			def->P_d_gn[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "P_D_GN_1"))
 		{
-			(*def).P_d_gn[1] = atof(attr_value);
+			def->P_d_gn[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_W_GR"))
 		{
-			(*def).S_w_gr = atof(attr_value);
+			def->S_w_gr = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_W_INIT"))
 		{
-			(*def).S_w_init = atof(attr_value);
+			def->S_w_init = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_N_INIT"))
 		{
-			(*def).S_n_init = atof(attr_value);
+			def->S_n_init = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_NR_0"))
 		{
-			(*def).S_nr[0] = atof(attr_value);
+			def->S_nr[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_NR_1"))
 		{
-			(*def).S_nr[1] = atof(attr_value);
+			def->S_nr[1] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_GR_0"))
 		{
-			(*def).S_gr[0] = atof(attr_value);
+			def->S_gr[0] = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "S_GR_1"))
 		{
-			(*def).S_gr[1] = atof(attr_value);
+			def->S_gr[1] = atof(attr_value);
 			continue;
 		}
 #endif
 		if (!strcmp(attr_name, "S_N_GR"))
 		{
-			(*def).S_n_gr = atof(attr_value);
+			def->S_n_gr = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "SOURCE"))
 		{
-			(*def).source = atoi(attr_value);
+			def->source = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "ITERATIONS"))
 		{
-			(*def).newton_iterations = atoi(attr_value);
+			def->newton_iterations = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "TIMEX"))
 		{
-			(*def).timeX = atof(attr_value);
+			def->timeX = atof(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "SAVE_PLOTS"))
 		{
-			(*def).save_plots = atoi(attr_value);
+			def->save_plots = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "PRINT_SCREEN"))
 		{
-			(*def).print_screen = atoi(attr_value);
+			def->print_screen = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "NX"))
 		{
-			(*def).Nx = atoi(attr_value);
+			def->Nx = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "NY"))
 		{
-			(*def).Ny = atoi(attr_value);
+			def->Ny = atoi(attr_value);
 			continue;
 		}
 		if (!strcmp(attr_name, "NZ"))
 		{
-			(*def).Nz = atoi(attr_value);
+			def->Nz = atoi(attr_value);
 			continue;
 		}
 	}

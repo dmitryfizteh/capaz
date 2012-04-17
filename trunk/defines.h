@@ -176,9 +176,5 @@ extern int is_injection_well(int i, int j, int k, consts def);
 extern int is_output_well(int i, int j, int k, consts def);
 extern void assing_k(double* k_w, double* k_n, double S_w);
 
-#ifdef THREE_PHASE
-extern void assign_border_P(double* P, double* ro, int i, int j, int k, consts def);
-#endif
-
 #endif
 
