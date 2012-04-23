@@ -59,7 +59,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 //****************************
 
 // Расчет относительных проницаемостей в точке
-__device__ void assing_k(double* k_w, double* k_n, double S_w)
+__device__ void device_assing_k(double* k_w, double* k_n, double S_w)
 {
 	/*
 	// SPE-постановка
@@ -121,19 +121,20 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
 	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
 	{
 		double k_w=0., k_n=0.;
-		assing_k(&k_w, &k_n, 1. - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]);
+		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+		device_assing_k(&k_w, &k_n, 1. - DevArraysPtr.S_n[local]);
 
-		DevArraysPtr.P_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-		DevArraysPtr.Xi_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = -1 * (DevArraysPtr.K[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]) * k_w / gpu_def->mu_w;
-		DevArraysPtr.Xi_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = -1 * (DevArraysPtr.K[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]) * k_n / gpu_def->mu_n;
-		DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_w * (1 + (gpu_def->beta_w) * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm));
-		DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_n * (1 + (gpu_def->beta_n) * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm));
+		DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local];
+		DevArraysPtr.Xi_w[local] = -1 * (DevArraysPtr.K[local]) * k_w / gpu_def->mu_w;
+		DevArraysPtr.Xi_n[local] = -1 * (DevArraysPtr.K[local]) * k_n / gpu_def->mu_n;
+		DevArraysPtr.ro_w[local] = gpu_def->ro0_w * (1 + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - gpu_def->P_atm));
+		DevArraysPtr.ro_n[local] = gpu_def->ro0_n * (1 + (gpu_def->beta_n) * (DevArraysPtr.P_w[local] - gpu_def->P_atm));
 
-		device_test_positive(DevArraysPtr.P_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.Xi_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.Xi_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.ro_w[local], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.ro_n[local], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.Xi_w[local], __FILE__, __LINE__);
+		device_test_nan(DevArraysPtr.Xi_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -172,3 +173,82 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
+// Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
+__global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+	int k = threadIdx.z + blockIdx.z * blockDim.z;
+
+	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
+	{
+		int i1 = i, j1 = j, k1 = k;
+
+		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
+
+		DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+
+		/*
+		// В центре резервуара находится нагнетательная скважина
+		if (device_is_injection_well(i, j, k, def))
+		{
+			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = INJECTION_WELL_Sn;
+		}
+
+		// В центре резервуара находится добывающая скважина
+		if (device_is_output_well(i, j, k, def))
+		{
+			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = OUTPUT_WELL_Sn;
+		}
+		*/
+
+		device_test_S(DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
+	}
+}
+
+__global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+	int k = threadIdx.z + blockIdx.z * blockDim.z;
+
+	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
+	{
+		int i1 = i, j1 = j, k1 = k;
+		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+
+		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
+
+		if ((j != 0) && (j != (gpu_def->locNy) - 1))
+		{
+			DevArraysPtr.P_w[local] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+		}
+		//else if(j == 0)
+		//	DevArraysPtr.P_w[local] = gpu_def->P_atm;
+		else
+		{
+			double ro_g_dy = (gpu_def->ro0_n * DevArraysPtr.S_n[local]
+							  + gpu_def->ro0_w * (1 - DevArraysPtr.S_n[local])) * (DevArraysPtr.m[ local]) * (gpu_def->g_const) * (gpu_def->hy);
+
+			DevArraysPtr.P_w[local] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)] + ro_g_dy;//DevArraysPtr.ro_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)] * (gpu_def->g_const) * (gpu_def->hy);
+		}
+
+	
+		// В центре резервуара находится нагнетающая скважина
+		if (device_is_injection_well(i, j, k))
+		//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
+		{
+			DevArraysPtr.P_w[local] = gpu_def->InjWell_Pw;
+		}
+
+		// В центре резервуара находится добывающая скважина
+		if (device_is_output_well(i, j, k))
+		//if (((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 1)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 1)))
+		{
+			DevArraysPtr.P_w[local] = gpu_def->OutWell_Pw;
+		}
+	
+
+		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
+	}
+}

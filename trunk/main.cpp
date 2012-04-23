@@ -330,7 +330,7 @@ void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* Dev
 {
 	memory_free(HostArraysPtr, DevArraysPtr); // (2)
 	communication_finalization(); // (1)
-	device__finalization(); // (1)
+	device_finalization(); // (1)
 }
 
 // ¬ыделение пам€ти хоста (1) и ускорител€ (2) под массив точек расчетной области
