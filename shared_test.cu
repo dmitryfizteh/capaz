@@ -24,6 +24,12 @@ void checkErrors(char *label, char *file, int line)
 #endif
 }
 
+// Функция, вызываемая при ошибке
+__device__ void device_print_error(char *error, char *file, int line)
+{
+	CUPRINTF("Error: %s\nFile: \"%s\"\nLine: %d\n\n", error, file, line);
+}
+
 // Тест на NaN
 // Синтаксис вызова device_test_nan(x, __FILE__, __LINE__);
 __device__ void device_test_nan(double x, char *file, int line)
@@ -64,3 +70,20 @@ __device__ void device_test_S(double S, char *file, int line)
 #endif
 }
 
+// Тест на вхождение скоростей в [-100;100]
+// Синтаксис вызова test_u(x, __FILE__, __LINE__);
+// Тест на вхождение скоростей в [-100;100]
+// Синтаксис вызова test_u(x, __FILE__, __LINE__);
+__device__ void device_test_u(double u, char *file, int line)
+{
+#ifdef MY_TEST
+	if (u < -1e8)
+	{
+		CUPRINTF("Error: u<-100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+	if (u > 1e8)
+	{
+		CUPRINTF("Error: u>100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+#endif
+}

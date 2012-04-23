@@ -730,7 +730,7 @@ void device_initialization(consts *def)
 }
 
 // Финализация ускорителя
-void device__finalization(void)
+void device_finalization(void)
 {
 }
 

@@ -122,7 +122,7 @@ extern void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, const
 extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts def);
 
 extern void device_initialization(consts* def);
-extern void device__finalization(void);
+extern void device_finalization(void);
 
 // Служебные
 extern void print_plots_top(double t, consts def);
