@@ -71,6 +71,23 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 #endif
 }
 
+__global__ void assign_ro_kernel(ptr_Arrays DevArraysPtr)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+	int k = threadIdx.z + blockIdx.z * blockDim.z;
+
+	int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+
+	DevArraysPtr.ro_w[local] = (gpu_def->ro0_w) * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - (gpu_def->P_atm)));
+	DevArraysPtr.ro_n[local] = (gpu_def->ro0_n) * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_n[local] - (gpu_def->P_atm)));
+#ifdef THREE_PHASE
+	DevArraysPtr.ro_g[local] = (gpu_def->ro0_g) * DevArraysPtr.P_g[local] / (gpu_def->P_atm);
+	device_test_positive(DevArraysPtr.ro_g[local], __FILE__, __LINE__);
+#endif
+	device_test_positive(DevArraysPtr.ro_w[local], __FILE__, __LINE__);
+	device_test_positive(DevArraysPtr.ro_n[local], __FILE__, __LINE__);
+}
 
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
 __device__ void device_set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1)
@@ -261,7 +278,7 @@ __device__ int device_is_active_point(int i, int j, int k)
 }
 
 // Функция вычисления "эффективной" плотности
-__device__ double cu_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k)
+__device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k)
 {
 	int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
@@ -279,18 +296,17 @@ __device__ double cu_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k)
 // Расчет плотностей, давления NAPL P2 и Xi во всех точках сетки
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
-	assign_ro_Pn_Xi_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
-	checkErrors("assign Pn, Xi, ro", __FILE__, __LINE__);
+	assign_P_Xi_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
+	checkErrors("assign P, Xi", __FILE__, __LINE__);
+	assign_ro_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
+	checkErrors("assign ro", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
 
 // Расчет давления воды P1 и насыщенности NAPL S2 во всех точках сетки
 void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
-	for (int w = 1; w <= def.newton_iterations; w++)
-	{
-		Newton_method_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
-	}
+	Newton_method_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
 	checkErrors("assign Pw and Sn", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -470,7 +486,6 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		DevArraysPtr.roS_g[local] = DevArraysPtr.ro_g[local]
 		* (1. - DevArraysPtr.S_w[local] - DevArraysPtr.S_n[local]);
 
-		double Pg = DevArraysPtr.P_g[local];
 		double fx_g, fy_g, fz_g, A3 = 0.;
 #else
 		DevArraysPtr.roS_w[local] = DevArraysPtr.ro_w[local] * (1. - DevArraysPtr.S_n[local]);
@@ -739,7 +754,7 @@ __global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr)
 
 		if ((j == (gpu_def->locNy) - 1) && ((gpu_def->locNy) > 2))
 		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + (j - 1) * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] + cu_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
+			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + (j - 1) * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] + device_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
 			if (i == 0)
 			{
 				DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];

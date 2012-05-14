@@ -2,114 +2,164 @@
 #include "three-phase.h"
 
 // Функции вычисления эффективных значений насыщенностей
-double assign_S_w_e(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+double assign_S_w_e(ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	int media = 0;
-	return (HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+	return (HostArraysPtr.S_w[local] - def.S_wr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
 }
 
-double assign_S_n_e(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+double assign_S_n_e(ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	int media = 0;
-	return (HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.S_nr[media]) / (1. - def.S_nr[media] - def.S_nr[media] - def.S_nr[media]);
+	return (HostArraysPtr.S_n[local] - def.S_nr[media]) / (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
 }
 
-// Функции вычисления капиллярных давлений
+// Вычисление капиллярных давлений
+
+// Функции задания переломных точек насыщенностей для вычисления капиллярных давлений
+void assign_S_w_range(double* S1, double* S2)
+{
+	(*S1) = 0.1;
+	(*S2) = 0.99;
+}
+
+void assign_S_g_range(double* S1, double* S2)
+{
+	(*S1) = 0.005;
+	(*S2) = 0.95;
+}
+
+// Функции кап. давлений и их производных для центральной части интервала
+double P_k_nw(double S, consts def)
+{
+	int media = 0;
+	double A = def.lambda[media];
+	return def.P_d_nw[media] * pow((pow(S, A / (1. - A)) - 1.), 1. / A);
+}
+
+double P_k_gn(double S, consts def)
+{
+	int media = 0;
+	double A = def.lambda[media];
+	return def.P_d_gn[media] * pow(pow((1. - S), A / (1. - A)) - 1., 1. / A);
+}
+
+double P_k_nw_S(double S, consts def)
+{
+	int media = 0;
+	double A = def.lambda[media];
+	return def.P_d_nw[media] * pow(pow(S, A / (1. - A)) - 1., 1. / A - 1.) * pow(S, (A / (1. - A) - 1.)) / (1. - A)
+		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+}
+
+double P_k_gn_S(double S, consts def)
+{
+	int media = 0;
+	double A = def.lambda[media];
+	return def.P_d_gn[media] * pow(pow(1. - S, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S, A / (1. - A) - 1.) / (1. - A)
+		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+}
+
+// Функции вычисления капиллярных давлений и производных на всем интервале
 // По краям интервала [0, 1] функции капиллярных давлений гладко заменяем линейными, производные меняются соответственно.
 // Описание можно посмотреть в файле mathcad.
-static double assign_P_k_nw(double S_w_e, int media, consts def)
+double assign_P_k_nw(double S_w_e, consts def)
 {
-	double P_k_nw = 0;
-/*	double A = def.lambda[media];
+	double Pk_nw = 0;
+/*	double S_w_range[2];
+	assign_S_w_range(S_w_range, S_w_range + 1);
 
-	if (S_w_e <= S_w_range[1])
+	if (S_w_e <= S_w_range[0])
 	{
-		P_k_nw = aw[0] * S_w_e + bw[0];
+		Pk_nw = P_k_nw_S(S_w_range[0], def) * (S_w_e - S_w_range[0]) + P_k_nw(S_w_range[0], def);
 	}
-	else if (S_w_e >= S_w_range[2])
+	else if (S_w_e >= S_w_range[1])
 	{
-		P_k_nw = aw[1] * S_w_e + bw[1];
+		Pk_nw = P_k_nw_S(S_w_range[1], def) * (S_w_e - S_w_range[1]) + P_k_nw(S_w_range[1], def);;
 	}
 	else
 	{
-		P_k_nw = def.P_d_nw[media] * pow((pow(S_w_e, A / (1. - A)) - 1.), 1. / A);
+		Pk_nw = P_k_nw(S_w_e, def);
 	}
 */
-	return P_k_nw;
+	return Pk_nw;
 }
 
-static double assign_P_k_gn(double S_g_e, int media, consts def)
+double assign_P_k_gn(double S_g_e, consts def)
 {
-	double P_k_gn = 0;
-/*	double A = def.lambda[media];
+	double Pk_gn = 0;
+/*	double S_g_range[2];
+	assign_S_g_range(S_g_range, S_g_range + 1);
 
-	if (S_g_e <= S_g_range[1])
+	if (S_g_e <= S_g_range[0])
 	{
-		P_k_gn = ag[0] * S_g_e + bg[0];
+		Pk_gn = P_k_gn_S(S_g_range[0], def) * (S_g_e - S_g_range[0]) + P_k_gn(S_g_range[0], def);
 	}
-	else if (S_g_e >= S_g_range[2])
+	else if (S_g_e >= S_g_range[1])
 	{
-		P_k_gn = ag[1] * S_g_e + bg[1];
+		Pk_gn = P_k_gn_S(S_g_range[1], def) * (S_g_e - S_g_range[1]) + P_k_gn(S_g_range[1], def);
 	}
 	else
 	{
-		P_k_gn = def.P_d_gn[media] * pow(pow((1. - S_g_e), A / (1. - A)) - 1., 1. / A);
+		Pk_gn = P_k_gn(S_g_e, def);
 	}
 */
-	return P_k_gn;
+	return Pk_gn;
 }
 
 // Функции вычисления производных капиллярных давлений по насыщенностям
-static double assign_P_k_nw_S(double S_w_e, int media, consts def)
+double assign_P_k_nw_S(double S_w_e, consts def)
 {
 	double PkSw = 0;
-/*	double A = def.lambda[media];
+/*	double S_w_range[2];
+	assign_S_w_range(S_w_range, S_w_range + 1);
 
-	if (S_w_e <= S_w_range[1])
+	if (S_w_e <= S_w_range[0])
 	{
-		PkSw = aw[0];
+		PkSw = P_k_nw_S(S_w_range[0], def);
 	}
-	else if (S_w_e >= S_w_range[2])
+	else if (S_w_e >= S_w_range[1])
 	{
-		PkSw = aw[1];
+		PkSw = P_k_nw_S(S_w_range[1], def);
 	}
 	else
 	{
-		PkSw = def.P_d_nw[media] * pow(pow(S_w_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(S_w_e, (A / (1. - A) - 1.)) / (1. - A)
-			/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+		PkSw = P_k_nw_S(S_w_e, def);
 	}
 */
 	return PkSw;
 }
 
-static double assign_P_k_gn_S(double S_g_e, int media, consts def)
+double assign_P_k_gn_S(double S_g_e, consts def)
 {
 	double PkSn = 0;
-/*	double A = def.lambda[media];
+/*	double S_g_range[2];
+	assign_S_g_range(S_g_range, S_g_range + 1);
 
-	if (S_g_e <= S_g_range[1])
+	if (S_g_e <= S_g_range[0])
 	{
-		PkSn = (-1) * ag[0];
+		PkSn = (-1) * P_k_gn_S(S_g_range[0], def);
 	}
-	else if (S_g_e >= S_g_range[2])
+	else if (S_g_e >= S_g_range[1])
 	{
-		PkSn = (-1) * ag[1];
+		PkSn = (-1) * P_k_gn_S(S_g_range[1], def);
 	}
 	else
 	{
-		PkSn = def.P_d_gn[media] * pow(pow(1. - S_g_e, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S_g_e, A / (1. - A) - 1.) / (1. - A)
-			/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
+		PkSn = P_k_gn_S(S_g_e, def);
 	}
-*/	return PkSn;
+*/
+	return PkSn;
 }
 
 // Функции вычисления относительных проницаемостей
-static double assign_k_w(double S_w_e, int media, consts def)
+double assign_k_w(double S_w_e, consts def)
 {
+	int media = 0;
 	double A = def.lambda[media];
 	double k_w = 0;
 
-	if (S_w_e >= S_w_range[0])
+	if (S_w_e >= 1e-3)
 	{
 		k_w = pow(S_w_e, 0.5) * pow(1. - pow(1. - pow(S_w_e, A / (A - 1.)), (A - 1.) / A), 2.);
 	}
@@ -117,12 +167,13 @@ static double assign_k_w(double S_w_e, int media, consts def)
 	return k_w;
 }
 
-static double assign_k_g(double S_g_e, int media, consts def)
+double assign_k_g(double S_g_e, consts def)
 {
+	int media = 0;
 	double A = def.lambda[media];
 	double k_g = 0;
 
-	if (S_g_e >= S_g_range[0])
+	if (S_g_e >= 1e-3)
 	{
 		k_g = pow(S_g_e, 0.5) * pow(1. - pow(1. - S_g_e, A / (A - 1.)), 2. * (A - 1.) / A);
 	}
@@ -130,8 +181,9 @@ static double assign_k_g(double S_g_e, int media, consts def)
 	return k_g;
 }
 
-static double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
+double assign_k_n(double S_w_e, double S_n_e, consts def)
 {
+	int media = 0;
 	double A = def.lambda[media];
 	double k_n = 0;
 	double S_g_e = 1. - S_w_e - S_n_e;
@@ -159,38 +211,39 @@ static double assign_k_n(double S_w_e, double S_n_e, int media, consts def)
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int media = 0;
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 	double k_w, k_g, k_n, P_k_nw, P_k_gn;
-	double S_w_e = assign_S_w_e(HostArraysPtr, i, j, k, def);
-	double S_n_e = assign_S_n_e(HostArraysPtr, i, j, k, def);
+	double S_w_e = assign_S_w_e(HostArraysPtr, local, def);
+	double S_n_e = assign_S_n_e(HostArraysPtr, local, def);
 	double S_g_e = 1. - S_w_e - S_n_e;
 
-	k_w = assign_k_w(S_w_e, media, def);
-	k_g = assign_k_g(S_g_e, media, def);
-	k_n = assign_k_n(S_w_e, S_n_e, media, def);
+	k_w = assign_k_w(S_w_e, def);
+	k_g = assign_k_g(S_g_e, def);
+	k_n = assign_k_n(S_w_e, S_n_e, def);
 
-	HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_w / def.mu_w;
-	HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_n / def.mu_n;
-	HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (-1.) * (def.K[media]) * k_g / def.mu_g;
+	HostArraysPtr.Xi_w[local] = (-1.) * (def.K[media]) * k_w / def.mu_w;
+	HostArraysPtr.Xi_n[local] = (-1.) * (def.K[media]) * k_n / def.mu_n;
+	HostArraysPtr.Xi_g[local] = (-1.) * (def.K[media]) * k_g / def.mu_g;
 
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		P_k_nw = assign_P_k_nw(S_w_e, media, def);
-		P_k_gn = assign_P_k_gn(S_g_e, media, def);
+		P_k_nw = assign_P_k_nw(S_w_e, def);
+		P_k_gn = assign_P_k_gn(S_g_e, def);
 
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw;
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_gn;
+		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local] + P_k_nw;
+		HostArraysPtr.P_g[local] = HostArraysPtr.P_n[local] + P_k_gn;
 	}
 
-	test_positive(HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_nan(HostArraysPtr.Xi_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_nan(HostArraysPtr.Xi_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_nan(HostArraysPtr.Xi_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.Xi_w[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.Xi_n[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.Xi_g[local], __FILE__, __LINE__);
 }
 
 // Вспомогательная функции для метода Ньютона:
 // Нахождение обратной матрицы 3*3;
-static void reverse_matrix(double* a)
+void reverse_matrix(double* a)
 {
 	int n = 3;
 	double b[9], det = 0;
@@ -203,20 +256,20 @@ static void reverse_matrix(double* a)
 			- a[(i + 2) % n + n * ((j + 1) % n)] * a[(i + 1) % n + n * ((j + 2) % n)];
 		}
 
-		// Нахождение детерминанта матрицы 3*3;
+	// Нахождение детерминанта матрицы 3*3;
+	for(int i = 0; i < n; i++)
+	{
+		det += a[i] * b[i];
+	}
+	test_nan(det, __FILE__, __LINE__);
+
+	// Транспонирование и деление на детерминант
+	for(int j = 0; j < n; j++)
 		for(int i = 0; i < n; i++)
 		{
-			det += a[i] * b[i];
+			a[i + n * j] = b[j + n * i] / det;
+			test_nan(a[i + n * j], __FILE__, __LINE__);
 		}
-		test_nan(det, __FILE__, __LINE__);
-
-		// Транспонирование и деление на детерминант
-		for(int j = 0; j < n; j++)
-			for(int i = 0; i < n; i++)
-			{
-				a[i + n * j] = b[j + n * i] / det;
-				test_nan(a[i + n * j], __FILE__, __LINE__);
-			}
 }
 
 //Функция решения системы 3*3 на основные параметры (Pn,Sw,Sg) методом Ньютона в точке (i,j,k) среды media
@@ -233,54 +286,54 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		int media = 0;
-		double S_w_e, S_g_e, S_n_e, P_k_nw, P_k_gn, PkSw, PkSn, Sg, F1, F2, F3;
+		double S_w_e, S_g_e, S_n_e, Pk_nw, Pk_gn, PkSw, PkSn, Sg, F1, F2, F3;
 		double dF[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 		for (int w = 1; w <= def.newton_iterations; w++)
 		{
-			S_w_e = assign_S_w_e(HostArraysPtr, i, j, k, def);
-			S_n_e = assign_S_n_e(HostArraysPtr, i, j, k, def);
+			S_w_e = assign_S_w_e(HostArraysPtr, local, def);
+			S_n_e = assign_S_n_e(HostArraysPtr, local, def);
 			S_g_e = 1. - S_w_e - S_n_e;
 
-			P_k_nw = assign_P_k_nw(S_w_e, media, def);
-			P_k_gn = assign_P_k_gn(S_g_e, media, def);
-			PkSw = assign_P_k_nw_S(S_w_e, media, def);
-			PkSn = assign_P_k_gn_S(S_g_e, media, def);
+			Pk_nw = assign_P_k_nw(S_w_e, def);
+			Pk_gn = assign_P_k_gn(S_g_e, def);
+			PkSw = assign_P_k_nw_S(S_w_e, def);
+			PkSn = assign_P_k_gn_S(S_g_e, def);
 
-			Sg = 1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+			Sg = 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local];
 
-			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm))
-			     * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw - def.P_atm))
-			     * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			F3 = def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn) / def.P_atm
-			     * Sg - HostArraysPtr.roS_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm))
+			     * HostArraysPtr.S_w[local] - HostArraysPtr.roS_w[local];
+			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] + Pk_nw - def.P_atm))
+			     * HostArraysPtr.S_n[local] - HostArraysPtr.roS_n[local];
+			F3 = def.ro0_g * (HostArraysPtr.P_w[local] + Pk_nw + Pk_gn) / def.P_atm
+			     * Sg - HostArraysPtr.roS_g[local];
 
 			// Матрица частных производных. Индексу от 0 до 8 соответствуют F1P, F1Sw, F1Sn, F2P, F2Sw, F2Sn, F3P, F3Sw, F3Sn
-			dF[0] = def.ro0_w * def.beta_w * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			dF[3] = def.ro0_n * def.beta_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+			dF[0] = def.ro0_w * def.beta_w * HostArraysPtr.S_w[local];
+			dF[3] = def.ro0_n * def.beta_n * HostArraysPtr.S_n[local];
 			dF[6] = def.ro0_g * Sg / def.P_atm;
-			dF[1] = def.ro0_w * (1 + def.beta_w * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-			dF[4] = def.ro0_n * (1. + (def.beta_n) * PkSw) * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-			dF[7] = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / def.P_atm;
+			dF[1] = def.ro0_w * (1 + def.beta_w * (HostArraysPtr.P_w[local] - def.P_atm));
+			dF[4] = def.ro0_n * (1. + (def.beta_n) * PkSw) * HostArraysPtr.S_n[local];
+			dF[7] = (-1) * def.ro0_g * (HostArraysPtr.P_w[local] + Pk_nw + Pk_gn - Sg * (PkSn + PkSw)) / def.P_atm;
 			dF[2] = 0;
-			dF[5] = def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw - def.P_atm));
-			dF[8] = (-1) * def.ro0_g * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn - Sg * PkSn) / def.P_atm;
+			dF[5] = def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_w[local] + Pk_nw - def.P_atm));
+			dF[8] = (-1) * def.ro0_g * (HostArraysPtr.P_w[local] + Pk_nw + Pk_gn - Sg * PkSn) / def.P_atm;
 
 			reverse_matrix(dF);
 
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local]
 			        - (dF[0] * F1 + dF[1] * F2 + dF[2] * F3);
-			HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+			HostArraysPtr.S_w[local] = HostArraysPtr.S_w[local]
 			        - (dF[3] * F1 + dF[4] * F2 + dF[5] * F3);
-			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
+			HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local]
 			        - (dF[6] * F1 + dF[7] * F2 + dF[8] * F3);
 		}
 
-		test_S(HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
 	}
 }
 
@@ -293,16 +346,19 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+	int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
+
 	if ((j != 0) || ((def.source) <= 0))
 	{
-		HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		HostArraysPtr.S_w[local] = HostArraysPtr.S_w[local1];
+		HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local1];
 	}
 
 	if ((j == 0) && ((def.source) > 0))
 	{
-		HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_w_gr;
-		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_n_gr;
+		HostArraysPtr.S_w[local] = def.S_w_gr;
+		HostArraysPtr.S_n[local] = def.S_n_gr;
 	}
 
 }
@@ -313,39 +369,45 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
-	int media = 0;
-	double S_w_e = assign_S_w_e(HostArraysPtr, i1, j1, k1, def);
-	double S_n_e = assign_S_n_e(HostArraysPtr, i1, j1, k1, def);
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+	int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
+
+	double S_w_e = assign_S_w_e(HostArraysPtr, local, def);
+	double S_n_e = assign_S_n_e(HostArraysPtr, local, def);
 	double S_g_e = 1. - S_w_e - S_n_e;
 
-	double P_k_nw = assign_P_k_nw(S_w_e, media, def);
-	double P_k_gn = assign_P_k_gn(S_g_e, media, def);
+	double Pk_nw = assign_P_k_nw(S_w_e, def);
+	double Pk_gn = assign_P_k_gn(S_g_e, def);
 
 	// Если отдельно задаем значения на границах через градиент (условия непротекания)
 	if ((j != 0) && (j != (def.locNy) - 1))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + P_k_nw;
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + P_k_nw + P_k_gn;
+		HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1];
+		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local1] + Pk_nw;
+		HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local1] + Pk_nw + Pk_gn;
 		
 	}
 	else if (j == 0)
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		- (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) / (1. + (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		+ P_k_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) / (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		+ P_k_nw + P_k_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
+		- (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
+			/ (1. + (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
+		HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+		+ Pk_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+			/ (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+		HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+		+ Pk_nw + Pk_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
 	}
 	else
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		+ (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) / (1. - (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		+ P_k_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) / (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = (HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)]
-		+ P_k_nw + P_k_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
+		+ (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
+			/ (1. - (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
+		HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+		+ Pk_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+			/ (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+		HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+		+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
 	}
 }
 
@@ -359,59 +421,60 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				{
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
+					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
+					HostArraysPtr.m[local]=def.porosity[0];
 					// Линейное изменение насыщенностей в начальном распределении
 	/*				int j1 = def.locNy / 2;
 
 					if (j < j1)
 					{
-						HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
+						HostArraysPtr.S_w[local] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
+						HostArraysPtr.S_n[local] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
 					}
 					else
 					*/
 					if ((j == 0) && ((def.source) > 0))
 					{
-						HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_w_gr;
-						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_gr;
+						HostArraysPtr.S_w[local] = def.S_w_gr;
+						HostArraysPtr.S_n[local] = def.S_n_gr;
 					}
 					else
 					{
-						HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_w_init;
-						HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.S_n_init;
+						HostArraysPtr.S_w[local] = def.S_w_init;
+						HostArraysPtr.S_n[local] = def.S_n_init;
 					}
 
-					double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
-					+ def.ro0_w * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					+ def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (HostArraysPtr.m[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (def.g_const) * (def.hy);
+					double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
+					+ def.ro0_w * HostArraysPtr.S_w[local]
+					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 
 					// Если отдельно задаем значения на границах через градиент
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
-						HostArraysPtr.P_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
-						HostArraysPtr.P_g[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
+						HostArraysPtr.P_w[local] = def.P_atm;
+						HostArraysPtr.P_n[local] = def.P_atm;
+						HostArraysPtr.P_g[local] = def.P_atm;
 					}
 					else
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
-						HostArraysPtr.P_n[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_n[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
-						HostArraysPtr.P_g[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_g[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
+						HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local - (def.locNx)] + ro_g_dy;
+						HostArraysPtr.P_n[local] = HostArraysPtr.P_n[local - (def.locNx)] + ro_g_dy;
+						HostArraysPtr.P_g[local] = HostArraysPtr.P_g[local - (def.locNx)] + ro_g_dy;
 					}
 
-					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_g * HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / def.P_atm;
+					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
+					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
+					HostArraysPtr.ro_g[local] = def.ro0_g * HostArraysPtr.P_g[local] / def.P_atm;
 
-					test_S(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_S(HostArraysPtr.S_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.P_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.P_g[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.ro_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.ro_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.ro_g[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
+					test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.ro_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.ro_g[local], __FILE__, __LINE__);
 				}
 }
 

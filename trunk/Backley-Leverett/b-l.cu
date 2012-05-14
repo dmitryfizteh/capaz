@@ -112,7 +112,7 @@ __device__ void device_assing_k(double* k_w, double* k_n, double S_w)
 }
 
 // Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
-__global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
+__global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -127,12 +127,8 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
 		DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local];
 		DevArraysPtr.Xi_w[local] = -1 * (DevArraysPtr.K[local]) * k_w / gpu_def->mu_w;
 		DevArraysPtr.Xi_n[local] = -1 * (DevArraysPtr.K[local]) * k_n / gpu_def->mu_n;
-		DevArraysPtr.ro_w[local] = gpu_def->ro0_w * (1 + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - gpu_def->P_atm));
-		DevArraysPtr.ro_n[local] = gpu_def->ro0_n * (1 + (gpu_def->beta_n) * (DevArraysPtr.P_w[local] - gpu_def->P_atm));
 
 		device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_w[local], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_n[local], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_w[local], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_n[local], __FILE__, __LINE__);
 	}

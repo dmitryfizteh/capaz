@@ -12,7 +12,7 @@
 
 __device__ int device_is_active_point(int i, int j, int k);
 __device__ int device_local_to_global(int local_index, char axis);
-__device__ double cu_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k);
+__device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k);
 __device__ void device_set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1);
 __device__ int device_is_injection_well(int i, int j, int k);
 __device__ int device_is_output_well(int i, int j, int k);
