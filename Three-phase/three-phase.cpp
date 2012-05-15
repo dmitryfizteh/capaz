@@ -342,72 +342,77 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // «адание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int i1 = i, j1 = j, k1 = k;
-
-	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
-	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-	int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
-
-	if ((j != 0) || ((def.source) <= 0))
+	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		HostArraysPtr.S_w[local] = HostArraysPtr.S_w[local1];
-		HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local1];
-	}
+		int i1 = i, j1 = j, k1 = k;
 
-	if ((j == 0) && ((def.source) > 0))
-	{
-		HostArraysPtr.S_w[local] = def.S_w_gr;
-		HostArraysPtr.S_n[local] = def.S_n_gr;
-	}
+		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
 
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
+
+		if ((j != 0) || ((def.source) <= 0))
+		{
+			HostArraysPtr.S_w[local] = HostArraysPtr.S_w[local1];
+			HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local1];
+		}
+
+		if ((j == 0) && ((def.source) > 0))
+		{
+			HostArraysPtr.S_w[local] = def.S_w_gr;
+			HostArraysPtr.S_n[local] = def.S_n_gr;
+		}
+	}
 }
 
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int i1 = i, j1 = j, k1 = k;
-
-	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
-	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-	int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
-
-	double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
-	double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);
-	double S_g_e = 1. - S_w_e - S_n_e;
-
-	double Pk_nw = assign_P_k_nw(S_w_e, def);
-	double Pk_gn = assign_P_k_gn(S_g_e, def);
-
-	// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
-	if ((j != 0) && (j != (def.locNy) - 1))
+	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1];
-		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local1] + Pk_nw;
-		HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local1] + Pk_nw + Pk_gn;
+		int i1 = i, j1 = j, k1 = k;
+
+		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
+
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
+
+		double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
+		double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);
+		double S_g_e = 1. - S_w_e - S_n_e;
+
+		double Pk_nw = assign_P_k_nw(S_w_e, def);
+		double Pk_gn = assign_P_k_gn(S_g_e, def);
+
+		// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
+		if ((j != 0) && (j != (def.locNy) - 1))
+		{
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1];
+			HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local1] + Pk_nw;
+			HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local1] + Pk_nw + Pk_gn;
 		
-	}
-	else if (j == 0)
-	{
-		HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
-		- (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
-			/ (1. + (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
-		+ Pk_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
-			/ (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
-		+ Pk_nw + Pk_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
-	}
-	else
-	{
-		HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
-		+ (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
-			/ (1. - (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
-		+ Pk_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
-			/ (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-		HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
-		+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		}
+		else if (j == 0)
+		{
+			HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
+			- (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
+				/ (1. + (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+				/ (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + Pk_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		}
+		else
+		{
+			HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
+			+ (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
+				/ (1. - (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+				/ (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		}
 	}
 }
 

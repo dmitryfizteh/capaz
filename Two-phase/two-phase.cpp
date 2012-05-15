@@ -56,52 +56,58 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int i1 = i, j1 = j, k1 = k;
-
-	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
-	if ((j != 0) || ((def.source) <= 0))
+	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-	}
+		int i1 = i, j1 = j, k1 = k;
 
-	if ((j == 0) && ((def.source) > 0))
-	{
-		int I = local_to_global(i, 'x', def);
-		if ((I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
-		{
-			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_n_gr;
-		}
-		else
-			//HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0;
+		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
+
+		if ((j != 0) || ((def.source) <= 0))
 		{
 			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
 		}
-	}
 
-	test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+		if ((j == 0) && ((def.source) > 0))
+		{
+			int I = local_to_global(i, 'x', def);
+			if ((I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
+			{
+				HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.S_n_gr;
+			}
+			else
+				//HostArraysPtr.S_n[i+j*(def.locNx)+k*(def.locNx)*(def.locNy)] = 0;
+			{
+				HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+			}
+		}
+
+		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	}
 }
 
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	int i1 = i, j1 = j, k1 = k;
-
-	set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
-	if ((j != 0) && (j != (def.locNy) - 1))
+	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
-	}
-	else if (j == 0)
-	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
-	}
-	else
-	{
-		HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_eff_gdy(HostArraysPtr, i1, j1, k1, def);
-	}
+		int i1 = i, j1 = j, k1 = k;
 
-	test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
+
+		if ((j != 0) && (j != (def.locNy) - 1))
+		{
+			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		}
+		else if (j == 0)
+		{
+			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
+		}
+		else
+		{
+			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_eff_gdy(HostArraysPtr, i1, j1, k1, def);
+		}
+
+		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	}
 }
 
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
