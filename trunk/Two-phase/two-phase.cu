@@ -64,7 +64,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* time_counter, const
 }
 
 // Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
-__global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
+__global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
@@ -84,12 +84,8 @@ __global__ void assign_ro_Pn_Xi_kernel(ptr_Arrays DevArraysPtr)
 		DevArraysPtr.P_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = P_w + P_k;
 		DevArraysPtr.Xi_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = -1 * gpu_def->K[media] * k_w / gpu_def->mu_w;
 		DevArraysPtr.Xi_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = -1 * gpu_def->K[media] * k_n / gpu_def->mu_n;
-		DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_w * (1 + (gpu_def->beta_w) * (P_w - gpu_def->P_atm));
-		DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_n * (1 + (gpu_def->beta_n) * (P_w + P_k - gpu_def->P_atm));
 
 		device_test_positive(DevArraysPtr.P_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
 	}
