@@ -77,16 +77,19 @@ __global__ void assign_ro_kernel(ptr_Arrays DevArraysPtr)
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
 	int k = threadIdx.z + blockIdx.z * blockDim.z;
 
-	int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
+	{
+		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
-	DevArraysPtr.ro_w[local] = (gpu_def->ro0_w) * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - (gpu_def->P_atm)));
-	DevArraysPtr.ro_n[local] = (gpu_def->ro0_n) * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_n[local] - (gpu_def->P_atm)));
-#ifdef THREE_PHASE
-	DevArraysPtr.ro_g[local] = (gpu_def->ro0_g) * DevArraysPtr.P_g[local] / (gpu_def->P_atm);
-	device_test_positive(DevArraysPtr.ro_g[local], __FILE__, __LINE__);
-#endif
-	device_test_positive(DevArraysPtr.ro_w[local], __FILE__, __LINE__);
-	device_test_positive(DevArraysPtr.ro_n[local], __FILE__, __LINE__);
+		DevArraysPtr.ro_w[local] = (gpu_def->ro0_w) * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - (gpu_def->P_atm)));
+		DevArraysPtr.ro_n[local] = (gpu_def->ro0_n) * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_n[local] - (gpu_def->P_atm)));
+	#ifdef THREE_PHASE
+		DevArraysPtr.ro_g[local] = (gpu_def->ro0_g) * DevArraysPtr.P_g[local] / (gpu_def->P_atm);
+		device_test_positive(DevArraysPtr.ro_g[local], __FILE__, __LINE__);
+	#endif
+		device_test_positive(DevArraysPtr.ro_w[local], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.ro_n[local], __FILE__, __LINE__);
+	}
 }
 
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
