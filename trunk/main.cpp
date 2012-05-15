@@ -110,17 +110,17 @@ int local_to_global(int local_index, char axis, consts def)
 	{
 	case 'x':
 	{
-		global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex);
+		global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex) - min(def.rankx, 1);
 		break;
 	}
 	case 'y':
 	{
-		global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey);
+		global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey) - min(def.ranky, 1);
 		break;
 	}
 	case 'z':
 	{
-		global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez);
+		global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez) - min(def.rankz, 1);
 		break;
 	}
 	default:
