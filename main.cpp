@@ -723,6 +723,12 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 // Функция загрузки файла проницаемостей
 void load_permeability(double* K, consts def)
 {
+#ifndef LOAD_K_FROM_FILE
+	for (int i = 0; i < def.locNx; i++)
+		for (int j = 0; j < def.locNy; j++)
+			for (int k = 0; k < def.locNz; k++)
+				K[i + j * def.locNx + k * def.locNx * def.locNy] = def.K[0];
+#else
 	FILE *input;
 	char *file = "../noise.dat";
 
@@ -822,6 +828,7 @@ void load_permeability(double* K, consts def)
 }
 
 fclose(input);
+#endif
 
 for (int i = 0; i < def.locNx; i++)
 	for (int j = 0; j < def.locNy; j++)

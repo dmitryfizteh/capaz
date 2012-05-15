@@ -66,7 +66,7 @@ double P_k_gn_S(double S, consts def)
 double assign_P_k_nw(double S_w_e, consts def)
 {
 	double Pk_nw = 0;
-/*	double S_w_range[2];
+	double S_w_range[2];
 	assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
@@ -81,14 +81,14 @@ double assign_P_k_nw(double S_w_e, consts def)
 	{
 		Pk_nw = P_k_nw(S_w_e, def);
 	}
-*/
+
 	return Pk_nw;
 }
 
 double assign_P_k_gn(double S_g_e, consts def)
 {
 	double Pk_gn = 0;
-/*	double S_g_range[2];
+	double S_g_range[2];
 	assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
@@ -103,7 +103,7 @@ double assign_P_k_gn(double S_g_e, consts def)
 	{
 		Pk_gn = P_k_gn(S_g_e, def);
 	}
-*/
+
 	return Pk_gn;
 }
 
@@ -212,7 +212,7 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int media = 0;
 	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-	double k_w, k_g, k_n, P_k_nw, P_k_gn;
+	double k_w, k_g, k_n, Pk_nw, Pk_gn;
 	double S_w_e = assign_S_w_e(HostArraysPtr, local, def);
 	double S_n_e = assign_S_n_e(HostArraysPtr, local, def);
 	double S_g_e = 1. - S_w_e - S_n_e;
@@ -227,11 +227,11 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		P_k_nw = assign_P_k_nw(S_w_e, def);
-		P_k_gn = assign_P_k_gn(S_g_e, def);
+		Pk_nw = assign_P_k_nw(S_w_e, def);
+		Pk_gn = assign_P_k_gn(S_g_e, def);
 
-		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local] + P_k_nw;
-		HostArraysPtr.P_g[local] = HostArraysPtr.P_n[local] + P_k_gn;
+		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local] + Pk_nw;
+		HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local] + Pk_nw + Pk_gn;
 	}
 
 	test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
@@ -372,8 +372,8 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 	int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
 
-	double S_w_e = assign_S_w_e(HostArraysPtr, local, def);
-	double S_n_e = assign_S_n_e(HostArraysPtr, local, def);
+	double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
+	double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);
 	double S_g_e = 1. - S_w_e - S_n_e;
 
 	double Pk_nw = assign_P_k_nw(S_w_e, def);
