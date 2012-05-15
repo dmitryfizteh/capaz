@@ -215,7 +215,7 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 	int k = threadIdx.z + blockIdx.z * blockDim.z;
 
 	int media = 0;
-	double k_w, k_g, k_n, P_k_nw, P_k_gn;
+	double k_w, k_g, k_n, Pk_nw, Pk_gn;
 	double S_w_e = device_assign_S_w_e(DevArraysPtr, i, j, k);
 	double S_n_e = device_assign_S_n_e(DevArraysPtr, i, j, k);
 	double S_g_e = 1. - S_w_e - S_n_e;
@@ -232,11 +232,11 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 
 	if ((i != 0) && (i != (gpu_def->locNx) - 1) && (j != 0) && (j != (gpu_def->locNy) - 1) && (((k != 0) && (k != (gpu_def->locNz) - 1)) || ((gpu_def->locNz) < 2)))
 	{
-		P_k_nw = device_assign_P_k_nw(S_w_e);
-		P_k_gn = device_assign_P_k_gn(S_g_e);
+		Pk_nw = device_assign_P_k_nw(S_w_e);
+		Pk_gn = device_assign_P_k_gn(S_g_e);
 
-		DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local] + P_k_nw;
-		DevArraysPtr.P_g[local] = DevArraysPtr.P_n[local] + P_k_gn;
+		DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local] + Pk_nw;
+		DevArraysPtr.P_g[local] = DevArraysPtr.P_n[local] + Pk_gn;
 	}
 
 	device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
@@ -295,7 +295,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 	if ((i != 0) && (i != (gpu_def->locNx) - 1) && (j != 0) && (j != (gpu_def->locNy) - 1) && (((k != 0) && (k != (gpu_def->locNz) - 1)) || ((gpu_def->locNz) < 2)))
 	{
-		double S_w_e, S_g_e, S_n_e, P_k_nw, P_k_gn, PkSw, PkSn, Sg, F1, F2, F3;
+		double S_w_e, S_g_e, S_n_e, Pk_nw, Pk_gn, PkSw, PkSn, Sg, F1, F2, F3;
 		double dF[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
@@ -306,8 +306,8 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 			S_n_e = device_assign_S_n_e(DevArraysPtr, i, j, k);
 			S_g_e = 1. - S_w_e - S_n_e;
 
-			P_k_nw = device_assign_P_k_nw(S_w_e);
-			P_k_gn = device_assign_P_k_gn(S_g_e);
+			Pk_nw = device_assign_P_k_nw(S_w_e);
+			Pk_gn = device_assign_P_k_gn(S_g_e);
 			PkSw = device_assign_P_k_nw_S(S_w_e);
 			PkSn = device_assign_P_k_gn_S(S_g_e);
 
@@ -315,9 +315,9 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 			F1 = gpu_def->ro0_w * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[local] - gpu_def->P_atm))
 			     * DevArraysPtr.S_w[local] - DevArraysPtr.roS_w[local];
-			F2 = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_w[local] + P_k_nw - gpu_def->P_atm))
+			F2 = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_w[local] + Pk_nw - gpu_def->P_atm))
 			     * DevArraysPtr.S_n[local] - DevArraysPtr.roS_n[local];
-			F3 = gpu_def->ro0_g * (DevArraysPtr.P_w[local] + P_k_nw + P_k_gn) / gpu_def->P_atm
+			F3 = gpu_def->ro0_g * (DevArraysPtr.P_w[local] + Pk_nw + Pk_gn) / gpu_def->P_atm
 			     * Sg - DevArraysPtr.roS_g[local];
 
 			// Матрица частных производных. Индексу от 0 до 8 соответствуют F1P, F1Sw, F1Sn, F2P, F2Sw, F2Sn, F3P, F3Sw, F3Sn
@@ -326,10 +326,10 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 			dF[6] = gpu_def->ro0_g * Sg / gpu_def->P_atm;
 			dF[1] = gpu_def->ro0_w * (1 + gpu_def->beta_w * (DevArraysPtr.P_w[local] - gpu_def->P_atm));
 			dF[4] = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * PkSw) * DevArraysPtr.S_n[local];
-			dF[7] = (-1) * gpu_def->ro0_g * (DevArraysPtr.P_w[local] + P_k_nw + P_k_gn - Sg * (PkSn + PkSw)) / gpu_def->P_atm;
+			dF[7] = (-1) * gpu_def->ro0_g * (DevArraysPtr.P_w[local] + Pk_nw + Pk_gn - Sg * (PkSn + PkSw)) / gpu_def->P_atm;
 			dF[2] = 0;
-			dF[5] = gpu_def->ro0_n * (1. + gpu_def->beta_n * (DevArraysPtr.P_w[local] + P_k_nw - gpu_def->P_atm));
-			dF[8] = (-1) * gpu_def->ro0_g * (DevArraysPtr.P_w[local] + P_k_nw + P_k_gn - Sg * PkSn) / gpu_def->P_atm;
+			dF[5] = gpu_def->ro0_n * (1. + gpu_def->beta_n * (DevArraysPtr.P_w[local] + Pk_nw - gpu_def->P_atm));
+			dF[8] = (-1) * gpu_def->ro0_g * (DevArraysPtr.P_w[local] + Pk_nw + Pk_gn - Sg * PkSn) / gpu_def->P_atm;
 
 			device_reverse_matrix(dF);
 
