@@ -66,7 +66,7 @@ double P_k_gn_S(double S, consts def)
 double assign_P_k_nw(double S_w_e, consts def)
 {
 	double Pk_nw = 0;
-	double S_w_range[2];
+/*	double S_w_range[2];
 	assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
@@ -81,14 +81,14 @@ double assign_P_k_nw(double S_w_e, consts def)
 	{
 		Pk_nw = P_k_nw(S_w_e, def);
 	}
-
+*/
 	return Pk_nw;
 }
 
 double assign_P_k_gn(double S_g_e, consts def)
 {
 	double Pk_gn = 0;
-	double S_g_range[2];
+/*	double S_g_range[2];
 	assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
@@ -103,7 +103,7 @@ double assign_P_k_gn(double S_g_e, consts def)
 	{
 		Pk_gn = P_k_gn(S_g_e, def);
 	}
-
+*/
 	return Pk_gn;
 }
 
