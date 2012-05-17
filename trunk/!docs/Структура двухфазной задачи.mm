@@ -2,7 +2,7 @@
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
 <node CREATED="1307791262350" ID="ID_319356386" MODIFIED="1319668026996" TEXT="main (main.cpp)">
 <node CREATED="1307793288498" ID="ID_1385423889" MODIFIED="1319667922897" POSITION="right" TEXT="read_defines (main.cpp)"/>
-<node CREATED="1307791279195" ID="ID_751379187" MODIFIED="1319667990672" POSITION="right" TEXT="initialization  (main.cpp)">
+<node CREATED="1307791279195" ID="ID_751379187" MODIFIED="1337283057242" POSITION="right" TEXT="initialization  (main.cpp)">
 <node CREATED="1307791551494" ID="ID_1793305870" MODIFIED="1320495217627" TEXT="communication_initialization (mpi.cpp)"/>
 <node CREATED="1307791564589" ID="ID_1926601743" MODIFIED="1319668182517" TEXT="global_to_local (main.cpp)"/>
 <node CREATED="1307791573275" ID="ID_664777153" MODIFIED="1320495525507" TEXT="device_initialization (cpu/gpu)">
@@ -22,6 +22,7 @@
 </node>
 <node CREATED="1307791626633" ID="ID_192250718" MODIFIED="1319668337988" TEXT="load_data_to_device (P1, S2, roS1_old, roS2_old, media) (cpu/gpu)"/>
 </node>
+<node CREATED="1337283058732" ID="ID_128984608" MODIFIED="1337283117915" POSITION="right" TEXT="save_data_plots[0] (main.cpp)"/>
 <node CREATED="1307791370055" ID="ID_1982838687" MODIFIED="1319668002014" POSITION="right" TEXT="time_step_function (main.cpp)">
 <node CREATED="1307792478624" ID="ID_1977192121" MODIFIED="1320495499406" TEXT="P_S_exchange (mpi.cpp)">
 <node CREATED="1307792682077" ID="ID_1596445838" MODIFIED="1320495676330" TEXT="exchange (P_w, S_n) (mpi.cpp)">
