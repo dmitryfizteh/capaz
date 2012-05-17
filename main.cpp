@@ -317,6 +317,8 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 #ifdef THREE_PHASE
 	load_data_to_device((*HostArraysPtr).S_w, (*DevArraysPtr).S_w, *def);
 	load_data_to_device((*HostArraysPtr).roS_g_old, (*DevArraysPtr).roS_g_old, *def);
+	load_data_to_device((*HostArraysPtr).P_n, (*DevArraysPtr).P_n, *def);
+	load_data_to_device((*HostArraysPtr).P_g, (*DevArraysPtr).P_g, *def);
 #endif
 	load_data_to_device((*HostArraysPtr).P_w, (*DevArraysPtr).P_w, *def);
 	load_data_to_device((*HostArraysPtr).S_n, (*DevArraysPtr).S_n, *def);
