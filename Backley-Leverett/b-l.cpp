@@ -108,8 +108,8 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // «адание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
-	{
+	//if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
+	//{
 		int i1 = i, j1 = j, k1 = k;
 
 		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
@@ -131,13 +131,13 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		*/
 
 		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	}
+	//}
 }
 
 void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
-	{
+	//if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
+	//{
 		int i1 = i, j1 = j, k1 = k;
 
 		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
@@ -173,7 +173,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	
 
 		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	}
+	//}
 }
 
 // ѕрисвоение начальных условий
