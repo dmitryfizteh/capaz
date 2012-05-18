@@ -185,43 +185,41 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
-					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.Background_Sn;
+					int local = i + j * def.locNx + k * def.locNx * def.locNy;
+					HostArraysPtr.m[local]=def.porosity[0];
+					HostArraysPtr.S_n[local] = def.Background_Sn;
 
-					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
+					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[local]
+					                  + def.ro0_w * (1 - HostArraysPtr.S_n[local])) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
+						HostArraysPtr.P_w[local] = def.P_atm;
 					}
 					else
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
+						HostArraysPtr.P_w[local] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
 					}
 
 					/*
 					// нагнетательная скважина
 					if (is_injection_well(i, j, k, def))
 					{
-						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
-						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+						HostArraysPtr.P_w[local] = Injection_well_P(HostArraysPtr, i, j, k, def);
 					}
 
 					// добывающая скважина
 					if (is_output_well(i, j, k, def))
 					{
-						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
-						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+						HostArraysPtr.P_w[local] = Production_well_P(HostArraysPtr, i, j, k, def);
 					}
 					*/
 
-					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
+					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] - def.P_atm));
 
-					test_S(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.m[local], __FILE__, __LINE__);
 				}
 }
-

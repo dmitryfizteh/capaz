@@ -15,43 +15,42 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]=def.porosity[0];
-					HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy] = def.Background_Sn;
+					int local = i + j * def.locNx + k * def.locNx * def.locNy;
+					HostArraysPtr.m[local]=def.porosity[0];
+					HostArraysPtr.S_n[local] = def.Background_Sn;
 
-					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					                  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
+					double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[local]
+					                  + def.ro0_w * (1 - HostArraysPtr.S_n[local])) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = def.P_atm;
+						HostArraysPtr.P_w[local] = def.P_atm;
 					}
 					else
 					{
-						HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
+						HostArraysPtr.P_w[local] = HostArraysPtr.P_w[i + (j - 1) * def.locNx + k * def.locNx * def.locNy] + ro_g_dy;
 					}
 
 					/*
 					// нагнетательна€ скважина
 					if (is_injection_well(i, j, k, def))
 					{
-						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Injection_well_P(HostArraysPtr, i, j, k, def);
-						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+						HostArraysPtr.P_w[local] = Injection_well_P(HostArraysPtr, i, j, k, def);
 					}
 
 					// добывающа€ скважина
 					if (is_output_well(i, j, k, def))
 					{
-						HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = Production_well_P(HostArraysPtr, i, j, k, def);
-						//HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = 0.5;
+						HostArraysPtr.P_w[local] = Production_well_P(HostArraysPtr, i, j, k, def);
 					}
 					*/
 
-					HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-					HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
+					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] - def.P_atm));
 
-					test_S(HostArraysPtr.S_n[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.P_w[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
-					test_positive(HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy], __FILE__, __LINE__);
+					test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.m[local], __FILE__, __LINE__);
 				}
 }
 //****************************
@@ -144,8 +143,10 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 	if ((i < (gpu_def->locNx) - 1) && (j < gpu_def->locNy - 1) && (k < (gpu_def->locNz)) && (i != 0) && (j != 0) && (((k != 0) && (k != (gpu_def->locNz) - 1)) || ((gpu_def->locNz) < 2)))
 	{
-		double A1 = DevArraysPtr.roS_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-		double A2 = DevArraysPtr.roS_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
+		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+
+		double A1 = DevArraysPtr.roS_w[local];
+		double A2 = DevArraysPtr.roS_n[local];
 		double a = gpu_def->beta_w * (gpu_def->beta_n);
 		double b = gpu_def->beta_w + gpu_def->beta_n - A2 * (gpu_def->beta_w) / (gpu_def->ro0_n) - A1 * (gpu_def->beta_n) / (gpu_def->ro0_w);
 		double c = 1. - A2 / gpu_def->ro0_n  - A1 / gpu_def->ro0_w;
@@ -155,17 +156,17 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 		if (P1 < 0.)
 		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = P2;
+			DevArraysPtr.P_w[local] = P2;
 		}
 		else
 		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = P1;
+			DevArraysPtr.P_w[local] = P1;
 		}
 
-		DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.roS_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] / (gpu_def->ro0_n * (1 + gpu_def->beta_n * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm)));
+		DevArraysPtr.S_n[local] = DevArraysPtr.roS_n[local] / (gpu_def->ro0_n * (1 + gpu_def->beta_n * (DevArraysPtr.P_w[local] - gpu_def->P_atm)));
 
-		device_test_positive(DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-		device_test_S(DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
+		device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -181,26 +182,13 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 			//(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 		{
 			int i1 = i, j1 = j, k1 = k;
+			int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
 			device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
 
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+			DevArraysPtr.S_n[local] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
 
-			/*
-			// ¬ центре резервуара находитс€ нагнетательна€ скважина
-			if (device_is_injection_well(i, j, k, def))
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = INJECTION_WELL_Sn;
-			}
-
-			// ¬ центре резервуара находитс€ добывающа€ скважина
-			if (device_is_output_well(i, j, k, def))
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = OUTPUT_WELL_Sn;
-			}
-			*/
-
-			device_test_S(DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
+			device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
 		}
 }
 
