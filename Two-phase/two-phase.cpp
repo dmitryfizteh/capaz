@@ -53,7 +53,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
-// «адание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
+// «адание граничных условий
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))

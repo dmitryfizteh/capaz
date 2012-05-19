@@ -233,6 +233,44 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local] + Pk_nw;
 		HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local] + Pk_nw + Pk_gn;
 	}
+	else
+	{
+		int i1 = i, j1 = j, k1 = k;
+
+		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
+
+		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
+
+		double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
+		double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);
+		double S_g_e = 1. - S_w_e - S_n_e;
+
+		double Pk_nw = assign_P_k_nw(S_w_e, def);
+		double Pk_gn = assign_P_k_gn(S_g_e, def);
+
+		// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
+		if ((j != 0) && (j != (def.locNy) - 1))
+		{
+			HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local1] + Pk_nw;
+			HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local1] + Pk_nw + Pk_gn;
+		}
+		else if (j == 0)
+		{
+			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+				/ (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + Pk_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		}
+		else
+		{
+			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
+				/ (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
+			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
+			+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
+		}
+	}
 
 	test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
 	test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
@@ -338,8 +376,6 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 }
 
 //«адание граничных условий отдельно дл€ (Sw,Sg),Pn
-
-// «адание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
@@ -362,6 +398,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			HostArraysPtr.S_w[local] = def.S_w_gr;
 			HostArraysPtr.S_n[local] = def.S_n_gr;
 		}
+		test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -376,43 +414,24 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
 
-		double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
-		double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);
-		double S_g_e = 1. - S_w_e - S_n_e;
-
-		double Pk_nw = assign_P_k_nw(S_w_e, def);
-		double Pk_gn = assign_P_k_gn(S_g_e, def);
-
 		// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
 		if ((j != 0) && (j != (def.locNy) - 1))
 		{
 			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1];
-			HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local1] + Pk_nw;
-			HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local1] + Pk_nw + Pk_gn;
-		
 		}
 		else if (j == 0)
 		{
 			HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
 			- (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
 				/ (1. + (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
-			+ Pk_nw - (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
-				/ (1. + (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
-			+ Pk_nw + Pk_gn) / (1. + (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
 		}
 		else
 		{
 			HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
 			+ (def.ro0_w) * (def.g_const) * (def.hy) * (1. - (def.beta_w) * (def.P_atm))) 
 				/ (1. - (def.beta_w) * (def.ro0_w) * (def.g_const) * (def.hy));
-			HostArraysPtr.P_n[local] = (HostArraysPtr.P_w[local1]
-			+ Pk_nw + (def.ro0_n) * (def.g_const) * (def.hy) * (1. - (def.beta_n) * (def.P_atm))) 
-				/ (1. - (def.beta_n) * (def.ro0_n) * (def.g_const) * (def.hy));
-			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
-			+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
 		}
+		test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -429,16 +448,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
-					// Ћинейное изменение насыщенностей в начальном распределении
-	/*				int j1 = def.locNy / 2;
 
-					if (j < j1)
-					{
-						HostArraysPtr.S_w[local] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-						HostArraysPtr.S_n[local] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
-					}
-					else
-					*/
 					if ((j == 0) && ((def.source) > 0))
 					{
 						HostArraysPtr.S_w[local] = def.S_w_gr;
