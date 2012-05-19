@@ -240,44 +240,6 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 			DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local] + Pk_nw;
 			DevArraysPtr.P_g[local] = DevArraysPtr.P_n[local] + Pk_gn;
 		}
-		else
-		{
-			int i1 = i, j1 = j, k1 = k;
-
-			device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
-
-			int local1 = i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy);
-
-			double S_w_e = device_assign_S_w_e(DevArraysPtr, i1, j1, k1);
-			double S_n_e = device_assign_S_n_e(DevArraysPtr, i1, j1, k1);
-			double S_g_e = 1. - S_w_e - S_n_e;
-
-			double P_k_nw = device_assign_P_k_nw(S_w_e);
-			double P_k_gn = device_assign_P_k_gn(S_g_e);
-
-			// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
-			if ((j != 0) && (j != (gpu_def->locNy) - 1))
-			{
-				DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local1] + P_k_nw;
-				DevArraysPtr.P_g[local] = DevArraysPtr.P_w[local1] + P_k_nw + P_k_gn;
-			}
-			else if (j == 0)
-			{
-				DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
-				+ P_k_nw - (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
-					/ (1. + (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
-				DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
-				+ P_k_nw + P_k_gn) / (1. + (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
-			}
-			else
-			{
-				DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
-				+ P_k_nw + (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
-					/ (1. - (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
-				DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
-				+ P_k_nw + P_k_gn) / (1. - (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
-			}
-		}
 
 		device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
 		device_test_positive(DevArraysPtr.P_g[local], __FILE__, __LINE__);
@@ -421,8 +383,6 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 			DevArraysPtr.S_w[local] = gpu_def->S_w_gr;
 			DevArraysPtr.S_n[local] = gpu_def->S_n_gr;
 		}
-		device_test_S(DevArraysPtr.S_w[local], __FILE__, __LINE__);
-		device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -434,7 +394,7 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 
 	if ((i < gpu_def->locNx) && (j < gpu_def->locNy) && (k < gpu_def->locNz))
 	if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
-		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (k < gpu_def->locNz) && (device_is_active_point(i, j, k) == 1))
+		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 	{
 		int i1 = i, j1 = j, k1 = k;
 
@@ -443,24 +403,43 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 		int local1 = i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy);
 
+		double S_w_e = device_assign_S_w_e(DevArraysPtr, i1, j1, k1);
+		double S_n_e = device_assign_S_n_e(DevArraysPtr, i1, j1, k1);
+		double S_g_e = 1. - S_w_e - S_n_e;
+
+		double P_k_nw = device_assign_P_k_nw(S_w_e);
+		double P_k_gn = device_assign_P_k_gn(S_g_e);
+
 		// ≈сли отдельно задаем значени€ на границах через градиент (услови€ непротекани€)
 		if ((j != 0) && (j != (gpu_def->locNy) - 1))
 		{
 			DevArraysPtr.P_w[local] = DevArraysPtr.P_w[local1];
+			DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local1] + P_k_nw;
+			DevArraysPtr.P_g[local] = DevArraysPtr.P_w[local1] + P_k_nw + P_k_gn;
+		
 		}
 		else if (j == 0)
 		{
 			DevArraysPtr.P_w[local] = (DevArraysPtr.P_w[local1]
 			- (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_w) * (gpu_def->P_atm))) 
 				/ (1. + (gpu_def->beta_w) * (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy));
+			DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
+			+ P_k_nw - (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
+				/ (1. + (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
+			DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
+			+ P_k_nw + P_k_gn) / (1. + (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
 		}
 		else
 		{
 			DevArraysPtr.P_w[local] = (DevArraysPtr.P_w[local1]
 			+ (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_w) * (gpu_def->P_atm))) 
 				/ (1. - (gpu_def->beta_w) * (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy));
+			DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
+			+ P_k_nw + (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
+				/ (1. - (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
+			DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
+			+ P_k_nw + P_k_gn) / (1. - (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
 		}
-		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
 	}
 }
 
@@ -477,7 +456,16 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
+					// Ћинейное изменение насыщенностей в начальном распределении
+	/*				int j1 = def.locNy / 2;
 
+					if (j < j1)
+					{
+						HostArraysPtr.S_w[local] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
+						HostArraysPtr.S_n[local] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
+					}
+					else
+					*/
 					if ((j == 0) && ((def.source) > 0))
 					{
 						HostArraysPtr.S_w[local] = def.S_w_gr;
