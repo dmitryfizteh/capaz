@@ -239,10 +239,11 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 
 			DevArraysPtr.P_n[local] = DevArraysPtr.P_w[local] + Pk_nw;
 			DevArraysPtr.P_g[local] = DevArraysPtr.P_n[local] + Pk_gn;
+
+			device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
+			device_test_positive(DevArraysPtr.P_g[local], __FILE__, __LINE__);
 		}
 
-		device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
-		device_test_positive(DevArraysPtr.P_g[local], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_w[local], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_n[local], __FILE__, __LINE__);
 		device_test_nan(DevArraysPtr.Xi_g[local], __FILE__, __LINE__);
@@ -383,6 +384,8 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 			DevArraysPtr.S_w[local] = gpu_def->S_w_gr;
 			DevArraysPtr.S_n[local] = gpu_def->S_n_gr;
 		}
+		device_test_S(DevArraysPtr.S_w[local], __FILE__, __LINE__);
+		device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -440,6 +443,9 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 			DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
 			+ P_k_nw + P_k_gn) / (1. - (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
 		}
+		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.P_n[local], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.P_g[local], __FILE__, __LINE__);
 	}
 }
 
