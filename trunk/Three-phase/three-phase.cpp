@@ -232,10 +232,11 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 		HostArraysPtr.P_n[local] = HostArraysPtr.P_w[local] + Pk_nw;
 		HostArraysPtr.P_g[local] = HostArraysPtr.P_w[local] + Pk_nw + Pk_gn;
+
+		test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
 	}
 
-	test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.Xi_w[local], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.Xi_n[local], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.Xi_g[local], __FILE__, __LINE__);
@@ -362,6 +363,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			HostArraysPtr.S_w[local] = def.S_w_gr;
 			HostArraysPtr.S_n[local] = def.S_n_gr;
 		}
+		test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 	}
 }
 
@@ -413,6 +416,9 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			HostArraysPtr.P_g[local] = (HostArraysPtr.P_w[local1]
 			+ Pk_nw + Pk_gn) / (1. - (def.ro0_g) * (def.g_const) * (def.hy) / (def.P_atm));
 		}
+		test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_n[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_g[local], __FILE__, __LINE__);
 	}
 }
 
