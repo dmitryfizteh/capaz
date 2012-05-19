@@ -74,35 +74,30 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
-	{/*
-		if(! HostArraysPtr.m[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
-		{
-			return;
-		}*/
-		double A1 = HostArraysPtr.roS_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-		double A2 = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-		double a = def.beta_w * (def.beta_n);
-		double b = def.beta_w + def.beta_n - A2 * (def.beta_w) / (def.ro0_n) - A1 * (def.beta_n) / (def.ro0_w);
-		double c = 1 - A2 / def.ro0_n  - A1 / def.ro0_w;
-		double D = b * b - 4 * a * c;
-		double P1 = def.P_atm + (-1 * b + sqrt(D)) / (2 * a);
-		double P2 = def.P_atm + (-1 * b - sqrt(D)) / (2 * a);
+	{
+		int media = 0;
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+		double F1, F2, F1P, F2P, F1S, F2S, det;
 
-		if (P1 < 0)
+		for (int w = 1; w <= def.newton_iterations; w++)
 		{
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P2;
-		}
-		else
-		{
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = P1;
+			F1 = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm)) * (1. - HostArraysPtr.S_n[local]) - HostArraysPtr.roS_w[local];
+			F2 = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] - def.P_atm)) * HostArraysPtr.S_n[local] - HostArraysPtr.roS_n[local];
+			F1P = def.ro0_w * (def.beta_w) * (1 - HostArraysPtr.S_n[local]);
+			F2P = def.ro0_n * (def.beta_n) * HostArraysPtr.S_n[local];
+			F1S = (-1) * (def.ro0_w) * (1 + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
+			F2S = def.ro0_n * (1 + (def.beta_n) * (HostArraysPtr.P_w[local]  - def.P_atm));
+
+			det = F1P * F2S - F1S * F2P;
+
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local] - (1. / det) * (F2S * F1 - F1S * F2);
+			HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local] - (1. / det) * (F1P * F2 - F2P * F1);
 		}
 
-		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.roS_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / (def.ro0_n * (1 + def.beta_n * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm)));
+		test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 
-		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
 	}
-
 }
 
 // Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
