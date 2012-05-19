@@ -128,65 +128,69 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// «апись начальных условий дл€ каждой точки сетки (независимо от остальных точек)
-__global__ void data_initialization_kernel(ptr_Arrays DevArraysPtr, long int* t)
+// «адание граничных условий
+__global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 {
-	*t = 0;
-
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int j = threadIdx.y + blockIdx.y * blockDim.y;
 	int k = threadIdx.z + blockIdx.z * blockDim.z;
 
-	if (device_is_active_point(i, j, k))
+	if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
+		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (k < gpu_def->locNz) && (device_is_active_point(i, j, k) == 1))
 	{
-		// ѕреобразование локальных координат процессора к глобальным
-		int I = device_local_to_global(i, 'x');
+		int i1 = i, j1 = j, k1 = k;
 
-		// ≈сли точка на верхней границе, не далее (gpu_def->source) точек от центра,
-		// то в ней начальна€ насыщенность. »наче, нулева€
-		if ((j == 0) && (I >= (gpu_def->Nx) / 2 - (gpu_def->source)) && (I <= (gpu_def->Nx) / 2 + (gpu_def->source)) && (k >= (gpu_def->Nz) / 2 - (gpu_def->source)) && (k <= (gpu_def->Nz) / 2 + (gpu_def->source)))
+		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
+
+		if ((j != 0) || ((gpu_def->source) <= 0))
 		{
-			DevArraysPtr.S_n[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = gpu_def->S_n_gr;
+			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+		}
+
+		if ((j == 0) && ((gpu_def->source) > 0))
+		{
+			int I = device_local_to_global(i, 'x');
+			if ((I >= (gpu_def->Nx) / 2 - (gpu_def->source)) && (I <= (gpu_def->Nx) / 2 + (gpu_def->source)) && (k >= (gpu_def->Nz) / 2 - (gpu_def->source)) && (k <= (gpu_def->Nz) / 2 + (gpu_def->source)))
+			{
+				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->S_n_gr;
+			}
+			else
+				//DevArraysPtr.S_n[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)] = 0;
+			{
+				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+			}
+		}
+
+		device_test_S(DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
+	}
+}
+
+__global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+	int k = threadIdx.z + blockIdx.z * blockDim.z;
+
+	if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
+		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (k < gpu_def->locNz) && (device_is_active_point(i, j, k) == 1))
+	{
+		int i1 = i, j1 = j, k1 = k;
+
+		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
+
+		if ((j != 0) && (j != (gpu_def->locNy) - 1))
+		{
+			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+		}
+		else if (j == 0)
+		{
+			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->P_atm;
 		}
 		else
 		{
-			DevArraysPtr.S_n[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = 0;
+			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)] + device_ro_eff_gdy(DevArraysPtr, i1, j1, k1);
 		}
 
-		if (j == 0)
-		{
-			DevArraysPtr.P_w[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = gpu_def->P_atm;
-		}
-		else
-		{
-			DevArraysPtr.P_w[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = DevArraysPtr.P_w[i + (j - 1) * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] + cu_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
-		}
-
-		DevArraysPtr.m[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy] = gpu_def->porosity[0];
-
-		DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_w * (1. + (gpu_def->beta_w) * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm));
-
-		///!!!! Ќе учитываютс€ капилл€рные силы! »ли надо считать перед этим шагом P_n
-		DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * (DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->P_atm));
-
-		/*
-		if ((DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=(gpu_def->NX)/2.*(gpu_def->h1)) && (DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]<=4.*(gpu_def->NX)/5.*(gpu_def->h1)))
-			if ((DevArraysPtr.y[i+j*(gpu_def)->locNx+k*(gpu_def->locNx)*(gpu_def->locNy)]<=2./5.*(gpu_def->locNy)*(gpu_def->h2)) && (DevArraysPtr.y[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=(-1.)*DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]/4.+2./5.*(gpu_def->locNy)*(gpu_def->h2)))
-				DevArraysPtr.media[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]=1;
-
-		if ((DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=(gpu_def->NX)/5.*(gpu_def->h1)) && (DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]<=2.*(gpu_def->NX)/5.*(gpu_def->h1)))
-			if ((DevArraysPtr.y[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]<=4./5.*(gpu_def->locNy)*(gpu_def->h2)) && (DevArraysPtr.y[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=3./5.*(gpu_def->locNy)*(gpu_def->h2)))
-				DevArraysPtr.media[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]=1;
-				*/
-
-		/*
-		if ((DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=2.*(gpu_def->NX)/5.*(gpu_def->h1)) && (DevArraysPtr.x[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]<=3.*(gpu_def->NX)/5.*(gpu_def->h1)))
-			if ((DevArraysPtr.y[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]>=1./10.*(gpu_def->locNy)*(gpu_def->h2)) && (DevArraysPtr.y[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]<=3./10.*(gpu_def->locNy)*(gpu_def->h2)))
-				DevArraysPtr.media[i+j*(gpu_def->locNx)+k*(gpu_def->locNx)*(gpu_def->locNy)]=1;
-		*/
-
-		device_test_nan(DevArraysPtr.S_n[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.P_w[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy], __FILE__, __LINE__);
-		device_test_nan(DevArraysPtr.m[i + j * gpu_def->locNx + k * gpu_def->locNx * gpu_def->locNy], __FILE__, __LINE__);
+		device_test_positive(DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
 	}
 }

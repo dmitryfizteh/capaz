@@ -286,12 +286,11 @@ __device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k
 	int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
 #ifdef THREE_PHASE
-	double ro_g_dy = (DevArraysPtr.ro_g[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] * (1. - DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)])
-	                  + DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] * DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]
-	                  + DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] * DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]) * (DevArraysPtr.m[local]) * (gpu_def->g_const) * (gpu_def->hy);
+	double ro_g_dy = (DevArraysPtr.ro_g[local] * (1. - DevArraysPtr.S_w[local] - DevArraysPtr.S_n[local]) + DevArraysPtr.ro_w[local] * DevArraysPtr.S_w[local]
+	                  + DevArraysPtr.ro_n[local] * DevArraysPtr.S_n[local]) * (DevArraysPtr.m[local]) * (gpu_def->g_const) * (gpu_def->hy);
 #else
-	double ro_g_dy = (DevArraysPtr.ro_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] * DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]
-	                  + DevArraysPtr.ro_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] * (1 - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)])) * (DevArraysPtr.m[local]) * (gpu_def->g_const) * (gpu_def->hy);
+	double ro_g_dy = (DevArraysPtr.ro_n[local] * DevArraysPtr.S_n[local] + DevArraysPtr.ro_w[local] * (1 - DevArraysPtr.S_n[local]))
+					  * (DevArraysPtr.m[local]) * (gpu_def->g_const) * (gpu_def->hy);
 #endif
 	return ro_g_dy;
 }
@@ -666,129 +665,6 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 #endif
 	checkErrors("assign roS", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
-}
-
-// Граничные условия на S2
-__global__ void Sn_boundary_kernel(ptr_Arrays DevArraysPtr)
-{
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	int j = threadIdx.y + blockIdx.y * blockDim.y;
-	int k = threadIdx.z + blockIdx.z * blockDim.z;
-
-	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
-	{
-		if ((i == 0) && (gpu_def->Nx > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			return;
-		}
-
-		if ((i == (gpu_def->locNx) - 1) && ((gpu_def->Nx) > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i - 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			return;
-		}
-
-		if ((j == (gpu_def->locNy) - 1) && ((gpu_def->locNy) > 2))
-		{
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + (j - 1) * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-
-			if (i == 0)
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			}
-			if (i == gpu_def->Nx - 1)
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i - 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			}
-			return;
-		}
-
-		if ((j == 0) && ((gpu_def->locNy) > 2))
-		{
-			int I = device_local_to_global(i, 'x');
-			if ((I >= (gpu_def->Nx) / 2 - (gpu_def->source)) && (I <= (gpu_def->Nx) / 2 + (gpu_def->source)) && (k >= (gpu_def->Nz) / 2 - (gpu_def->source)) && (k <= (gpu_def->Nz) / 2 + (gpu_def->source)))
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->S_n_gr;
-			}
-			else
-			{
-				DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + (j + 1) * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			}
-			return;
-		}
-
-		if ((k == 0) && (gpu_def->Nz > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + j * (gpu_def->locNx) + (k + 1) * (gpu_def->locNx) * (gpu_def->locNy)];
-			return;
-		}
-
-		if ((k == gpu_def->Nz - 1) && (gpu_def->Nz > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.S_n[i + j * (gpu_def->locNx) + (k - 1) * (gpu_def->locNx) * (gpu_def->locNy)];
-			return;
-		}
-
-		device_test_S(DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-	}
-}
-
-// Граничные условия на P1
-__global__ void Pw_boundary_kernel(ptr_Arrays DevArraysPtr)
-{
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	int j = threadIdx.y + blockIdx.y * blockDim.y;
-	int k = threadIdx.z + blockIdx.z * blockDim.z;
-
-	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)) && (device_is_active_point(i, j, k) == 1))
-	{
-		if ((i == 0) && (gpu_def->Nx > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			//return;
-		}
-
-		if ((i == (gpu_def->locNx) - 1) && (gpu_def->Nx > 2) && (j > 0) && (j < gpu_def->locNy - 1))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i - 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			//return;
-		}
-
-		if ((j == (gpu_def->locNy) - 1) && ((gpu_def->locNy) > 2))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + (j - 1) * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] + device_ro_eff_gdy(DevArraysPtr, i, j - 1, k);
-			if (i == 0)
-			{
-				DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			}
-			if (i == gpu_def->Nx - 1)
-			{
-				DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i - 1 + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-			}
-			//return;
-		}
-
-		if ((j == 0) && ((gpu_def->locNy) > 2))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = gpu_def->P_atm;
-			//return;
-		}
-
-		if ((k == 0) && ((gpu_def->Nz) > 2) && (j > 0) && (j < (gpu_def->locNy) - 1))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + j * (gpu_def->locNx) + (k + 1) * (gpu_def->locNx) * (gpu_def->locNy)];
-			//return;
-		}
-
-		if ((k == (gpu_def->locNz) - 1) && ((gpu_def->locNz) > 2) && (j > 0) && (j < (gpu_def->locNy) - 1))
-		{
-			DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] = DevArraysPtr.P_w[i + j * (gpu_def->locNx) + (k - 1) * (gpu_def->locNx) * (gpu_def->locNy)];
-			//return;
-		}
-
-		device_test_positive(DevArraysPtr.P_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)], __FILE__, __LINE__);
-	}
 }
 
 // Применение граничных условий
