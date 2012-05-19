@@ -143,27 +143,28 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 	if ((i < (gpu_def->locNx) - 1) && (j < gpu_def->locNy - 1) && (k < (gpu_def->locNz)) && (i != 0) && (j != 0) && (((k != 0) && (k != (gpu_def->locNz) - 1)) || ((gpu_def->locNz) < 2)))
 	{
+		int media = 0;
+		double S_n, P_w, F1, F2, F1P, F2P, F1S, F2S, det;
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
-		double A1 = DevArraysPtr.roS_w[local];
-		double A2 = DevArraysPtr.roS_n[local];
-		double a = gpu_def->beta_w * (gpu_def->beta_n);
-		double b = gpu_def->beta_w + gpu_def->beta_n - A2 * (gpu_def->beta_w) / (gpu_def->ro0_n) - A1 * (gpu_def->beta_n) / (gpu_def->ro0_w);
-		double c = 1. - A2 / gpu_def->ro0_n  - A1 / gpu_def->ro0_w;
-		double D = b * b - 4. * a * c;
-		double P1 = gpu_def->P_atm + (-1. * b + sqrt(D)) / (2. * a);
-		double P2 = gpu_def->P_atm + (-1. * b - sqrt(D)) / (2. * a);
-
-		if (P1 < 0.)
+		for (int w = 1; w <= gpu_def->newton_iterations; w++)
 		{
-			DevArraysPtr.P_w[local] = P2;
-		}
-		else
-		{
-			DevArraysPtr.P_w[local] = P1;
-		}
+			S_n = DevArraysPtr.S_n[local];
+			P_w = DevArraysPtr.P_w[local];
 
-		DevArraysPtr.S_n[local] = DevArraysPtr.roS_n[local] / (gpu_def->ro0_n * (1 + gpu_def->beta_n * (DevArraysPtr.P_w[local] - gpu_def->P_atm)));
+			F1 = gpu_def->ro0_w * (1. + (gpu_def->beta_w) * (P_w - gpu_def->P_atm)) * (1. - S_n) - DevArraysPtr.roS_w[local];
+			F2 = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * (P_w - gpu_def->P_atm)) * S_n - DevArraysPtr.roS_n[local];
+
+			F1P = gpu_def->ro0_w * (gpu_def->beta_w) * (1. - S_n);
+			F2P = gpu_def->ro0_n * (gpu_def->beta_n) * S_n;
+			F1S = (-1.) * gpu_def->ro0_w * (1. + (gpu_def->beta_w) * (P_w - gpu_def->P_atm));
+			F2S = gpu_def->ro0_n * (1. + (gpu_def->beta_n) * (P_w - gpu_def->P_atm));
+
+			det = F1P * F2S - F1S * F2P;
+
+			DevArraysPtr.P_w[local] = P_w - (1. / det) * (F2S * F1 - F1S * F2);
+			DevArraysPtr.S_n[local] = S_n - (1. / det) * (F1P * F2 - F2P * F1);
+		}
 
 		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
 		device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
