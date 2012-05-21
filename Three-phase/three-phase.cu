@@ -365,12 +365,8 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 	if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
 		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 	{
-		int i1 = i, j1 = j, k1 = k;
-
-		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
-
+		int local1 = device_set_boundary_basic_coordinate(i, j, k);
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
-		int local1 = i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy);
 
 		if ((j != 0) || ((gpu_def->source) <= 0))
 		{
@@ -398,12 +394,8 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 	if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
 		(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 	{
-		int i1 = i, j1 = j, k1 = k;
-
-		device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
-
+		int local1 = device_set_boundary_basic_coordinate(i, j, k);
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
-		int local1 = i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy);
 
 		double S_w_e = device_assign_S_w_e(DevArraysPtr, local1);
 		double S_n_e = device_assign_S_n_e(DevArraysPtr, local1);
