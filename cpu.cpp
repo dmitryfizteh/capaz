@@ -7,7 +7,7 @@ int is_injection_well(int i, int j, int k, consts def)
 	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 #endif
 #ifdef THREE_PHASE
-	if (j == (def.Ny) - 2)
+	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
 #endif
 #ifndef TWO_PHASE
 		return 1;
@@ -23,7 +23,7 @@ int is_output_well(int i, int j, int k, consts def)
 	if (((i == def.Nx - 2) && (j == def.Ny - 2)) || ((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 #endif
 #ifdef THREE_PHASE
-	if (j == 1)
+	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
 #endif
 #ifndef TWO_PHASE
 		return 1;
@@ -58,28 +58,23 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 #endif
 
 #ifdef THREE_PHASE
-/*
-	double q = 0;
-	if (is_output_well(i, j, k, def))
-	{
-	*q_w = 0.02;
-	*q_g = 0.005;
-	*q_n = 0;
 
-	q = *q_w + *q_n + *q_g;
-
-	*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-	*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
-	*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-	}
+	double q = 0.;
 
 	if (is_injection_well(i, j, k, def))
 	{
-	*q_w = 0.02;
-	*q_g = 0.005;
-	*q_n = 0;
+		*q_w = 0.02;
+		*q_g = 0.;
+		*q_n = 0.;
 	}
-*/
+	if (is_output_well(i, j, k, def))
+	{
+		q = 0.02;
+
+		*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+		*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	}
 #endif
 }
 
@@ -658,7 +653,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 #ifdef THREE_PHASE
 			z2 = -1. * right_difference (HostArraysPtr.P_g+local, 'z', def); 
 			z1 = -1. * left_difference (HostArraysPtr.P_g+local, 'z', def); 
-			fz_n = directed_difference (z1, z2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'z', def);
+			fz_g = directed_difference (z1, z2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'z', def);
 #endif
 		}
 
