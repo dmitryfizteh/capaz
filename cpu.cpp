@@ -147,48 +147,54 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 }
 
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
-void set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1, consts def)
+int set_boundary_basic_coordinate(int i, int j, int k, consts def)
 {
-	(*i1) = i;
-	(*j1) = j;
-	(*k1) = k;
+	int i1, j1, k1;
+
+	i1 = i;
+	j1 = j;
+	k1 = k;
 
 	if (i == 0)
 	{
-		(*i1) ++;
+		i1 ++;
 	}
 	if (i == (def.locNx) - 1)
 	{
-		(*i1) --;
+		i1 --;
 	}
 	if (j == 0)
 	{
-		(*j1) ++;
+		j1 ++;
 	}
 	if (j == (def.locNy) - 1)
 	{
-		(*j1) --;
+		j1 --;
 	}
 	if ((k == 0) && ((def.locNz) > 2))
 	{
-		(*k1) ++;
+		k1 ++;
 	}
 	if ((k == (def.locNz) - 1) && ((def.locNz) > 2))
 	{
-		(*k1) --;
+		k1 --;
 	}
+
+	return (i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy));
 }
 
 void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
-	HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - def.P_atm));
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+
+	HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
+	HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
 #ifdef THREE_PHASE
-	HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.ro0_g * HostArraysPtr.P_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] / def.P_atm;
-	test_positive(HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	HostArraysPtr.ro_g[local] = def.ro0_g * HostArraysPtr.P_g[local] / def.P_atm;
+	test_positive(HostArraysPtr.ro_g[local], __FILE__, __LINE__);
 #endif
-	test_positive(HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.ro_w[local], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
 }
 
 // Расчет центральной разности
@@ -418,16 +424,16 @@ void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #endif
 	}
 
-	test_u(HostArraysPtr.ux_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.ux_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uy_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uy_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uz_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uz_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	test_u(HostArraysPtr.ux_w[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.ux_n[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uy_w[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uy_n[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uz_w[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uz_n[local], __FILE__, __LINE__);
 #ifdef THREE_PHASE
-	test_u(HostArraysPtr.ux_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uy_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
-	test_u(HostArraysPtr.uz_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+	test_u(HostArraysPtr.ux_g[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uy_g[local], __FILE__, __LINE__);
+	test_u(HostArraysPtr.uz_g[local], __FILE__, __LINE__);
 #endif
 }
 

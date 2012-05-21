@@ -345,12 +345,8 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		int i1 = i, j1 = j, k1 = k;
-
-		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
+		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
 
 		if ((j != 0) || ((def.source) <= 0))
 		{
@@ -372,12 +368,8 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
-		int i1 = i, j1 = j, k1 = k;
-
-		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
+		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-		int local1 = i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy);
 
 		double S_w_e = assign_S_w_e(HostArraysPtr, local1, def);
 		double S_n_e = assign_S_n_e(HostArraysPtr, local1, def);

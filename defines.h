@@ -149,7 +149,7 @@ extern void read_defines_test(consts def);
 
 
 // Расчеты в каждой точке
-extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
@@ -158,7 +158,7 @@ extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int 
 extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
-extern void set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1, consts def);
+extern int set_boundary_basic_coordinate(int i, int j, int k, consts def);
 
 extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
 extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);

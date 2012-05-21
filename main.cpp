@@ -239,18 +239,16 @@ void blocks_initialization(consts *def)
 }
 
 // Функция вычисления "эффективной" плотности * g * hy
-double ro_eff_gdy(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def)
 {
-	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
-
 #ifdef THREE_PHASE
-	double ro_g_dy = (HostArraysPtr.ro_g[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1. - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])
-					+ HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-					+ HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_g[local] * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
+					+ HostArraysPtr.ro_w[local] * HostArraysPtr.S_w[local]
+					+ HostArraysPtr.ro_n[local] * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 
 #else
-	double ro_g_dy = (HostArraysPtr.ro_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-	                  + HostArraysPtr.ro_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
+	double ro_g_dy = (HostArraysPtr.ro_n[local] * HostArraysPtr.S_n[local]
+	                  + HostArraysPtr.ro_w[local] * (1 - HostArraysPtr.S_n[local])) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 #endif
 	return ro_g_dy;
 }
