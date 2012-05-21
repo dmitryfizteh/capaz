@@ -182,12 +182,10 @@ __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 		//if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
 			//(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 		{
-			int i1 = i, j1 = j, k1 = k;
+			int local1 = device_set_boundary_basic_coordinate(i, j, k);
 			int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 
-			device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
-
-			DevArraysPtr.S_n[local] = DevArraysPtr.S_n[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+			DevArraysPtr.S_n[local] = DevArraysPtr.S_n[local1];
 
 			device_test_S(DevArraysPtr.S_n[local], __FILE__, __LINE__);
 		}
@@ -203,14 +201,12 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		//if (((i == 0) || (i == (gpu_def->locNx) - 1) || (j == 0) || (j == (gpu_def->locNy) - 1) ||
 		//	(((k == 0) || (k == (gpu_def->locNz) - 1)) && ((gpu_def->locNz) >= 2))) && (device_is_active_point(i, j, k) == 1))
 		{
-			int i1 = i, j1 = j, k1 = k;
+			int local1 = device_set_boundary_basic_coordinate(i, j, k);
 			int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
-
-			device_set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1);
 
 			if ((j != 0) && (j != (gpu_def->locNy) - 1))
 			{
-				DevArraysPtr.P_w[local] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)];
+				DevArraysPtr.P_w[local] = DevArraysPtr.P_w[local1];
 			}
 			//else if(j == 0)
 			//	DevArraysPtr.P_w[local] = gpu_def->P_atm;
@@ -219,7 +215,7 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 				double ro_g_dy = (gpu_def->ro0_n * DevArraysPtr.S_n[local]
 								  + gpu_def->ro0_w * (1 - DevArraysPtr.S_n[local])) * (DevArraysPtr.m[ local]) * (gpu_def->g_const) * (gpu_def->hy);
 
-				DevArraysPtr.P_w[local] = DevArraysPtr.P_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)] + ro_g_dy;//DevArraysPtr.ro_w[i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy)] * (gpu_def->g_const) * (gpu_def->hy);
+				DevArraysPtr.P_w[local] = DevArraysPtr.P_w[local1] + ro_g_dy;//DevArraysPtr.ro_w[local1] * (gpu_def->g_const) * (gpu_def->hy);
 			}
 
 	

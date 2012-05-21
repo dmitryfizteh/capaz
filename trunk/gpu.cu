@@ -93,36 +93,40 @@ __global__ void assign_ro_kernel(ptr_Arrays DevArraysPtr)
 }
 
 // Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
-__device__ void device_set_boundary_basic_coordinate(int i, int j, int k, int* i1, int* j1, int* k1)
+__device__ int device_set_boundary_basic_coordinate(int i, int j, int k)
 {
-	(*i1) = i;
-	(*j1) = j;
-	(*k1) = k;
+	int i1, j1, k1;
+
+	i1 = i;
+	j1 = j;
+	k1 = k;
 
 	if (i == 0)
 	{
-		(*i1) ++;
+		i1 ++;
 	}
 	if (i == (gpu_def->locNx) - 1)
 	{
-		(*i1) --;
+		i1 --;
 	}
 	if (j == 0)
 	{
-		(*j1) ++;
+		j1 ++;
 	}
 	if (j == (gpu_def->locNy) - 1)
 	{
-		(*j1) --;
+		j1 --;
 	}
 	if ((k == 0) && ((gpu_def->locNz) > 2))
 	{
-		(*k1) ++;
+		k1 ++;
 	}
 	if ((k == (gpu_def->locNz) - 1) && ((gpu_def->locNz) > 2))
 	{
-		(*k1) --;
+		k1 --;
 	}
+
+	return (i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy));
 }
 
 // Расчет центральной разности
@@ -281,10 +285,8 @@ __device__ int device_is_active_point(int i, int j, int k)
 }
 
 // Функция вычисления "эффективной" плотности
-__device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int i, int j, int k)
+__device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int local)
 {
-	int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
-
 #ifdef THREE_PHASE
 	double ro_g_dy = (DevArraysPtr.ro_g[local] * (1. - DevArraysPtr.S_w[local] - DevArraysPtr.S_n[local]) + DevArraysPtr.ro_w[local] * DevArraysPtr.S_w[local]
 	                  + DevArraysPtr.ro_n[local] * DevArraysPtr.S_n[local]) * (DevArraysPtr.m[local]) * (gpu_def->g_const) * (gpu_def->hy);
