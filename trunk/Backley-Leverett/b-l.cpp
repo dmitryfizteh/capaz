@@ -105,27 +105,26 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	//if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	//{
-		int i1 = i, j1 = j, k1 = k;
+		int local1=set_boundary_basic_coordinate(i, j, k, def);
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
-
-		HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.S_n[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+		HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local1];
 
 		/*
 		// В центре резервуара находится нагнетательная скважина
 		if (is_injection_well(i, j, k, def))
 		{
-			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = INJECTION_WELL_Sn;
+			HostArraysPtr.S_n[local] = INJECTION_WELL_Sn;
 		}
 
 		// В центре резервуара находится добывающая скважина
 		if (is_output_well(i, j, k, def))
 		{
-			HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = OUTPUT_WELL_Sn;
+			HostArraysPtr.S_n[local] = OUTPUT_WELL_Sn;
 		}
 		*/
 
-		test_S(HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 	//}
 }
 
@@ -133,22 +132,21 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	//if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	//{
-		int i1 = i, j1 = j, k1 = k;
-
-		set_boundary_basic_coordinate(i, j, k, &i1, &j1, &k1, def);
+		int local1=set_boundary_basic_coordinate(i, j, k, def);
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 		if ((j != 0) && (j != (def.locNy) - 1))
 		{
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)];
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1];
 		}
 		//else if(j == 0)
-		//	HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.P_atm;
+		//	HostArraysPtr.P_w[local] = def.P_atm;
 		else
 		{
-			double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]
-							  + def.ro0_w * (1 - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
+			double ro_g_dy = (def.ro0_n * HostArraysPtr.S_n[local]
+							  + def.ro0_w * (1 - HostArraysPtr.S_n[local])) * (HostArraysPtr.m[i + j * def.locNx + k * def.locNx * def.locNy]) * (def.g_const) * (def.hy);
 
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = HostArraysPtr.P_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] + ro_g_dy;//HostArraysPtr.ro_w[i1 + j1 * (def.locNx) + k1 * (def.locNx) * (def.locNy)] * (def.g_const) * (def.hy);
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local1] + ro_g_dy;//HostArraysPtr.ro_w[local1] * (def.g_const) * (def.hy);
 		}
 
 	
@@ -156,18 +154,18 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		if (is_injection_well(i, j, k, def))
 		//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 		{
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.InjWell_Pw;
+			HostArraysPtr.P_w[local] = def.InjWell_Pw;
 		}
 
 		// В центре резервуара находится добывающая скважина
 		if (is_output_well(i, j, k, def))
 		//if (((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 		{
-			HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] = def.OutWell_Pw;
+			HostArraysPtr.P_w[local] = def.OutWell_Pw;
 		}
 	
 
-		test_positive(HostArraysPtr.P_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
 	//}
 }
 

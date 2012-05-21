@@ -2,16 +2,16 @@
 #include "three-phase.h"
 
 // Функции вычисления эффективных значений насыщенностей
-__device__ double device_assign_S_w_e(ptr_Arrays DevArraysPtr, int i, int j, int k)
+__device__ double device_assign_S_w_e(ptr_Arrays DevArraysPtr, int local)
 {
 	int media = 0;
-	return (DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->S_wr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
+	return (DevArraysPtr.S_w[local] - gpu_def->S_wr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
 }
 
-__device__ double device_assign_S_n_e(ptr_Arrays DevArraysPtr, int i, int j, int k)
+__device__ double device_assign_S_n_e(ptr_Arrays DevArraysPtr, int local)
 {
 	int media = 0;
-	return (DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - gpu_def->S_nr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
+	return (DevArraysPtr.S_n[local] - gpu_def->S_nr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
 }
 
 // Вычисление капиллярных давлений
@@ -218,11 +218,10 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 	{
 		int media = 0;
 		double k_w, k_g, k_n, Pk_nw, Pk_gn;
-		double S_w_e = device_assign_S_w_e(DevArraysPtr, i, j, k);
-		double S_n_e = device_assign_S_n_e(DevArraysPtr, i, j, k);
-		double S_g_e = 1. - S_w_e - S_n_e;
-
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+		double S_w_e = device_assign_S_w_e(DevArraysPtr, local);
+		double S_n_e = device_assign_S_n_e(DevArraysPtr, local);
+		double S_g_e = 1. - S_w_e - S_n_e;
 
 		k_w = device_assign_k_w(S_w_e);
 		k_g = device_assign_k_g(S_g_e);
@@ -308,8 +307,8 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 
 		for (int w = 1; w <= gpu_def->newton_iterations; w++)
 		{
-			S_w_e = device_assign_S_w_e(DevArraysPtr, i, j, k);
-			S_n_e = device_assign_S_n_e(DevArraysPtr, i, j, k);
+			S_w_e = device_assign_S_w_e(DevArraysPtr, local);
+			S_n_e = device_assign_S_n_e(DevArraysPtr, local);
 			S_g_e = 1. - S_w_e - S_n_e;
 
 			Pk_nw = device_assign_P_k_nw(S_w_e);
@@ -406,8 +405,8 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		int local = i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
 		int local1 = i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy);
 
-		double S_w_e = device_assign_S_w_e(DevArraysPtr, i1, j1, k1);
-		double S_n_e = device_assign_S_n_e(DevArraysPtr, i1, j1, k1);
+		double S_w_e = device_assign_S_w_e(DevArraysPtr, local1);
+		double S_n_e = device_assign_S_n_e(DevArraysPtr, local1);
 		double S_g_e = 1. - S_w_e - S_n_e;
 
 		double P_k_nw = device_assign_P_k_nw(S_w_e);
