@@ -63,13 +63,13 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 
 	if (is_injection_well(i, j, k, def))
 	{
-		*q_w = 0.02;
-		*q_g = 0.;
-		*q_n = 0.;
+		*q_w = 0.01;
+		*q_g = 0.005;
+		*q_n = 0.02;
 	}
 	if (is_output_well(i, j, k, def))
 	{
-		q = 0.02;
+		q = 0.035;
 
 		*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
