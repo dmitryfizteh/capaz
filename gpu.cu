@@ -20,7 +20,7 @@ __device__ int device_is_injection_well(int i, int j, int k)
 	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 #endif
 #ifdef THREE_PHASE
-		if (j == (gpu_def->Ny) - 2)
+	if ((j == 1) && (i > 0) && (i < (gpu_def->locNx) / 3 - 1) && (((gpu_def->locNz) < 2) || (k > 0) && (k < (gpu_def->locNz) / 3 - 1)))
 #endif
 #ifndef TWO_PHASE
 			return 1;
@@ -36,7 +36,7 @@ __device__ int device_is_output_well(int i, int j, int k)
 	if (((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 1)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 1)))
 #endif
 #ifdef THREE_PHASE
-		if (j == 1)
+	if ((j == 1) && (i > 0) && (i < (gpu_def->locNx) / 3 - 1) && (((gpu_def->locNz) < 2) || (k > 0) && (k < (gpu_def->locNz) / 3 - 1)))
 #endif
 #ifndef TWO_PHASE
 			return 1;
@@ -67,6 +67,26 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 		double F_bl = (k_w / gpu_def->mu_w) / (k_w / gpu_def->mu_w + k_n / gpu_def->mu_n);
 		*q_w = -1. * gpu_def->Q * F_bl;
 		*q_n = -1. * gpu_def->Q * (1. - F_bl);
+	}
+#endif
+
+#ifdef THREE_PHASE
+
+	double q = 0.;
+
+	if (device_is_injection_well(i, j, k))
+	{
+		*q_w = 0.01;
+		*q_g = 0.005;
+		*q_n = 0.02;
+	}
+	if (device_is_output_well(i, j, k))
+	{
+		q = 0.035;
+
+		*q_w = -q * DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
+		*q_g = -q * (1 - DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]);
+		*q_n = -q * DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
 	}
 #endif
 }
@@ -520,7 +540,7 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 #ifdef THREE_PHASE
 			z2 = -1. * right_difference (DevArraysPtr.P_g+local, 'z'); 
 			z1 = -1. * left_difference (DevArraysPtr.P_g+local, 'z'); 
-			fz_n = directed_difference (z1, z2, DevArraysPtr.Xi_g+local, DevArraysPtr.ro_g+local, 'z');
+			fz_g = directed_difference (z1, z2, DevArraysPtr.Xi_g+local, DevArraysPtr.ro_g+local, 'z');
 #endif
 		}
 

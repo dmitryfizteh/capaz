@@ -414,14 +414,25 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		}
 		else if (j == 0)
 		{
-			DevArraysPtr.P_w[local] = (DevArraysPtr.P_w[local1]
-			- (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_w) * (gpu_def->P_atm))) 
-				/ (1. + (gpu_def->beta_w) * (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy));
-			DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
-			+ P_k_nw - (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
-				/ (1. + (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
-			DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
-			+ P_k_nw + P_k_gn) / (1. + (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
+			if((i > 0) && (i < (gpu_def->locNx) / 3 - 1) && (((gpu_def->locNz) < 2) || (k > 0) && (k < (gpu_def->locNz) / 3 - 1)))
+			{
+				//ќткрыта€ верхн€€ граница
+				DevArraysPtr.P_w[local] = gpu_def->P_atm;
+				DevArraysPtr.P_n[local] = gpu_def->P_atm;
+				DevArraysPtr.P_g[local] = gpu_def->P_atm;
+			}
+			else
+			{
+				// ”слови€ непротекани€
+				DevArraysPtr.P_w[local] = (DevArraysPtr.P_w[local1]
+				- (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_w) * (gpu_def->P_atm))) 
+					/ (1. + (gpu_def->beta_w) * (gpu_def->ro0_w) * (gpu_def->g_const) * (gpu_def->hy));
+				DevArraysPtr.P_n[local] = (DevArraysPtr.P_w[local1]
+				+ P_k_nw - (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy) * (1. - (gpu_def->beta_n) * (gpu_def->P_atm))) 
+					/ (1. + (gpu_def->beta_n) * (gpu_def->ro0_n) * (gpu_def->g_const) * (gpu_def->hy));
+				DevArraysPtr.P_g[local] = (DevArraysPtr.P_w[local1]
+				+ P_k_nw + P_k_gn) / (1. + (gpu_def->ro0_g) * (gpu_def->g_const) * (gpu_def->hy) / (gpu_def->P_atm));
+			}
 		}
 		else
 		{
