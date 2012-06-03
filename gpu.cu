@@ -558,8 +558,8 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		fx_n = directed_difference (x1, x2, DevArraysPtr.Xi_n+local, DevArraysPtr.ro_n+local, 'x');
 		fy_n = directed_difference (y1, y2, DevArraysPtr.Xi_n+local, DevArraysPtr.ro_n+local, 'y');
 
-		A1 = DevArraysPtr.roS_w[local] - (gpu_def->dt / DevArraysPtr.m[local]) * (q_w + fx_w + fy_w + fz_w);
-		A2 = DevArraysPtr.roS_n[local] - (gpu_def->dt / DevArraysPtr.m[local]) * (q_n + fx_n + fy_n + fz_n);
+		A1 = DevArraysPtr.roS_w[local] - (gpu_def->dt / DevArraysPtr.m[local]) * (-q_w + fx_w + fy_w + fz_w);
+		A2 = DevArraysPtr.roS_n[local] - (gpu_def->dt / DevArraysPtr.m[local]) * (-q_n + fx_n + fy_n + fz_n);
 
 		DevArraysPtr.roS_w_old[local] = DevArraysPtr.roS_w[local];
 		DevArraysPtr.roS_n_old[local] = DevArraysPtr.roS_n[local];
