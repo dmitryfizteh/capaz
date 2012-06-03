@@ -223,14 +223,14 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 			if (device_is_injection_well(i, j, k))
 			//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 			{
-				DevArraysPtr.P_w[local] = gpu_def->InjWell_Pw;
+				//DevArraysPtr.P_w[local] = gpu_def->InjWell_Pw;
 			}
 
 			// В центре резервуара находится добывающая скважина
 			if (device_is_output_well(i, j, k))
 			//if (((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 1)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 1)))
 			{
-				DevArraysPtr.P_w[local] = gpu_def->OutWell_Pw;
+				//DevArraysPtr.P_w[local] = gpu_def->OutWell_Pw;
 			}
 	
 

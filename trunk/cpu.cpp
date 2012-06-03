@@ -671,8 +671,8 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		fx_n = directed_difference (x1, x2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'x', def);
 		fy_n = directed_difference (y1, y2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'y', def);
 
-		A1 = HostArraysPtr.roS_w[local] - (def.dt / HostArraysPtr.m[local]) * (q_w + fx_w + fy_w + fz_w);
-		A2 = HostArraysPtr.roS_n[local] - (def.dt / HostArraysPtr.m[local]) * (q_n + fx_n + fy_n + fz_n);
+		A1 = HostArraysPtr.roS_w[local] - (def.dt / HostArraysPtr.m[local]) * (-q_w + fx_w + fy_w + fz_w);
+		A2 = HostArraysPtr.roS_n[local] - (def.dt / HostArraysPtr.m[local]) * (-q_n + fx_n + fy_n + fz_n);
 
 		HostArraysPtr.roS_w_old[local] = HostArraysPtr.roS_w[local];
 		HostArraysPtr.roS_n_old[local] = HostArraysPtr.roS_n[local];
