@@ -24,7 +24,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					if (j == 0)
 					{
-						HostArraysPtr.P_w[local] = def.P_atm;
+						HostArraysPtr.P_w[local] = def.Background_Pw;//def.P_atm;
 					}
 					else
 					{
