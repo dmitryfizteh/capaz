@@ -414,14 +414,14 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		}
 		else if (j == 0)
 		{
-			if((i > 0) && (i < (gpu_def->locNx) / 3 - 1) && (((gpu_def->locNz) < 2) || (k > 0) && (k < (gpu_def->locNz) / 3 - 1)))
+			/*if((i > 0) && (i < (gpu_def->locNx) / 3 - 1) && (((gpu_def->locNz) < 2) || (k > 0) && (k < (gpu_def->locNz) / 3 - 1)))
 			{
 				//ќткрыта€ верхн€€ граница
 				DevArraysPtr.P_w[local] = gpu_def->P_atm;
 				DevArraysPtr.P_n[local] = gpu_def->P_atm;
 				DevArraysPtr.P_g[local] = gpu_def->P_atm;
 			}
-			else
+			else*/
 			{
 				// ”слови€ непротекани€
 				DevArraysPtr.P_w[local] = (DevArraysPtr.P_w[local1]

@@ -66,7 +66,7 @@ double P_k_gn_S(double S, consts def)
 double assign_P_k_nw(double S_w_e, consts def)
 {
 	double Pk_nw = 0;
-	double S_w_range[2];
+/*	double S_w_range[2];
 	assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
@@ -81,14 +81,14 @@ double assign_P_k_nw(double S_w_e, consts def)
 	{
 		Pk_nw = P_k_nw(S_w_e, def);
 	}
-
+*/
 	return Pk_nw;
 }
 
 double assign_P_k_gn(double S_g_e, consts def)
 {
 	double Pk_gn = 0;
-	double S_g_range[2];
+/*	double S_g_range[2];
 	assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
@@ -103,7 +103,7 @@ double assign_P_k_gn(double S_g_e, consts def)
 	{
 		Pk_gn = P_k_gn(S_g_e, def);
 	}
-
+*/
 	return Pk_gn;
 }
 
@@ -111,7 +111,7 @@ double assign_P_k_gn(double S_g_e, consts def)
 double assign_P_k_nw_S(double S_w_e, consts def)
 {
 	double PkSw = 0;
-	double S_w_range[2];
+/*	double S_w_range[2];
 	assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
@@ -126,14 +126,14 @@ double assign_P_k_nw_S(double S_w_e, consts def)
 	{
 		PkSw = P_k_nw_S(S_w_e, def);
 	}
-
+*/
 	return PkSw;
 }
 
 double assign_P_k_gn_S(double S_g_e, consts def)
 {
 	double PkSn = 0;
-	double S_g_range[2];
+/*	double S_g_range[2];
 	assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
@@ -148,7 +148,7 @@ double assign_P_k_gn_S(double S_g_e, consts def)
 	{
 		PkSn = P_k_gn_S(S_g_e, def);
 	}
-
+*/
 	return PkSn;
 }
 
@@ -388,14 +388,14 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 		else if (j == 0)
 		{
-			if((i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+			/*if((i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
 			{
 				//ќткрыта€ верхн€€ граница
 				HostArraysPtr.P_w[local] = def.P_atm;
 				HostArraysPtr.P_n[local] = def.P_atm;
 				HostArraysPtr.P_g[local] = def.P_atm;
 			}
-			else
+			else*/
 			{
 				// ”слови€ непротекани€
 				HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]

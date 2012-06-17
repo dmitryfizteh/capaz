@@ -71,7 +71,7 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 #endif
 
 #ifdef THREE_PHASE
-
+/*
 	double q = 0.;
 
 	if (device_is_injection_well(i, j, k))
@@ -87,7 +87,7 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 		*q_w = -q * DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
 		*q_g = -q * (1 - DevArraysPtr.S_w[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)] - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]);
 		*q_n = -q * DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)];
-	}
+	}*/
 #endif
 }
 
