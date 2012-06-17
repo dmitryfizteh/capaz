@@ -58,7 +58,7 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 #endif
 
 #ifdef THREE_PHASE
-
+/*
 	double q = 0.;
 
 	if (is_injection_well(i, j, k, def))
@@ -74,7 +74,7 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 		*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
 		*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
-	}
+	}*/
 #endif
 }
 
