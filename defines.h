@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+//#define LOAD_K_FROM_FILE
 //#define GTEST
 
 #ifdef GTEST
