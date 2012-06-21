@@ -17,7 +17,7 @@ typedef char * LPSTR;
 
 #define clrscr() system("cls")
 
-#define PR 0.5e-12     //абсолютная проницаемость
+#define K 0.5e-12     //абсолютная проницаемость
 #define M 0.2          //пористость
 #define MUW 1.2e-13    //вязкость воды
 #define MUO 6.e-13     //вязкость нефти
@@ -27,7 +27,7 @@ typedef char * LPSTR;
 #define N3 0.5		//степени в функциях проницаемости
 #define H 10.		//толщина пласта
 #define SZ 0.8		//Критическая водонасыщенность
-#define SSV 0.1		//Связанная водонасыщенность (начальная?)
+#define S_wr 0.1		//Связанная водонасыщенность (начальная?)
 #define S1 0.70324	//Вспомогательное значение водонасыщенности. Используется в вычислениях проницаемости
 #define QN 100.     //Мощность источников
 #define ALEN 2.		//Связано с геометрией расположения скважин
@@ -36,19 +36,19 @@ typedef char * LPSTR;
 #define NHALF 6        //Связано с геометрией расположения скважин
 #define NJH 9			//Связано с геометрией расположения скважин	
 #define NSIDE 4		//Связано с геометрией расположения скважин
-#define NI NIH*NHALF+3	//Размеры сетки
-#define NJ NJH*NSIDE+3	//Размеры сетки
-#define NI1 NI+1	//Размеры сетки
-#define NJ1 NJ+1	//Размеры сетки
+#define Nx NIH*NHALF+3	//Размеры сетки
+#define Ny NJH*NSIDE+3	//Размеры сетки
+#define Nx1 Nx+1	//Размеры сетки
+#define Ny1 Ny+1	//Размеры сетки
 #define NT 1			//Количество подобластей (для параллельного варианта программы)
-#define NJSIZE NJ1/NT	//Размеры сетки по одному из направлений в подобласти
+#define NJSIZE Ny1/NT	//Размеры сетки по одному из направлений в подобласти
 
 #define nprint 200  //счетчик для записи результатов в файлы 
 
 int lrpar(double ccs,double ccw,double cce,double ccn,double cosnx2,
           double cosny2,double cosnxy,int i,int j);
 
-void relaxrb(double cc, double yy[NI1][NJ1]);
+void relaxrb(double cc, double yy[Nx1][Ny1]);
 
 double FKW(double S);
 double DFKW(double S);
@@ -69,29 +69,29 @@ FILE * ygrid;
 FILE * rec;
 FILE * out;     /* file-description for user */
 
-static double CW[NI1][NJ1];           //Коэффициенты разностной схемы для расчёта давления
-static double CS[NI1][NJ1];           // 
-static double CN[NI1][NJ1];       //   
-static double CE[NI1][NJ1];       //
-static double F[NI1][NJ1];        //Правая часть для этой разностной схемы
-static double SWOLD[NI1][NJ1];	//Водонасыщенность на предыдущем слое
-static double SWNEW[NI1][NJ1];	//Водонас. на новом временном слое
-static double P[NI1][NJ1];		//Давление (вычисляется через водонасыщенность??)
-static double Q[NI1][NJ1];		//Накачиваемая в скважины вода или извлекаемая жидкость 
-static double SWRES[NI1][NJ1];	//Результирующая водонасыщенность (параллельный алгоритм??)
-static double PRES[NI1][NJ1];		//Результирующее давление
-static double FW0[NI1][NJ1];		//Функция Баклея-Леверетта ??
-static double omg[NI1][NJ1];		//Параметры локальной релаксации
-static double SS[NI1][NJSIZE];	//Дополнитеьные массивы для решения уравнения Баклея-Леверетта
-static double SSS[NI1][NJSIZE];  //
-static double FN[NI1][NJSIZE];   //
-static double FN1[NI1][NJSIZE];  // 
+static double CW[Nx1][Ny1];           //Коэффициенты разностной схемы для расчёта давления
+static double CS[Nx1][Ny1];           // 
+static double CN[Nx1][Ny1];       //   
+static double CE[Nx1][Ny1];       //
+static double F[Nx1][Ny1];        //Правая часть для этой разностной схемы
+static double Sw_old[Nx1][Ny1];	//Водонасыщенность на предыдущем слое
+static double Sw_new[Nx1][Ny1];	//Водонас. на новом временном слое
+static double P[Nx1][Ny1];		//Давление (вычисляется через водонасыщенность??)
+static double Q[Nx1][Ny1];		//Накачиваемая в скважины вода или извлекаемая жидкость 
+static double SWRES[Nx1][Ny1];	//Результирующая водонасыщенность (параллельный алгоритм??)
+static double PRES[Nx1][Ny1];		//Результирующее давление
+static double F_bl[Nx1][Ny1];		//Функция Баклея-Леверетта ??
+static double omg[Nx1][Ny1];		//Параметры локальной релаксации
+static double SS[Nx1][NJSIZE];	//Дополнитеьные массивы для решения уравнения Баклея-Леверетта
+static double SSS[Nx1][NJSIZE];  //
+static double FN[Nx1][NJSIZE];   //
+static double FN1[Nx1][NJSIZE];  // 
 //static double P0[NI1][NJ1];       
-static double QTR[NI1][NJSIZE];	//Дебиты на скважинах
-static double FW0TR[NI1][NJSIZE];//Значени функции Баклея-Леверетта на скважинах
-static double omg[NI1][NJ1];
-static double X[NI1];         /* x-coordinate */
-static double Y[NJ1];         /* y-coordinate */
+static double QTR[Nx1][NJSIZE];	//Дебиты на скважинах
+static double FW0TR[Nx1][NJSIZE];//Значени функции Баклея-Леверетта на скважинах
+//static double omg[Nx1][Ny1];
+static double X[Nx1];         /* x-coordinate */
+static double Y[Ny1];         /* y-coordinate */
 
 double cosnx, cosny, cosnxy, cosnx2, cosny2;      
 
@@ -117,37 +117,37 @@ double FW(double S)
 
 double FKW(double S)
 {
-      if((SSV <= S) && (S < S1)) return(pow(((S-SSV)/(SZ-SSV)), N2));
+      if((S_wr <= S) && (S < S1)) return(pow(((S-S_wr)/(SZ-S_wr)), N2));
       else
-		  if((S1 <= S) && (S <= 1.)) return(pow(0.8*(S-SSV)/(SZ-SSV) ,N3));
+		  if((S1 <= S) && (S <= 1.)) return(pow(0.8*(S-S_wr)/(SZ-S_wr) ,N3));
       else
-		  if((0. <= S) && (S < SSV)) return(0.);
+		  if((0. <= S) && (S < S_wr)) return(0.);
       else
 		  if(S < 0.) return(0.);
       else
-		  if(S > 1.) return(pow( 8.*(S-SSV)/(SZ-SSV) ,N3));
+		  if(S > 1.) return(pow( 8.*(S-S_wr)/(SZ-S_wr) ,N3));
 //		  return FKW(S);
       }
 
 double DFKW(double S)
 {
-      if((SSV <= S) && (S < S1)) return(pow( N2*(S-SSV),(N2-1))/pow((SZ-SSV),N2));
+      if((S_wr <= S) && (S < S1)) return(pow( N2*(S-S_wr),(N2-1))/pow((SZ-S_wr),N2));
       else
-		  if((S1 <= S) && (S <= 1.)) return(pow(8.*N3*(S-SSV),(N3-1))/pow((SZ-SSV),N3));
+		  if((S1 <= S) && (S <= 1.)) return(pow(8.*N3*(S-S_wr),(N3-1))/pow((SZ-S_wr),N3));
       else
-		  if((0. <= S) && (S < SSV)) return(0.);
+		  if((0. <= S) && (S < S_wr)) return(0.);
       else
 		  if(S < 0.) return(0.);
       else
-	      if(S > 1.) return(pow(8.*N3*(S-SSV),(N3-1))/pow((SZ-SSV),N3));
+	      if(S > 1.) return(pow(8.*N3*(S-S_wr),(N3-1))/pow((SZ-S_wr),N3));
 //		  return DFKW(S);
 }
 
 double FKO(double S)
 {
-      if((SSV <= S) && (S <= SZ)) return(pow((SZ-S)/(SZ-SSV),N1));
+      if((S_wr <= S) && (S <= SZ)) return(pow((SZ-S)/(SZ-S_wr),N1));
       else
-		  if((0. <= S) && (S < SSV)) return(1.);
+		  if((0. <= S) && (S < S_wr)) return(1.);
       else 
 		  if((SZ < S) && (S <= 1.)) return(0.);
       else 
@@ -165,7 +165,7 @@ double FO(double S)
 
 double FK(double S)
 {
-      return(-PR*(FKW(S)/MUW+FKO(S)/MUO));
+      return(-K*(FKW(S)/MUW+FKO(S)/MUO));
 //		  return FK(S);
 }   
     
@@ -177,33 +177,32 @@ double FK(double S)
 void main()
 {
 
- NIS1=NI-1;
- NIS2=NI-2;
- NJS1=NJ-1;
- NJS2=NJ-2;
+ NIS1=Nx-1;
+ NIS2=Nx-2;
+ NJS1=Ny-1;
+ NJS2=Ny-2;
  EPS=1.e-4;
-//     HX=(ALEN/2)/NIH
-//     HY=(DSQRT(3.D0)/2*ALEN)/NJH
+
  HX=5.;
  HY=5.;
 
   X[1]=0.;                 /* initial coordinates */
   Y[1]=0.;
 
-  for(I=2; I<=NI; I++)     /* grid in x-direction */
+  for(I=2; I<=Nx; I++)     /* grid in x-direction */
      {
      X[I]=X[I-1]+HX;
      }
 
-  for(J=2; J<=NJ; J++)     /* grid in y-direction */
+  for(J=2; J<=Ny; J++)     /* grid in y-direction */
      {
      Y[J]=Y[J-1]+HY;
      }
 
 //-----------initial zero values----------
 
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
          CW[I][J]=0.;
          CS[I][J]=0.;
@@ -213,9 +212,9 @@ void main()
 		 omg[I][J]=0.;
 		}  
 
-      cosnx = cos( 3.1415926/(NI-3) );     /* const for over-relaxation  */
+      cosnx = cos( 3.1415926/(Nx-3) );     /* const for over-relaxation  */
       cosnx2 = cosnx*cosnx;
-      cosny = cos( 3.1415926/(NJ-3) );
+      cosny = cos( 3.1415926/(Ny-3) );
       cosny2 = cosny*cosny;
       cosnxy =cosnx*cosny;
 
@@ -239,11 +238,11 @@ void OIL1()
 {
 
 
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
          Q[I][J]=0.;
-         FW0[I][J]=0.;
+         F_bl[I][J]=0.;
 		}
 
       QHALF=0.5*QN;
@@ -266,94 +265,33 @@ void OIL1()
       Q[NIH*3+2][NJH*4+2]=QN;
       Q[NIH*5+2][NJH*4+2]=-QHALF;
 
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
 		if ( Q[I][J] > 0.)
          {
-          FW0[I][J]=FW(SZ); 
+          F_bl[I][J]=FW(SZ); 
          }         
 		}
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
          QTR[I][J]=Q[I][J];
-         FW0TR[I][J]=FW0[I][J];
+         FW0TR[I][J]=F_bl[I][J];
 		}
 
-/*-------------------continue computations or begin from the initial values?--------------------------*/
-
-    printf("Do you want to continue or not? (y/n)\n");
-    scanf("%c",&ch); 
-
-  if(ch=='n')
-  {
-/*---------------- begin calculations --------------------*/
-
-      N=0;
-      HT=0.1;
-      TIME=0.;
-	  printf("Begin: Step N = %d, Time Step HT = %6.4e, TIME = %6.4e \n",N,HT,TIME);
 
 /*---------------- initial values ------------------------*/
 
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
-         SWOLD[I][J]=SSV;
+         Sw_old[I][J]=S_wr;
 		 P[I][J]=PRESS;
-//         P0[I][J]=PRESS;
 		}
 
-
-/*  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
-        {
-         P0[I][J]=0.;
-        } */
-
-/*      P0(2,1)=PRESS;
-     P0(2,NJ)=PRESS;
-     P0(1,2)=PRESS;
-      P0(NI,2)=PRESS;
-      P0(NI-1,1)=PRESS;
-      P0(NI-1,NJ)=PRESS;
-      P0(1,NJ-1)=PRESS;
-      P0(NI,NJ-1)=PRESS;
-      P0(2,2)=PRESS;
-      P0(2,NJ-1)=PRESS;
-      P0(NI-1,2)=PRESS;
-      P0(NI-1,NJ-1)=PRESS; */
-
-
-      AK=PR/(M*MUW);
-  }
-  else
-  {
-/*---------------continue calculations------------------------*/
-
-  rec=fopen("rec.dat","r");
-
-  fscanf(rec,"%d %le %le",&N,&HT,&TIME);
-  printf("Continue: Step N = %d, Time Step HT = %6.4e, TIME = %6.4e \n",N,HT,TIME);
-
-    for(J=0; J<=NJ; J++)
-       {
-        for(I=0; I<=NI; I++)
-           fscanf(rec,"%le ",&SWOLD[I][J]);
-        }
-        fscanf(rec,"\n");
-
-    for(J=0; J<=NJ; J++)
-       {
-        for(I=0; I<=NI; I++)
-           fscanf(rec,"%le ",&P[I][J]);
-        }
-        fscanf(rec,"\n");
-
-  fclose(rec);
-  }
-
+     AK=K/(M*MUW);
+  
 
 label25: N++;
 		 TIME+=HT;
@@ -362,14 +300,14 @@ label25: N++;
 		 printf("Step N = %d, Time Step HT = %6.4e, TIME = %6.4e \n",N,HT,TIME);
 
   III=1;
-  for(J=0; J<=NJ; J++)
-        for(I=0; I<=NI; I++)
+  for(J=0; J<=Ny; J++)
+        for(I=0; I<=Nx; I++)
         {
-         SS[I][J]=SWOLD[I][J];
+         SS[I][J]=Sw_old[I][J];
 		}
 
-label702:  for(J=0; J<=NJ; J++)
-        for(I=0 ; I<=NI; I++)
+label702:  for(J=0; J<=Ny; J++)
+        for(I=0 ; I<=Nx; I++)
         {
       
        if ( QTR[I][J] < 0. ) FW0TR[I][J]=FW(SS[I][J]);       
@@ -392,34 +330,34 @@ label702:  for(J=0; J<=NJ; J++)
               2.*FW(SS[I][J+1]))/HX;
            if(III == 1) 
 		   {
-           SWNEW[I][J]=SS[I][J]+0.01;
-           FN[I][J]=M/HT*(SS[I][J]-SWOLD[I][J])-
+           Sw_new[I][J]=SS[I][J]+0.01;
+           FN[I][J]=M/HT*(SS[I][J]-Sw_old[I][J])-
 			       QTR[I][J]/(H*HX*HY)*FW0TR[I][J]+A1+A2;
 		   }
 	       else
 			   if  (fabs(SS[I][J]-SSS[I][J]) > 1.e-3)
 			   { 
-				FN[I][J]=M/HT*(SS[I][J]-SWOLD[I][J])-QTR[I][J]/(H*HX*HY)*
+				FN[I][J]=M/HT*(SS[I][J]-Sw_old[I][J])-QTR[I][J]/(H*HX*HY)*
                    FW0TR[I][J]+A1+A2;
-                SWNEW[I][J]=SS[I][J]-(SS[I][J]-SSS[I][J])*FN[I][J]/
+                Sw_new[I][J]=SS[I][J]-(SS[I][J]-SSS[I][J])*FN[I][J]/
                      (FN[I][J]-FN1[I][J]);
 		   
 			   }
 		}
-        SWNEW[1][J]=SWNEW[2][J];
-        SWNEW[NI][J]=SWNEW[NIS1][J];
+        Sw_new[1][J]=Sw_new[2][J];
+        Sw_new[Nx][J]=Sw_new[NIS1][J];
         }
 
-        for(I=1; I<=NI; I++)
+        for(I=1; I<=Nx; I++)
 		{
-         SWNEW[I][1]=SWNEW[I][2];
-         SWNEW[I][NJ]=SWNEW[I][NJS1];
+         Sw_new[I][1]=Sw_new[I][2];
+         Sw_new[I][Ny]=Sw_new[I][NJS1];
         }
       SUM=0.;
-      for(J=1; J<=NJ; J++)
-        for(I=1; I<=NI; I++)
+      for(J=1; J<=Ny; J++)
+        for(I=1; I<=Nx; I++)
 		{
-         SUM+=pow((SWNEW[I][J]-SS[I][J]),2)*HX*HY;
+         SUM+=pow((Sw_new[I][J]-SS[I][J]),2)*HX*HY;
         }
 
       SUM=sqrt(fabs(SUM));
@@ -427,31 +365,29 @@ label702:  for(J=0; J<=NJ; J++)
       if(SUM < 1.e-4) goto label705;
 	  
       INDIC=0;
-//	  printf("Sec iter go on! Sum = %6.4e \n",SUM);
-//	  getch();
 
       III=III+1;
 
-      for(J=1; J<=NJ; J++)
-        for(I=1; I<=NI; I++)
+      for(J=1; J<=Ny; J++)
+        for(I=1; I<=Nx; I++)
 		{
          SSS[I][J]=SS[I][J];
-         SS[I][J]=SWNEW[I][J];
+         SS[I][J]=Sw_new[I][J];
          FN1[I][J]=FN[I][J];
 		}
       goto label702;
 	  
 label705:   INDIC=1;
 
-	printf("END of SWNEW:     SW_center = %6.4e \n",SWNEW[NIH*3+2][NJH*2+2]);
+	printf("END of SWNEW:     SW_center = %6.4e \n",Sw_new[NIH*3+2][NJH*2+2]);
 
       for(J=2; J<=NJS1; J++)
         for(I=2; I<=NIS1; I++)
 		{
-            A = (FK(SWNEW[I][J])+FK(SWNEW[I-1][J]))/(2.*HX*HX);
-            B = (FK(SWNEW[I+1][J])+FK(SWNEW[I][J]))/(2.*HX*HX);
-            ADASH = (FK(SWNEW[I][J])+FK(SWNEW[I][J-1]))/(2.*HY*HY);
-            BDASH = (FK(SWNEW[I][J+1])+FK(SWNEW[I][J]))/(2.*HY*HY);
+            A = (FK(Sw_new[I][J])+FK(Sw_new[I-1][J]))/(2.*HX*HX);
+            B = (FK(Sw_new[I+1][J])+FK(Sw_new[I][J]))/(2.*HX*HX);
+            ADASH = (FK(Sw_new[I][J])+FK(Sw_new[I][J-1]))/(2.*HY*HY);
+            BDASH = (FK(Sw_new[I][J+1])+FK(Sw_new[I][J]))/(2.*HY*HY);
 
             C = A+B+ADASH+BDASH;
 
@@ -478,39 +414,9 @@ label705:   INDIC=1;
 
 //----------------------------------------------------
 
-/*      AMAXK=DFKW(SWNEW[1][1]);
-
-      for(J=1; J<=NJ; J++)
-        for(I=1; I<=NI; I++)
-            if(DFKW(SWNEW[I][J]) >= AMAXK) AMAXK=DFKW(SWNEW[I][J]);
-
-      AMAXPX=(P[2][1]-P[1][1])/HX;
-
-      for(J=1; J<=NJ; J++)
-        for(I=2; I<=NI; I++)
-		{
-         PX=(P[I][J]-P[I-1][J])/HX;
-         if(PX >= AMAXPX) AMAXPX=PX;
-		}
-
-      AMAXPY=(P[1][2]-P[1][1])/HY;
-
-      for(J=2; J<=NJ; J++)
-        for(I=1; I<=NI; I++)
-		{
-         PY=(P[I][J]-P[I][J-1])/HY;
-         if(PY >= AMAXPY) AMAXPY=PY;
-		}  
-
-		AMAXP=AMAXPX;
-		if(AMAXPY > AMAXPX) AMAXP=AMAXPY;
-		HT=HX;
-		if(HY < HX) HT=HY;
-        HT=HT/(AK*AMAXK*AMAXP);   */
-
-      for(J=1; J<=NJ; J++)
-        for(I=1; I<=NI; I++)
-         SWOLD[I][J]=SWNEW[I][J];
+      for(J=1; J<=Ny; J++)
+        for(I=1; I<=Nx; I++)
+         Sw_old[I][J]=Sw_new[I][J];
 
 
       printf("			TIME STEP IS OVER \n");
@@ -523,32 +429,17 @@ label705:   INDIC=1;
 
 		 /*-----------two-dimensional grafics --------------*/
 
-/*		 sprintf(namefl, "omg_%d.dat",N);
-         out=fopen(namefl,"w");
-		 fprintf(out,"TITLE =  \"Relaxation Parameters OMG\" \n");
-		 fprintf(out,"VARIABLES = \"X\",\"Y\",\"OMG\" \n");
-         fprintf(out,"ZONE T = \"BIG ZONE\", I=%d  ,J=%d, F = POINT \n", NI, NJ);
-
-			for(J=1; J<=NJ; J++)
-		       {			
-			for(I=1; I<=NI; I++)
-			   {
-			     fprintf(out,"%6.4e %6.4e %6.4e \n",X[I],Y[J],omg[I][J]);
-				     }
-			   }
-		 fclose(out);  */
-
 		 sprintf(namefl, "sw_%d.dat",N);
          out=fopen(namefl,"w");
 		 fprintf(out,"TITLE =  \"Water Saturation\" \n");
 		 fprintf(out,"VARIABLES = \"X\",\"Y\",\"SWNEW\" \n");
-         fprintf(out,"ZONE T = \"BIG ZONE\", I=%d  ,J=%d, F = POINT \n", NI, NJ);
+         fprintf(out,"ZONE T = \"BIG ZONE\", I=%d  ,J=%d, F = POINT \n", Nx, Ny);
 
-			for(J=1; J<=NJ; J++)
+			for(J=1; J<=Ny; J++)
 		       {			
-			for(I=1; I<=NI; I++)
+			for(I=1; I<=Nx; I++)
 			   {
-			     fprintf(out,"%6.4e %6.4e %6.4e \n",X[I],Y[J],SWNEW[I][J]);
+			     fprintf(out,"%6.4e %6.4e %6.4e \n",X[I],Y[J],Sw_new[I][J]);
 				     }
 			   }
 		 fclose(out);
@@ -557,43 +448,16 @@ label705:   INDIC=1;
          out=fopen(namefl,"w");
 		 fprintf(out,"TITLE =  \"Pressure\" \n");
 		 fprintf(out,"VARIABLES = \"X\",\"Y\",\"P\" \n");
-         fprintf(out,"ZONE T = \"BIG ZONE\", I=%d  ,J=%d, F = POINT \n", NI, NJ);
+         fprintf(out,"ZONE T = \"BIG ZONE\", I=%d  ,J=%d, F = POINT \n", Nx, Ny);
 
-			for(J=1; J<=NJ; J++)
+			for(J=1; J<=Ny; J++)
 		       {			
-			for(I=1; I<=NI; I++)
+			for(I=1; I<=Nx; I++)
 			   {
 			     fprintf(out,"%6.4e %6.4e %6.4e \n",X[I],Y[J],P[I][J]);
 				     }
 			   }
 		  fclose(out);
-
-
-
-		  /*------------in file for continuing calculations-------------*/
-
-          rec=fopen("rec.dat","w");
-
-          fprintf(rec,"%10d %10.8e %10.8e \n",N,HT,TIME);
-
-	      for(J=0; J<=NJ; J++)
-		  {
-             for(I=0; I<=NI; I++)
-                fprintf(rec,"%10.8e ",SWOLD[I][J]);
-		  }
-          fprintf(rec,"\n");
-
-	      for(J=0; J<=NJ; J++)
-		  {
-             for(I=0; I<=NI; I++)
-                fprintf(rec,"%10.8e ",P[I][J]);
-		  }
-          fprintf(rec,"\n");
-		
-          fclose(rec);
-
-          printf("O'k. Go on!\n");
-
 		}
 
 
@@ -742,7 +606,7 @@ C----------------------------------------------------------------------*/
  *                                                *
  **************************************************/
 
-void relaxrb(double cc, double yy[NI1][NJ1])
+void relaxrb(double cc, double yy[Nx1][Ny1])
 {
       int i,j,ind,itr;
       double d,work,omega;
@@ -800,15 +664,15 @@ L10:  ++itr;
           }
       /*-----------boundary conditions --------------------------------*/
 
-      for (i = 1; i <= NI; i++)
+      for (i = 1; i <= Nx; i++)
       {
-           yy[i][NJ]=yy[i][NJS1];
+           yy[i][Ny]=yy[i][NJS1];
            yy[i][1]=yy[i][2];
       }
 
-      for (j = 1; j <= NJ; j++)
+      for (j = 1; j <= Ny; j++)
       {
-           yy[NI][j]=yy[NIS1][j];
+           yy[Nx][j]=yy[NIS1][j];
            yy[1][j]=yy[2][j];
       }
 
