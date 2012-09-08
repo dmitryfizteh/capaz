@@ -72,8 +72,6 @@ __device__ void device_test_S(double S, char *file, int line)
 
 // Тест на вхождение скоростей в [-100;100]
 // Синтаксис вызова test_u(x, __FILE__, __LINE__);
-// Тест на вхождение скоростей в [-100;100]
-// Синтаксис вызова test_u(x, __FILE__, __LINE__);
 __device__ void device_test_u(double u, char *file, int line)
 {
 #ifdef MY_TEST
@@ -84,6 +82,22 @@ __device__ void device_test_u(double u, char *file, int line)
 	if (u > 1e8)
 	{
 		CUPRINTF("Error: u>100\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+#endif
+}
+
+// Тест на вхождение плотностей в [0;3000]
+// Синтаксис вызова test_ro(x, __FILE__, __LINE__);
+__device__ void device_test_ro(double ro, char *file, int line)
+{
+#ifdef MY_TEST
+	if (ro < 0)
+	{
+		CUPRINTF("Error: ro < 0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+	if (ro > 3000)
+	{
+		CUPRINTF("Error: ro > 5000\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
 #endif
 }

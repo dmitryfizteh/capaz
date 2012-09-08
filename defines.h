@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-//#define LOAD_K_FROM_FILE
+#define LOAD_K_FROM_FILE
 //#define GTEST
 
 #ifdef GTEST
@@ -144,6 +144,7 @@ extern void test_nan(double x, char *file, int line);
 extern void test_positive(double x, char *file, int line);
 extern void test_S(double S, char *file, int line);
 extern void test_u(double u, char *file, int line);
+extern void test_ro(double ro, char *file, int line);
 extern void test_arrowhead(double big, double small, char *file, int line);
 extern void test_tau(double S_old, double S_now, double S_new, int local, consts def, char *file, int line);
 extern void read_defines_test(consts def);
