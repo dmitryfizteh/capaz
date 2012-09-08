@@ -124,6 +124,27 @@ void test_u(double u, char *file, int line)
 #endif
 }
 
+
+// Тест на вхождение плотностей в [-0;1500]
+// Синтаксис вызова test_ro(x, __FILE__, __LINE__);
+void test_ro(double ro, char *file, int line)
+{
+#ifdef MY_TEST
+	if (isnan(ro))
+	{
+		printf("Error: ro = NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+	if (ro < 0)
+	{
+		printf("Error: ro < 0\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+	if (ro > 1e8)
+	{
+		printf("Error: ro > 1500\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
+	}
+#endif
+}
+
 // Функция проверяет, что первый аргумент много больше (по модулю) второго
 // Если это не так, печатается предупреждение
 void test_arrowhead(double big, double small, char *file, int line)

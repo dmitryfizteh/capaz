@@ -186,10 +186,10 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
 #ifdef THREE_PHASE
 	HostArraysPtr.ro_g[local] = def.ro0_g * HostArraysPtr.P_g[local] / def.P_atm;
-	test_positive(HostArraysPtr.ro_g[local], __FILE__, __LINE__);
+	test_ro(HostArraysPtr.ro_g[local], __FILE__, __LINE__);
 #endif
-	test_positive(HostArraysPtr.ro_w[local], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
+	test_ro(HostArraysPtr.ro_w[local], __FILE__, __LINE__);
+	test_ro(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
 }
 
 // Расчет центральной разности
