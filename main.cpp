@@ -263,14 +263,15 @@ void print_task_name(consts def)
 	if (!(def.rank))
 	{
 #ifdef TWO_PHASE
-		std::cout << "Two phase filtration by CAPAZ on " << (def.size) << " node(s).\n";
+		char task_name[] = "Two phase filtration";
 #endif
 #ifdef THREE_PHASE
-		std::cout << "Three phase filtration by CAPAZ on " << (def.size) << " node(s).\n";
+		char task_name[] = "Three phase filtration";
 #endif
 #ifdef B_L
-		std::cout << "Backley-Leverett filtration by CAPAZ on " << (def.size) << " node(s).\n";
+		char task_name[] = "Backley-Leverett filtration";
 #endif
+		std::cout << task_name << " by CAPAZ on " << (def.size) << " node(s).\n";
 		read_version();
 		fflush(stdout);
 	}
