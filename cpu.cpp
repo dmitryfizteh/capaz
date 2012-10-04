@@ -854,16 +854,16 @@ void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostB
 			for (int i = 0; i < (def.locNx); i++)
 				for (int k = 0; k < (def.locNz); k++)
 				{
-					HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
-					test_nan(HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+					HostArrayPtr[i + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+					test_nan(HostArrayPtr[i + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
 				}
 		} else if(direction == 'r') 
 		{
 			for (int i = 0; i < (def.locNx); i++)
 				for (int k = 0; k < (def.locNz); k++)
 				{
-					HostArrayPtr[i + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
-					test_nan(HostArrayPtr[i + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+					HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+					test_nan(HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
 				}
 		}
 		break;
@@ -873,16 +873,16 @@ void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostB
 			for (int i = 0; i < (def.locNx); i++)
 				for (int j = 0; j < (def.locNy); j++)
 				{
-					HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)] = HostBuffer[i + (def.locNx)*j];
-					test_nan(HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)], __FILE__, __LINE__);
+					HostArrayPtr[i + (def.locNx) * j] = HostBuffer[i + (def.locNx)*j];
+					test_nan(HostArrayPtr[i + (def.locNx) * j], __FILE__, __LINE__);
 				}
 		} else if(direction == 'r') 
 		{
 			for (int i = 0; i < (def.locNx); i++)
 				for (int j = 0; j < (def.locNy); j++)
 				{
-					HostArrayPtr[i + (def.locNx) * j] = HostBuffer[i + (def.locNx)*j];
-					test_nan(HostArrayPtr[i + (def.locNx) * j], __FILE__, __LINE__);
+					HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)] = HostBuffer[i + (def.locNx)*j];
+					test_nan(HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)], __FILE__, __LINE__);
 				}
 		}
 		break;
