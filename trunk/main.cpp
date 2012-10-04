@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
+	print_hosts_configuration(def);
 	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 
 	task_time = clock();
@@ -142,7 +143,7 @@ void global_to_local_vars(consts *def)
 {
 	(*def).locNx = (*def).Nx / (*def).sizex;
 
-	if ((*def).rank % (*def).sizex < (*def).Nx % (*def).sizex)
+	if ((*def).rankx < (*def).Nx % (*def).sizex)
 	{
 		((*def).locNx) ++;
 	}
@@ -152,7 +153,7 @@ void global_to_local_vars(consts *def)
 	// Если процессор один, то границ у него нет и дополнительные точки не нужны
 	if ((*def).sizex > 1)
 	{
-		if (((*def).rank % (*def).sizex == 0) || ((*def).rank % (*def).sizex  == (*def).sizex - 1))
+		if (((*def).rankx == 0) || ((*def).rankx  == (*def).sizex - 1))
 		{
 			((*def).locNx) ++;
 		}
@@ -164,14 +165,14 @@ void global_to_local_vars(consts *def)
 
 	(*def).locNy = (*def).Ny / (*def).sizey;
 
-	if (((*def).rank % ((*def).sizex) * (*def).sizey) / (*def).sizex < (*def).Ny % (*def).sizey)
+	if (((*def).ranky < (*def).Ny % (*def).sizey))
 	{
 		((*def).locNy) ++;
 	}
 
 	if ((*def).sizey > 1)
 	{
-		if ((((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == 0) || (((*def).rank % ((*def).sizex * (*def).sizey)) / (*def).sizex == (*def).sizey - 1))
+		if (((*def).ranky == 0) || ((*def).ranky == (*def).sizey - 1))
 		{
 			((*def).locNy) ++;
 		}
@@ -183,14 +184,14 @@ void global_to_local_vars(consts *def)
 
 	(*def).locNz = (*def).Nz / (*def).sizez;
 
-	if ((*def).rank / (*def).sizex / (*def).sizey < (*def).Nz % (*def).sizez)
+	if ((*def).rankz < (*def).Nz % (*def).sizez)
 	{
 		((*def).locNz) ++;
 	}
 
 	if ((*def).sizez > 1)
 	{
-		if (((*def).rank / (*def).sizex / (*def).sizey == 0) || ((*def).rank / (*def).sizex / (*def).sizey == (*def).sizez - 1))
+		if (((*def).rankz == 0) || ((*def).rankz == (*def).sizez - 1))
 		{
 			((*def).locNz) ++;
 		}
@@ -198,6 +199,11 @@ void global_to_local_vars(consts *def)
 		{
 			((*def).locNz) += 2;
 		}
+	}
+
+	if((*def).rank >= (*def).sizex * (*def).sizey * (*def).sizez)
+	{
+		(*def).locNx = (*def).locNy = (*def).locNz = 0;
 	}
 
 	test_positive((*def).locNx, __FILE__, __LINE__);
@@ -208,9 +214,9 @@ void global_to_local_vars(consts *def)
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
 int is_active_point(int i, int j, int k, consts def)
 {
-	if (((def.rank) % (def.sizex) != 0 && i == 0) || ((def.rank) % (def.sizex) != (def.sizex) - 1 && i == def.locNx - 1)
-	    || (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != 0 && j == 0)	|| (((def.rank) % ((def.sizex) * (def.sizey))) / (def.sizex) != (def.sizey) - 1 && j == def.locNy - 1)
-	    || ((((def.rank) / (def.sizex) / (def.sizey) != 0 && k == 0) || ((def.rank) / (def.sizex) / (def.sizey) == (def.sizez) - 1 && k == def.locNz - 1)) && (def.sizez) > 1))
+	if (((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1)
+	    || ((def.ranky) != 0 && j == 0)	|| ((def.ranky) != (def.sizey) - 1 && j == (def.locNy) - 1)
+	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) == (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.sizez) > 1))
 	{
 		return 0;
 	}
@@ -223,12 +229,19 @@ int is_active_point(int i, int j, int k, consts def)
 // Применение начальных данных во всех точках
 void sizes_initialization(consts *def)
 {
-	(*def).sizex = (*def).size;
-	(*def).sizey = 1;
-	(*def).sizez = 1;
-	(*def).rankx = (*def).rank;
-	(*def).ranky = 0;
-	(*def).rankz = 0;
+	if((*def).size == 1) 
+	{
+		(*def).sizex = (*def).size;
+		(*def).sizey = 1;
+		(*def).sizez = 1;
+	} else {
+		(*def).sizex = 2;
+		(*def).sizey = 2;
+		(*def).sizez = 1;
+	}
+	(*def).rankx = (*def).rank % (*def).sizex;
+	(*def).ranky = ((*def).rank / (*def).sizex) % (*def).sizey;
+	(*def).rankz = ((*def).rank / (*def).sizex) / (*def).sizey;
 }
 
 void blocks_initialization(consts *def)
@@ -351,9 +364,18 @@ void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 // Выделение памяти хоста под массив точек расчетной области
 void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 {
-	if (!(HostBuffer = new double[2 * ((def.locNy) * (def.locNz))]))
-		print_error("Memory for *HostBuffer is not allocated in function host_memory_alloc", __FILE__, __LINE__);
+	int buffer_size = 0;
 
+	if(def.sizex > 1)
+		buffer_size = (def.locNy) * (def.locNz);
+	if(def.sizey > 1 && (def.locNx) * (def.locNz) > buffer_size)
+		buffer_size = (def.locNx) * (def.locNz);
+	if(def.sizez > 1 && (def.locNx) * (def.locNy) > buffer_size)
+		buffer_size = (def.locNx) * (def.locNy);
+
+	if(buffer_size)
+		if (!(HostBuffer = new double[buffer_size]))
+			print_error("Memory for *HostBuffer is not allocated in function host_memory_alloc", __FILE__, __LINE__);
 	try
 	{
 		(*ArraysPtr).S_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
@@ -463,7 +485,7 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 
 	// По очереди для каждого из процессоров вызываем функцию вывода на график
 	// своей части массива.
-	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu ++)
+	for (int cpu = 0; cpu < ((def.sizex) * (def.sizey) * (def.sizez)); cpu ++)
 	{
 		// Реализация фунции Barrier для различных коммуникаций
 		barrier();
@@ -557,20 +579,23 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
 			for (int k = 0; k < def.locNz; k++)
-				if (is_active_point(i, j, k, def))
+				//if (is_active_point(i, j, k, def))
 				{
 					local = i + j * def.locNx + k * def.locNx * def.locNy;
 
 					// Преобразование локальных координат процессора к глобальным
 					int I = local_to_global(i, 'x', def);
+					int J = def.Ny - 1 - local_to_global(j, 'y', def);
+					int K = local_to_global(k, 'z', def); 
+					//printf("i=%d, I=%d, j=%d, J=%d, k=%d, K=%d\n", i, I, j, J, k, K);
 #ifdef THREE_PHASE
 					if (def.Nz < 2)
 					{
-						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), (def.Ny-1-j)*(def.hy),
+						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), J*(def.hy),
 													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 													HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 						*/
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy),
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
 						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 						        HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
 						        (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
@@ -579,11 +604,11 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 
 					else
 					{
-						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), k*(def.hz), (def.Ny-1)*(def.hy)-HostArraysPtr.y[local],
+						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), K*(def.hz), J*(def.hy),
 													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 													HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 						*/
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy),
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy),
 						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 						        HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
 						        HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
@@ -594,23 +619,23 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #ifdef TWO_PHASE
 					if (def.Nz < 2)
 					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
 					}
 #endif
 #ifdef B_L
 					if (def.Nz < 2)
 					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), j * (def.hy), 1.-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), 1.-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 
 					}
 					else
 					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), (def.Ny - 1 - j) * (def.hy), 1-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), 1-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
 					}
 
 #endif
@@ -639,7 +664,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 					local = i + j2 * def.locNx + k * def.locNx * def.locNy;
 					int I = local_to_global(i, 'x', def);
 
-					fprintf(fp_xz, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), k * (def.hz), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.K[i + j1 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j2 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j3 * def.locNx + k * def.locNx * def.locNy]); // (1)
+					fprintf(fp_xz, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.K[i + j1 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j2 * def.locNx + k * def.locNx * def.locNy], HostArraysPtr.K[i + j3 * def.locNx + k * def.locNx * def.locNy]); // (1)
 				}
 		}
 	fclose(fp_xz);
@@ -1443,5 +1468,13 @@ void read_defines(int argc, char *argv[], consts* def)
 
 	//resize_defines(def, 0.15, 0.01);
 	read_defines_test(*def);
+}
+
+// Вывод на экран распределения процессоров в системе и области по процессорам
+void print_hosts_configuration(consts def) {
+	printf("\n  size = %d : (%d, %d, %d)\n  rank = %d : (%d, %d, %d)\n  locN = %d : (%d, %d, %d)\n", 
+		 (def).size, (def).sizex, (def).sizey, (def).sizez,
+		 (def).rank, (def).rankx, (def).ranky, (def).rankz, 
+		 (def).locNx * (def).locNy * (def).locNz, (def).locNx, (def).locNy, (def).locNz);
 }
 

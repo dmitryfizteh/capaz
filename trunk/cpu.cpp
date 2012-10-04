@@ -7,7 +7,11 @@ int is_injection_well(int i, int j, int k, consts def)
 	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 #endif
 #ifdef THREE_PHASE
-	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+//	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1) 
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
+	|| (i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1))
 #endif
 #ifndef TWO_PHASE
 		return 1;
@@ -23,7 +27,11 @@ int is_output_well(int i, int j, int k, consts def)
 	if (((i == def.Nx - 2) && (j == def.Ny - 2)) || ((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 #endif
 #ifdef THREE_PHASE
-	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+//	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1) 
+	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
+	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1))
 #endif
 #ifndef TWO_PHASE
 		return 1;
@@ -58,18 +66,21 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 #endif
 
 #ifdef THREE_PHASE
-/*
-	double q = 0.;
 
-	if (is_injection_well(i, j, k, def))
+	double q = 0.;
+	*q_w = 0.0;
+	*q_g = 0.0;
+	*q_n = 0.0;
+
+/*	if (is_injection_well(i, j, k, def))
 	{
 		*q_w = 0.01;
 		*q_g = 0.005;
-		*q_n = 0.02;
+		*q_n = 0.0;
 	}
 	if (is_output_well(i, j, k, def))
 	{
-		q = 0.035;
+		q = 0.015;
 
 		*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
 		*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
@@ -736,44 +747,149 @@ void device_finalization(void)
 }
 
 // Загрузка на хост данных для обмена на границе
-void load_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+void load_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
 {
-	for (int j = 0; j < (def.locNy); j++)
-		for (int k = 0; k < (def.locNz); k++)
+	switch(axis) {
+	case 'x': 
+		if(direction == 'l')
 		{
-			HostBuffer[j + (def.locNy)*k] = HostArrayPtr[1 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
-			HostBuffer[j + (def.locNy)*k + (def.locNy) * (def.locNz)] = HostArrayPtr[(def.locNx) - 2 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
-
-			test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
-			test_nan(HostBuffer[j + (def.locNy)*k + (def.locNy) * (def.locNz)], __FILE__, __LINE__);
+			for (int j = 0; j < (def.locNy); j++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostBuffer[j + (def.locNy)*k] = HostArrayPtr[1 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
+					test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int j = 0; j < (def.locNy); j++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostBuffer[j + (def.locNy)*k] = HostArrayPtr[(def.locNx) - 2 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
+					test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
+				}
 		}
+		break;
+	case 'y': 
+		if(direction == 'l')
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) + (def.locNx) * (def.locNy) * k];
+					test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) * ((def.locNy) - 2) + (def.locNx) * (def.locNy) * k];
+					test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
+				}
+		}
+		break;
+	case 'z': 
+		if(direction == 'l')
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int j = 0; j < (def.locNy); j++)
+				{
+					HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy)];
+					test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int j = 0; j < (def.locNy); j++)
+				{
+					HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 2)];
+					test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
+				}
+		}
+		break;
+	default:
+		break;
+	}
 
-	/*for(int j=0;j<(def.locNy);j++)
+	/*
+	printf("\nLoad\n");
+	for(int j=0;j<(def.locNy);j++)
 		for(int k=0;k<(def.locNz);k++)
-			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);*/
+			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);
+	*/
 }
 
 // Загрузка на device данных обмена на границе
-void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
 {
-	//printf("\nSave\n");
-	/*for(int j=0;j<(def.locNy);j++)
+	/*
+	printf("\nSave\n");
+	for(int j=0;j<(def.locNy);j++)
 		for(int k=0;k<(def.locNz);k++)
-			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);*/
-
-	for (int j = 0; j < (def.locNy); j++)
-		for (int k = 0; k < (def.locNz); k++)
+			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);
+	*/
+	switch(axis) {
+	case 'x': 
+		if(direction == 'l')
 		{
-			if ((def.rank) != def.sizex - 1)
-			{
-				HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k + (def.locNy) * (def.locNz)];
-				test_nan(HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
-			}
-			if ((def.rank) != 0)
-			{
-				HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
-				test_nan(HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
-			}
+			for (int j = 0; j < (def.locNy); j++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
+					test_nan(HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int j = 0; j < (def.locNy); j++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
+					test_nan(HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
+				}
 		}
+		break;
+	case 'y': 
+		if(direction == 'l')
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+					test_nan(HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int k = 0; k < (def.locNz); k++)
+				{
+					HostArrayPtr[i + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+					test_nan(HostArrayPtr[i + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+				}
+		}
+		break;
+	case 'z': 
+		if(direction == 'l')
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int j = 0; j < (def.locNy); j++)
+				{
+					HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)] = HostBuffer[i + (def.locNx)*j];
+					test_nan(HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)], __FILE__, __LINE__);
+				}
+		} else if(direction == 'r') 
+		{
+			for (int i = 0; i < (def.locNx); i++)
+				for (int j = 0; j < (def.locNy); j++)
+				{
+					HostArrayPtr[i + (def.locNx) * j] = HostBuffer[i + (def.locNx)*j];
+					test_nan(HostArrayPtr[i + (def.locNx) * j], __FILE__, __LINE__);
+				}
+		}
+		break;
+	default:
+		break;
+	}
 }
+
+
 
