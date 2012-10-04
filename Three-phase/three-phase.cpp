@@ -433,21 +433,10 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					// Преобразование локальных координат процессора к глобальным
-					int I = local_to_global(i, 'x', def);
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
-					// Линейное изменение насыщенностей в начальном распределении
-	/*				int j1 = def.locNy / 2;
 
-					if (j < j1)
-					{
-						HostArraysPtr.S_w[local] = def.S_w_gr + (def.S_w_init - def.S_w_gr) * j / j1;
-						HostArraysPtr.S_n[local] = def.S_n_gr + (def.S_n_init - def.S_n_gr) * j / j1;
-					}
-					else
-					*/
 					if ((j == 0) && ((def.source) > 0))
 					{
 						HostArraysPtr.S_w[local] = def.S_w_gr;
@@ -464,18 +453,18 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
 
 					// Если отдельно задаем значения на границах через градиент
-					if (j == 0)
+					//if (j == 0)
 					{
 						HostArraysPtr.P_w[local] = def.P_atm;
 						HostArraysPtr.P_n[local] = def.P_atm;
 						HostArraysPtr.P_g[local] = def.P_atm;
 					}
-					else
+					/*else
 					{
 						HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local - (def.locNx)] + ro_g_dy;
 						HostArraysPtr.P_n[local] = HostArraysPtr.P_n[local - (def.locNx)] + ro_g_dy;
 						HostArraysPtr.P_g[local] = HostArraysPtr.P_g[local - (def.locNx)] + ro_g_dy;
-					}
+					}*/
 
 					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
 					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
