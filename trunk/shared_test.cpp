@@ -61,10 +61,11 @@ void test_nan(double x, char *file, int line)
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
 	// Тестовое более жесткое ограничение именно для этой задачи
-/*	if (x > 1e12)
+	/*if (x > 1e30 || x < -1e30)
 	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}*/
+	
 #endif
 }
 

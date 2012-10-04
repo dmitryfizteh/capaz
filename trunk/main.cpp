@@ -579,7 +579,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	for (int i = 0; i < def.locNx; i++)
 		for (int j = 0; j < def.locNy; j++)
 			for (int k = 0; k < def.locNz; k++)
-				//if (is_active_point(i, j, k, def))
+				if (is_active_point(i, j, k, def))
 				{
 					local = i + j * def.locNx + k * def.locNx * def.locNy;
 
