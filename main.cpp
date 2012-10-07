@@ -216,7 +216,7 @@ int is_active_point(int i, int j, int k, consts def)
 {
 	if (((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1)
 	    || ((def.ranky) != 0 && j == 0)	|| ((def.ranky) != (def.sizey) - 1 && j == (def.locNy) - 1)
-	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) == (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.sizez) > 1))
+	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) != (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.sizez) > 1))
 	{
 		return 0;
 	}
@@ -235,9 +235,9 @@ void sizes_initialization(consts *def)
 		(*def).sizey = 1;
 		(*def).sizez = 1;
 	} else {
-		(*def).sizex = 2;
-		(*def).sizey = 2;
-		(*def).sizez = 1;
+		(*def).sizex = SizeX;
+		(*def).sizey = SizeY;
+		(*def).sizez = SizeZ;
 	}
 	(*def).rankx = (*def).rank % (*def).sizex;
 	(*def).ranky = ((*def).rank / (*def).sizex) % (*def).sizey;
@@ -564,8 +564,6 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	char fname[30];
 	FILE *fp;
 
-	int local;
-
 	sprintf(fname, "plots/S=%012.4f.dat", t);
 
 	// Открытие на дозапись и сохранение графиков
@@ -750,6 +748,66 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 				fprintf(stderr, "Can't add data about block err %d\n", err);
 		}
 	*/
+}
+
+// Функция вывода на экран двумерного массива(для тестирования пересылок)
+void print_array_console(double* Arr, consts def, char axis)
+{
+	printf("\n");
+	switch(axis)
+	{
+	case 'x':
+		printf("left:\n");
+		for (int i = 0; i < def.locNz; i++) 
+		{
+			for (int j = 0; j < def.locNy; j++)
+				printf("%.2f  ", Arr[j * def.locNx + i * def.locNx * def.locNy]);
+			printf("\n");
+		}
+		printf("right:\n");
+		for (int i = 0; i < def.locNz; i++) 
+		{
+			for (int j = 0; j < def.locNy; j++)
+				printf("%.2f  ", Arr[def.locNx - 1 + j * def.locNx + i * def.locNx * def.locNy]);
+			printf("\n");
+		}
+		break;
+	case 'y':
+		printf("left:\n");
+		for (int i = 0; i < def.locNz; i++) 
+		{
+			for (int j = 0; j < def.locNx; j++)
+				printf("%.2f  ", Arr[j + i * def.locNx * def.locNy]);
+			printf("\n");
+		}
+		printf("right:\n");
+		for (int i = 0; i < def.locNz; i++) 
+		{
+			for (int j = 0; j < def.locNx; j++)
+				printf("%.2f  ", Arr[j + (def.locNy - 1) * def.locNx + i * def.locNx * def.locNy]);
+			printf("\n");
+		}
+		break;
+	case 'z':
+		printf("left:\n");
+		for (int i = 0; i < def.locNy; i++) 
+		{
+			for (int j = 0; j < def.locNx; j++)
+				printf("%.2f  ", Arr[j + i * def.locNx]);
+			printf("\n");
+		}
+		printf("right:\n");
+		for (int i = 0; i < def.locNy; i++) 
+		{
+			for (int j = 0; j < def.locNx; j++)
+				printf("%.2f  ", Arr[j + i * def.locNx + (def.locNz - 1) * def.locNx * def.locNy]);
+			printf("\n");
+		}
+		break;
+	default:
+		break;
+	}
+	printf("\n");
 }
 
 // Функция загрузки файла проницаемостей
