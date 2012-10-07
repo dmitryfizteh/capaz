@@ -483,17 +483,39 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 		print_plots_top(t, def);
 	}
 
-	// По очереди для каждого из процессоров вызываем функцию вывода на график
-	// своей части массива.
-	for (int cpu = 0; cpu < ((def.sizex) * (def.sizey) * (def.sizez)); cpu ++)
+	if((def.sizey == 1) && (def.sizez == 1))
 	{
-		// Реализация фунции Barrier для различных коммуникаций
-		barrier();
-		if ((def.rank) == cpu)
+		// По очереди для каждого из процессоров вызываем функцию вывода на график
+		// своей части массива.
+		for (int cpu = 0; cpu < ((def.sizex) * (def.sizey) * (def.sizez)); cpu ++)
 		{
-			print_plots(HostArraysPtr, t, def);
+			// Реализация фунции Barrier для различных коммуникаций
+			barrier();
+			if ((def.rank) == cpu)
+			{
+				print_plots(HostArraysPtr, t, def, -1, -1);
+			}
 		}
+	} 
+	else 
+	{
+		// Выстраиваем такую очередь вывода своей части массива каждого из процессоров, 
+		// чтобы значения создавали последовательность, корректно отображаемую Tecplot.
+		for (int i = 0; i < def.Nx / def.sizex + 3; i++)
+			for (int j = 0; j < def.Ny / def.sizey + 3; j++)
+				for (int cpux = 0; cpux < (def.sizex); cpux ++)
+					for (int cpuy = 0; cpuy < (def.sizey); cpuy ++)
+						for (int cpuz = 0; cpuz < (def.sizez); cpuz ++)
+						{
+							// Реализация фунции Barrier для различных коммуникаций
+							barrier();
+							if ((def.rank) == cpux + cpuy * (def.sizex) + cpuz * (def.sizex) * (def.sizey) && i < def.locNx && j < def.locNy)
+							{
+								print_plots(HostArraysPtr, t, def, i, j);
+							}
+						}
 	}
+
 }
 
 // Функция создания директорий, файлов для графиков и сохранения заголовков в них
@@ -559,7 +581,9 @@ void print_plots_top(double t, consts def)
 }
 
 // Функция сохранения данных в файлы графиков
-void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
+// Если деления между процессорами по y, z нет, то параметры I, J не используются. 
+// Если же есть, но хочется писать в файл в простой последовательности, то должно быть I=J=-1
+void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J)
 {
 	char fname[30];
 	FILE *fp;
@@ -567,21 +591,23 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 	sprintf(fname, "plots/S=%012.4f.dat", t);
 
 	// Открытие на дозапись и сохранение графиков
-	// 1. Для распределения насыщенностей NAPL S_n
-	// 2. Для распределения давлений воды P_w
-	// 3. Для распределения скоростей {u_x, u_y, u_z}
-	// 4. Для распределения типов грунтов
 	if (!(fp = fopen(fname, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
-	for (int i = 0; i < def.locNx; i++)
-		for (int j = 0; j < def.locNy; j++)
-			for (int k = 0; k < def.locNz; k++)
-				if (is_active_point(i, j, k, def))
-				{
-					print_plot_row(HostArraysPtr, fp, i, j, k, def);
-				}
-
+	if((def.sizey == 1) && (def.sizez == 1) || (I == -1) && (J == -1))
+	{
+		for (int i = 0; i < def.locNx; i++)
+			for (int j = 0; j < def.locNy; j++)
+				for (int k = 0; k < def.locNz; k++)
+					if (is_active_point(i, j, k, def))
+						print_plot_row(HostArraysPtr, fp, i, j, k, def);
+	}
+	else
+	{
+		for (int k = 0; k < def.locNz; k++)
+			if (is_active_point(I, J, k, def))
+				print_plot_row(HostArraysPtr, fp, I, J, k, def);
+	}
 
 	fclose(fp);
 
@@ -613,7 +639,12 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 #endif
 }
 
-// Функция записи строчки значений параметров, которые нужны для построения графиков,  для всех задач
+// Функция записи строчки значений параметров, которые нужны для построения графиков,  для всех задач.
+// Включает в себя:
+// 1. Распределение насыщенностей NAPL S_n
+// 2. Распределение давлений воды P_w
+// 3. Распределение скоростей {u_x, u_y, u_z}
+// 4. Распределение типов грунтов
 void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, consts def)
 {
 	int local = i + j * def.locNx + k * def.locNx * def.locNy;
