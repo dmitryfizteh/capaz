@@ -81,6 +81,9 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 
 void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def, char axis)
 {
+	if((def.rank) >= (def.sizex) * (def.sizey) * (def.sizez))
+		return;
+
 	switch(axis)
 	{
 	case 'x':
@@ -250,9 +253,7 @@ void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostB
 void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 #ifdef THREE_PHASE
-	//print_array_console(HostArraysPtr.S_w, def, 'z');
 	exchange(HostArraysPtr.S_w, DevArraysPtr.S_w, HostBuffer, DevBuffer, def);
-	//print_array_console(HostArraysPtr.S_w, def, 'z');
 #endif
 	exchange(HostArraysPtr.P_w, DevArraysPtr.P_w, HostBuffer, DevBuffer, def);
 	exchange(HostArraysPtr.S_n, DevArraysPtr.S_n, HostBuffer, DevBuffer, def);
