@@ -48,7 +48,7 @@ void kak_delit(void)
 */
 
 // Передача и прием данных правой границе
-void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id, consts def)
+void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
 
@@ -59,7 +59,7 @@ void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, 
 }
 
 // Получение и передача данных на левой границе
-void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id, consts def)
+void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
 
@@ -91,14 +91,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.rankx) != (def.sizex) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 500, def);    // (1.1)
+					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 500);    // (1.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (3)
 				}
 
 				if ((def.rankx) != 0)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 502, def);    // (1.2)
+					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 502);    // (1.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (3)
 				}
 			}
@@ -107,14 +107,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.rankx) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 500, def);    // (2.1)
+					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 500);    // (2.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (3)
 				}
 
 				if ((def.rankx) != (def.sizex) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 502, def);    // (2.2)
+					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 502);    // (2.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (3)
 				}
 			}
@@ -128,14 +128,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.ranky) != (def.sizey) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 504, def);    // (1.1)
+					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 504);    // (1.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (3)
 				}
 
 				if ((def.ranky) != 0)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 506, def);    // (1.2)
+					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 506);    // (1.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (3)
 				}
 			}
@@ -144,14 +144,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.ranky) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 504, def);    // (2.1)
+					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 504);    // (2.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (3)
 				}
 
 				if ((def.ranky) != (def.sizey) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 506, def);    // (2.2)
+					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 506);    // (2.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (3)
 				}
 			}
@@ -165,14 +165,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.rankz) != (def.sizez) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 508, def);    // (1.1)
+					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 508);    // (1.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (3)
 				}
 
 				if ((def.rankz) != 0)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 510, def);    // (1.2)
+					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 510);    // (1.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (3)
 				}
 			}
@@ -181,14 +181,14 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 				if ((def.rankz) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (0)
-					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 500, def);    // (2.1)
+					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 500);    // (2.1)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (3)
 				}
 
 				if ((def.rankz) != (def.sizez) - 1)
 				{
 					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (0)
-					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 502, def);    // (2.2)
+					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 502);    // (2.2)
 					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (3)
 				}
 			}

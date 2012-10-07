@@ -581,65 +581,9 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					local = i + j * def.locNx + k * def.locNx * def.locNy;
-
-					// Преобразование локальных координат процессора к глобальным
-					int I = local_to_global(i, 'x', def);
-					int J = def.Ny - 1 - local_to_global(j, 'y', def);
-					int K = local_to_global(k, 'z', def); 
-					//printf("i=%d, I=%d, j=%d, J=%d, k=%d, K=%d\n", i, I, j, J, k, K);
-#ifdef THREE_PHASE
-					if (def.Nz < 2)
-					{
-						/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), J*(def.hy),
-													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
-													HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
-						*/
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
-						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
-						        HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
-						        (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
-
-					}
-
-					else
-					{
-						/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), K*(def.hz), J*(def.hy),
-													HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
-													HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
-						*/
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy),
-						        HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
-						        HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
-						        HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
-						        HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
-
-					}
-#endif
-#ifdef TWO_PHASE
-					if (def.Nz < 2)
-					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
-
-					}
-					else
-					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
-					}
-#endif
-#ifdef B_L
-					if (def.Nz < 2)
-					{
-						fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), 1.-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
-
-					}
-					else
-					{
-						fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), 1-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
-					}
-
-#endif
+					print_plot_row(HostArraysPtr, fp, i, j, k, def);
 				}
+
 
 	fclose(fp);
 
@@ -668,6 +612,68 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def)
 				}
 		}
 	fclose(fp_xz);
+#endif
+}
+
+// Функция записи строчки значений параметров, которые нужны для построения графиков,  для всех задач
+void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, consts def)
+{
+	int local = i + j * def.locNx + k * def.locNx * def.locNy;
+
+	// Преобразование локальных координат процессора к глобальным
+	int I = local_to_global(i, 'x', def);
+	int J = def.Ny - 1 - local_to_global(j, 'y', def);
+	int K = local_to_global(k, 'z', def); 
+
+#ifdef THREE_PHASE
+	if (def.Nz < 2)
+	{
+		/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), J*(def.hy),
+									HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+									HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
+		*/
+		fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+				HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
+				(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
+
+	}
+
+	else
+	{
+		/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), K*(def.hz), J*(def.hy),
+									HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+									HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
+		*/
+		fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+				HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
+				HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
+				HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
+
+	}
+#endif
+#ifdef TWO_PHASE
+	if (def.Nz < 2)
+	{
+		fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+
+	}
+	else
+	{
+		fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]); // (1)
+	}
+#endif
+#ifdef B_L
+	if (def.Nz < 2)
+	{
+		fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy), 1.-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+
+	}
+	else
+	{
+		fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy), 1-HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.K[local]); // (1)
+	}
 #endif
 }
 
