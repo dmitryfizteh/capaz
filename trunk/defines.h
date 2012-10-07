@@ -30,6 +30,11 @@
 #define BlockNY 8
 #define BlockNZ 8
 
+// Размеры сетки из процессоров
+#define SizeX 2
+#define SizeY 2
+#define SizeZ 2
+
 #include <float.h>
 #include <stdio.h>
 #include <iostream>
@@ -130,6 +135,7 @@ extern void print_plots_top(double t, consts def);
 extern void print_plots(ptr_Arrays HostArraysPtr, double t, consts def);
 extern void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, consts def);
 extern void print_hosts_configuration(consts def);
+extern void print_array_console(double* Arr, consts def, char axis);
 extern void barrier(void);
 extern void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def);
 extern void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def);
