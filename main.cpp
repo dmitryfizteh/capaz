@@ -501,10 +501,10 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	{
 		// Выстраиваем такую очередь вывода своей части массива каждого из процессоров, 
 		// чтобы значения создавали последовательность, корректно отображаемую Tecplot.
-		for (int i = 0; i < def.Nx / def.sizex + 3; i++)
-			for (int j = 0; j < def.Ny / def.sizey + 3; j++)
-				for (int cpux = 0; cpux < (def.sizex); cpux ++)
-					for (int cpuy = 0; cpuy < (def.sizey); cpuy ++)
+		for (int cpux = 0; cpux < (def.sizex); cpux ++)
+			for (int i = 0; i < def.Nx / def.sizex + 3; i++)
+				for (int cpuy = 0; cpuy < (def.sizey); cpuy ++)
+					for (int j = 0; j < def.Ny / def.sizey + 3; j++)
 						for (int cpuz = 0; cpuz < (def.sizez); cpuz ++)
 						{
 							// Реализация фунции Barrier для различных коммуникаций
