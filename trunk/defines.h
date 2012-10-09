@@ -31,9 +31,9 @@
 #define BlockNZ 8
 
 // Размеры сетки из процессоров
-#define SizeX 4
+#define SizeX 2
 #define SizeY 2
-#define SizeZ 1
+#define SizeZ 2
 
 #include <float.h>
 #include <stdio.h>
