@@ -746,150 +746,125 @@ void device_finalization(void)
 {
 }
 
-// Загрузка на хост данных для обмена на границе
-void load_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
+// Загрузка в буфер данных для обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
+void load_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
-	switch(axis) {
-	case 'x': 
-		if(direction == 'l')
+	for (int j = 0; j < (def.locNy); j++)
+		for (int k = 0; k < (def.locNz); k++)
 		{
-			for (int j = 0; j < (def.locNy); j++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostBuffer[j + (def.locNy)*k] = HostArrayPtr[1 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
-					test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int j = 0; j < (def.locNy); j++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostBuffer[j + (def.locNy)*k] = HostArrayPtr[(def.locNx) - 2 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
-					test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
-				}
+			HostBuffer[j + (def.locNy)*k] = HostArrayPtr[1 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
+			test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
 		}
-		break;
-	case 'y': 
-		if(direction == 'l')
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) + (def.locNx) * (def.locNy) * k];
-					test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) * ((def.locNy) - 2) + (def.locNx) * (def.locNy) * k];
-					test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
-				}
-		}
-		break;
-	case 'z': 
-		if(direction == 'l')
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int j = 0; j < (def.locNy); j++)
-				{
-					HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy)];
-					test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int j = 0; j < (def.locNy); j++)
-				{
-					HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 2)];
-					test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
-				}
-		}
-		break;
-	default:
-		break;
-	}
-
-	/*
-	printf("\nLoad\n");
-	for(int j=0;j<(def.locNy);j++)
-		for(int k=0;k<(def.locNz);k++)
-			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);
-	*/
 }
 
-// Загрузка на device данных обмена на границе
-void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
+void load_exchange_data_part_xr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
-	/*
-	printf("\nSave\n");
-	for(int j=0;j<(def.locNy);j++)
-		for(int k=0;k<(def.locNz);k++)
-			printf("Buffer j=%d k=%d buffer=%f\n", j, k, HostBuffer[j+(def.locNy)*k]);
-	*/
-	switch(axis) {
-	case 'x': 
-		if(direction == 'l')
+	for (int j = 0; j < (def.locNy); j++)
+		for (int k = 0; k < (def.locNz); k++)
 		{
-			for (int j = 0; j < (def.locNy); j++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
-					test_nan(HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int j = 0; j < (def.locNy); j++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
-					test_nan(HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
-				}
+			HostBuffer[j + (def.locNy)*k] = HostArrayPtr[(def.locNx) - 2 + (def.locNx) * j + (def.locNx) * (def.locNy) * k];
+			test_nan(HostBuffer[j + (def.locNy)*k], __FILE__, __LINE__);
 		}
-		break;
-	case 'y': 
-		if(direction == 'l')
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostArrayPtr[i + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
-					test_nan(HostArrayPtr[i + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int k = 0; k < (def.locNz); k++)
-				{
-					HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
-					test_nan(HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
-				}
-		}
-		break;
-	case 'z': 
-		if(direction == 'l')
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int j = 0; j < (def.locNy); j++)
-				{
-					HostArrayPtr[i + (def.locNx) * j] = HostBuffer[i + (def.locNx)*j];
-					test_nan(HostArrayPtr[i + (def.locNx) * j], __FILE__, __LINE__);
-				}
-		} else if(direction == 'r') 
-		{
-			for (int i = 0; i < (def.locNx); i++)
-				for (int j = 0; j < (def.locNy); j++)
-				{
-					HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)] = HostBuffer[i + (def.locNx)*j];
-					test_nan(HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)], __FILE__, __LINE__);
-				}
-		}
-		break;
-	default:
-		break;
-	}
 }
 
+void load_exchange_data_part_yl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) + (def.locNx) * (def.locNy) * k];
+			test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
+		}
+}
 
+void load_exchange_data_part_yr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostBuffer[i + (def.locNx)*k] = HostArrayPtr[i + (def.locNx) * ((def.locNy) - 2) + (def.locNx) * (def.locNy) * k];
+			test_nan(HostBuffer[i + (def.locNx)*k], __FILE__, __LINE__);
+		}
+}
+
+void load_exchange_data_part_zl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+		{
+			HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy)];
+			test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
+		}
+}
+
+void load_exchange_data_part_zr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+		{
+			HostBuffer[i + (def.locNx)*j] = HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 2)];
+			test_nan(HostBuffer[i + (def.locNx)*j], __FILE__, __LINE__);
+		}
+}
+
+// Загрузка из буфера данных обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
+void save_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int j = 0; j < (def.locNy); j++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
+			test_nan(HostArrayPtr[(def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
+		}
+}
+
+void save_exchange_data_part_xr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int j = 0; j < (def.locNy); j++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k] = HostBuffer[j + (def.locNy) * k];
+			test_nan(HostArrayPtr[(def.locNx) - 1 + (def.locNx)*j + (def.locNx) * (def.locNy)*k], __FILE__, __LINE__);
+		}
+}
+
+void save_exchange_data_part_yl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostArrayPtr[i + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+			test_nan(HostArrayPtr[i + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+		}
+}
+
+void save_exchange_data_part_yr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int k = 0; k < (def.locNz); k++)
+		{
+			HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k] = HostBuffer[i + (def.locNx)*k];
+			test_nan(HostArrayPtr[i + (def.locNx) * ((def.locNy) - 1) + (def.locNx) * (def.locNy) * k], __FILE__, __LINE__);
+		}
+}
+
+void save_exchange_data_part_zl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+		{
+			HostArrayPtr[i + (def.locNx) * j] = HostBuffer[i + (def.locNx)*j];
+			test_nan(HostArrayPtr[i + (def.locNx) * j], __FILE__, __LINE__);
+		}
+}
+
+void save_exchange_data_part_zr(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+		{
+			HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)] = HostBuffer[i + (def.locNx)*j];
+			test_nan(HostArrayPtr[i + (def.locNx) * j + (def.locNx) * (def.locNy) * ((def.locNz) - 1)], __FILE__, __LINE__);
+		}
+}
 

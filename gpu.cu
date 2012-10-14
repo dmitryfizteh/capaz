@@ -728,7 +728,18 @@ void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts def)
 // Выделение памяти ускорителя под массив точек расчетной области
 void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts def)
 {
-	cudaMalloc((void**) DevBuffer,  2 * (def.locNy) * (def.locNz) * sizeof(double));
+	int buffer_size = 0;
+
+	if(def.sizex > 1)
+		buffer_size = (def.locNy) * (def.locNz);
+	if(def.sizey > 1 && (def.locNx) * (def.locNz) > buffer_size)
+		buffer_size = (def.locNx) * (def.locNz);
+	if(def.sizez > 1 && (def.locNx) * (def.locNy) > buffer_size)
+		buffer_size = (def.locNx) * (def.locNy);
+
+	if(buffer_size)
+		cudaMalloc((void**) DevBuffer,  buffer_size * sizeof(double));
+	
 	cudaMalloc((void**) & ((*ArraysPtr).P_w), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).P_n), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
 	cudaMalloc((void**) & ((*ArraysPtr).S_n), (def.locNx) * (def.locNy) * (def.locNz) * sizeof(double));
@@ -894,7 +905,7 @@ void device_finalization(void)
 	cudaPrintfEnd();
 }
 
-__global__ void load_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer)
+__global__ void load_exchange_data_part_xl_kernel(double* DevArrayPtr, double* DevBuffer)
 {
 	int j = threadIdx.x + blockIdx.x * blockDim.x;
 	int k = threadIdx.y + blockIdx.y * blockDim.y;
@@ -902,54 +913,270 @@ __global__ void load_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer
 	if (j < gpu_def->locNy && k < (gpu_def->locNz))
 	{
 		DevBuffer[j + (gpu_def->locNy)*k] = DevArrayPtr[1 + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k];
-		DevBuffer[j + (gpu_def->locNy)*k + (gpu_def->locNy) * (gpu_def->locNz)] = DevArrayPtr[(gpu_def->locNx) - 2 + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k];
-
 		device_test_nan(DevBuffer[j + (gpu_def->locNy)*k], __FILE__, __LINE__);
-		device_test_nan(DevBuffer[j + (gpu_def->locNy)*k + (gpu_def->locNy) * (gpu_def->locNz)], __FILE__, __LINE__);
 	}
 }
 
-
-void load_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
-{
-	load_exchange_data_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
-	checkErrors("load_exchange_data", __FILE__, __LINE__);
-	cudaPrintfDisplay(stdout, true);
-
-	cudaMemcpy(HostBuffer, DevBuffer, 2 * (def.Ny) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
-	checkErrors("copy data to host", __FILE__, __LINE__);
-	cudaPrintfDisplay(stdout, true);
-}
-
-__global__ void save_exchange_data_kernel(double* DevArrayPtr, double* DevBuffer)
+__global__ void load_exchange_data_part_xr_kernel(double* DevArrayPtr, double* DevBuffer)
 {
 	int j = threadIdx.x + blockIdx.x * blockDim.x;
 	int k = threadIdx.y + blockIdx.y * blockDim.y;
 
-	if (j < (gpu_def->locNy) && k < (gpu_def->locNz))
+	if (j < gpu_def->locNy && k < (gpu_def->locNz))
 	{
-		if (gpu_def->rank != 0)
-		{
-			DevArrayPtr[(gpu_def->locNx)*j + (gpu_def->locNx) * (gpu_def->locNy)*k] = DevBuffer[j + (gpu_def->locNy) * k];
-			device_test_nan(DevArrayPtr[(gpu_def->locNx)*j + (gpu_def->locNx) * (gpu_def->locNy)*k], __FILE__, __LINE__);
-		}
-		if (gpu_def->rank != gpu_def->sizex - 1)
-		{
-			DevArrayPtr[(gpu_def->locNx) - 1 + (gpu_def->locNx)*j + (gpu_def->locNx) * (gpu_def->locNy)*k] = DevBuffer[j + (gpu_def->locNy) * k + (gpu_def->locNy) * (gpu_def->locNz)];
-			device_test_nan(DevArrayPtr[(gpu_def->locNx) - 1 + (gpu_def->locNx)*j + (gpu_def->locNx) * (gpu_def->locNy)*k], __FILE__, __LINE__);
-		}
+		DevBuffer[j + (gpu_def->locNy)*k] = DevArrayPtr[(gpu_def->locNx) - 2 + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k];
+		device_test_nan(DevBuffer[j + (gpu_def->locNy)*k], __FILE__, __LINE__);
 	}
 }
 
-void save_exchange_data(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+__global__ void load_exchange_data_part_yl_kernel(double* DevArrayPtr, double* DevBuffer)
 {
-	cudaMemcpy(DevBuffer, HostBuffer, 2 * (def.locNy) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
-	checkErrors("copy data to device", __FILE__, __LINE__);
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && k < (gpu_def->locNz))
+	{
+		DevBuffer[i + (gpu_def->locNx)*k] = DevArrayPtr[i + (gpu_def->locNx) + (gpu_def->locNx) * (gpu_def->locNy) * k];
+		device_test_nan(DevBuffer[i + (gpu_def->locNx)*k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void load_exchange_data_part_yr_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && k < (gpu_def->locNz))
+	{
+		DevBuffer[i + (gpu_def->locNx)*k] = DevArrayPtr[i + (gpu_def->locNx) * (gpu_def->locNy - 2) + (gpu_def->locNx) * (gpu_def->locNy) * k];
+		device_test_nan(DevBuffer[i + (gpu_def->locNx)*k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void load_exchange_data_part_zl_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && j < (gpu_def->locNy))
+	{
+		DevBuffer[i + (gpu_def->locNx)*j] = DevArrayPtr[i + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy)];
+		device_test_nan(DevBuffer[i + (gpu_def->locNx)*j], __FILE__, __LINE__);
+	}
+}
+
+__global__ void load_exchange_data_part_zr_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && j < (gpu_def->locNy))
+	{
+		DevBuffer[i + (gpu_def->locNx)*j] = DevArrayPtr[i + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * (gpu_def->locNz - 2)];
+		device_test_nan(DevBuffer[i + (gpu_def->locNx)*j], __FILE__, __LINE__);
+	}
+}
+
+void load_exchange_data_part_xl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_xl_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_xl", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	save_exchange_data_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
-	checkErrors("save_exchange_data", __FILE__, __LINE__);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Ny) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
 
+void load_exchange_data_part_xr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_xr_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_xr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
 
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Ny) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void load_exchange_data_part_yl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_yl_kernel <<< dim3(def.blocksX, def.blocksZ), dim3(BlockNX, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_yl", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void load_exchange_data_part_yr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_yr_kernel <<< dim3(def.blocksX, def.blocksZ), dim3(BlockNX, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_yr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void load_exchange_data_part_zl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_zl_kernel <<< dim3(def.blocksX, def.blocksY), dim3(BlockNX, BlockNY)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_zl", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Ny) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void load_exchange_data_part_zr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	load_exchange_data_part_zr_kernel <<< dim3(def.blocksX, def.blocksY), dim3(BlockNX, BlockNY)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("load_exchange_data_part_zr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Ny) * sizeof(double), cudaMemcpyDeviceToHost);
+	checkErrors("copy data to host", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+__global__ void save_exchange_data_part_xl_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int j = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (j < gpu_def->locNy && k < (gpu_def->locNz))
+	{
+		DevArrayPtr[(gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k] = DevBuffer[j + (gpu_def->locNy)*k];
+		device_test_nan(DevArrayPtr[(gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void save_exchange_data_part_xr_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int j = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (j < gpu_def->locNy && k < (gpu_def->locNz))
+	{
+		DevArrayPtr[(gpu_def->locNx) - 1 + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k] = DevBuffer[j + (gpu_def->locNy)*k];
+		device_test_nan(DevArrayPtr[(gpu_def->locNx) - 1 + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void save_exchange_data_part_yl_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && k < (gpu_def->locNz))
+	{
+		DevArrayPtr[i + (gpu_def->locNx) * (gpu_def->locNy) * k] = DevBuffer[i + (gpu_def->locNx)*k];
+		device_test_nan(DevArrayPtr[i + (gpu_def->locNx) * (gpu_def->locNy) * k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void save_exchange_data_part_yr_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int k = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && k < (gpu_def->locNz))
+	{
+		DevArrayPtr[i + (gpu_def->locNx) * (gpu_def->locNy - 1) + (gpu_def->locNx) * (gpu_def->locNy) * k] = DevBuffer[i + (gpu_def->locNx)*k];
+		device_test_nan(DevArrayPtr[i + (gpu_def->locNx) * (gpu_def->locNy - 1) + (gpu_def->locNx) * (gpu_def->locNy) * k], __FILE__, __LINE__);
+	}
+}
+
+__global__ void save_exchange_data_part_zl_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && j < (gpu_def->locNy))
+	{
+		DevArrayPtr[i + (gpu_def->locNx) * j] = DevBuffer[i + (gpu_def->locNx)*j];
+		device_test_nan(DevArrayPtr[i + (gpu_def->locNx) * j], __FILE__, __LINE__);
+	}
+}
+
+__global__ void save_exchange_data_part_zr_kernel(double* DevArrayPtr, double* DevBuffer)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+	if (i < gpu_def->locNx && j < (gpu_def->locNy))
+	{
+		DevArrayPtr[i + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * (gpu_def->locNz - 1)] = DevBuffer[i + (gpu_def->locNx)*j];
+		device_test_nan(DevArrayPtr[i + (gpu_def->locNx) * j + (gpu_def->locNx) * (gpu_def->locNy) * (gpu_def->locNz - 1)], __FILE__, __LINE__);
+	}
+}
+
+void save_exchange_data_part_xl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNy) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_xl_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_xl", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void save_exchange_data_part_xr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNy) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_xr_kernel <<< dim3(def.blocksY, def.blocksZ), dim3(BlockNY, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_xr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void save_exchange_data_part_yl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNx) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_yl_kernel <<< dim3(def.blocksX, def.blocksZ), dim3(BlockNX, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_yl", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void save_exchange_data_part_yr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNx) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_yr_kernel <<< dim3(def.blocksX, def.blocksZ), dim3(BlockNX, BlockNZ)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_yr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void save_exchange_data_part_zl(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNx) * (def.locNy)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_zl_kernel <<< dim3(def.blocksX, def.blocksY), dim3(BlockNX, BlockNY)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_zl", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
+void save_exchange_data_part_zr(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
+{
+	cudaMemcpy(DevBuffer, HostBuffer, (def.locNx) * (def.locNy)*sizeof(double), cudaMemcpyHostToDevice);
+	checkErrors("copy data to device", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+
+	save_exchange_data_part_zr_kernel <<< dim3(def.blocksX, def.blocksY), dim3(BlockNX, BlockNY)>>>(DevArrayPtr, DevBuffer);
+	checkErrors("save_exchange_data_part_zr", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
