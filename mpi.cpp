@@ -69,62 +69,6 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 	}
 }
 
-
-// Загрузка на хост данных для обмена на границе
-void load_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
-{
-	switch(axis) {
-	case 'x': 
-		if(direction == 'l')
-			load_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			load_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	case 'y': 
-		if(direction == 'l')
-			load_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			load_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	case 'z': 
-		if(direction == 'l')
-			load_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			load_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	default:
-		break;
-	}
-}
-
-// Загрузка на device данных обмена на границе
-void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
-{
-	switch(axis) {
-	case 'x': 
-		if(direction == 'l')
-			save_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			save_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	case 'y': 
-		if(direction == 'l')
-			save_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			save_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	case 'z': 
-		if(direction == 'l')
-			save_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		else if(direction == 'r') 
-			save_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
-		break;
-	default:
-		break;
-	}
-}
-
-
 // Обмен данными на границах между всеми процессорами
 // 0. Загружаем данные с усорителя в память хоста
 // 1.  Для всех четных процессоров
@@ -149,32 +93,32 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			{
 				if ((def.rankx) != (def.sizex) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (0)
+					load_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 500);    // (1.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (3)
+					save_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.rankx) != 0)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (0)
+					load_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 502);    // (1.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (3)
+					save_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 			else
 			{
 				if ((def.rankx) != 0) // В принципе, лишняя проверка
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (0)
+					load_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 500);    // (2.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'l'); // (3)
+					save_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.rankx) != (def.sizex) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (0)
+					load_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNy) * (def.locNz), (def.rank) + 1, 502);    // (2.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'x', 'r'); // (3)
+					save_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 		}
@@ -186,32 +130,32 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			{
 				if ((def.ranky) != (def.sizey) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (0)
+					load_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 504);    // (1.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (3)
+					save_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.ranky) != 0)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (0)
+					load_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 506);    // (1.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (3)
+					save_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 			else
 			{
 				if ((def.ranky) != 0) // В принципе, лишняя проверка
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (0)
+					load_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 504);    // (2.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'l'); // (3)
+					save_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.ranky) != (def.sizey) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (0)
+					load_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNx) * (def.locNz), (def.rank) + (def.sizex), 506);    // (2.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'y', 'r'); // (3)
+					save_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 		}
@@ -223,32 +167,32 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			{
 				if ((def.rankz) != (def.sizez) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (0)
+					load_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 508);    // (1.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (3)
+					save_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.rankz) != 0)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (0)
+					load_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 510);    // (1.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (3)
+					save_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 			else
 			{
 				if ((def.rankz) != 0) // В принципе, лишняя проверка
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (0)
+					load_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 508);    // (2.1)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'l'); // (3)
+					save_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 
 				if ((def.rankz) != (def.sizez) - 1)
 				{
-					load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (0)
+					load_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					right_send_recv(HostBuffer, (def.locNx) * (def.locNy), (def.rank) + (def.sizex) * (def.sizey), 510);    // (2.2)
-					save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z', 'r'); // (3)
+					save_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 				}
 			}
 		}
