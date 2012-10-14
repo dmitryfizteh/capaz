@@ -69,6 +69,62 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 	}
 }
 
+
+// Загрузка на хост данных для обмена на границе
+void load_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
+{
+	switch(axis) {
+	case 'x': 
+		if(direction == 'l')
+			load_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			load_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	case 'y': 
+		if(direction == 'l')
+			load_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			load_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	case 'z': 
+		if(direction == 'l')
+			load_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			load_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	default:
+		break;
+	}
+}
+
+// Загрузка на device данных обмена на границе
+void save_exchange_data(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def, char axis, char direction)
+{
+	switch(axis) {
+	case 'x': 
+		if(direction == 'l')
+			save_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			save_exchange_data_part_xr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	case 'y': 
+		if(direction == 'l')
+			save_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			save_exchange_data_part_yr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	case 'z': 
+		if(direction == 'l')
+			save_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		else if(direction == 'r') 
+			save_exchange_data_part_zr(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def);
+		break;
+	default:
+		break;
+	}
+}
+
+
 // Обмен данными на границах между всеми процессорами
 // 0. Загружаем данные с усорителя в память хоста
 // 1.  Для всех четных процессоров
