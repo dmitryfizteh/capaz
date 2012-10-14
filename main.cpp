@@ -216,7 +216,7 @@ int is_active_point(int i, int j, int k, consts def)
 {
 	if (((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1)
 	    || ((def.ranky) != 0 && j == 0)	|| ((def.ranky) != (def.sizey) - 1 && j == (def.locNy) - 1)
-	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) != (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.sizez) > 1))
+	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) != (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.Nz) >= 2))
 	{
 		return 0;
 	}

@@ -1,14 +1,16 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#ifdef B_L
 #define LOAD_K_FROM_FILE
+#endif
 //#define GTEST
 
 #ifdef GTEST
 #include "gtest/gtest.h"
 #endif
 
-#define VERSION "0.52"
+#define VERSION "0.55"
 
 #ifdef TWO_PHASE
 //Если 1, то считать двухслойной РС
@@ -31,9 +33,9 @@
 #define BlockNZ 8
 
 // Размеры сетки из процессоров
-#define SizeX 2
-#define SizeY 2
-#define SizeZ 2
+#define SizeX 1
+#define SizeY 1
+#define SizeZ 1
 
 #include <float.h>
 #include <stdio.h>

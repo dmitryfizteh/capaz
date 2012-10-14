@@ -71,10 +71,13 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 #endif
 
 #ifdef THREE_PHASE
-/*
-	double q = 0.;
 
-	if (device_is_injection_well(i, j, k))
+	double q = 0.;
+	*q_w = 0.0;
+	*q_g = 0.0;
+	*q_n = 0.0;
+
+/*	if (device_is_injection_well(i, j, k))
 	{
 		*q_w = 0.01;
 		*q_g = 0.005;
