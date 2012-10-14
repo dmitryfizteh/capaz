@@ -111,17 +111,17 @@ int local_to_global(int local_index, char axis, consts def)
 	{
 	case 'x':
 	{
-		global_index += def.rankx * def.Nx / def.sizex + min(def.rankx, def.Nx % def.sizex) - min(def.rankx, 1);
+		global_index += def.rankx * (def.Nx / def.sizex) + min(def.rankx, def.Nx % def.sizex) - min(def.rankx, 1);
 		break;
 	}
 	case 'y':
 	{
-		global_index += def.ranky * def.Ny / def.sizey + min(def.ranky, def.Ny % def.sizey) - min(def.ranky, 1);
+		global_index += def.ranky * (def.Ny / def.sizey) + min(def.ranky, def.Ny % def.sizey) - min(def.ranky, 1);
 		break;
 	}
 	case 'z':
 	{
-		global_index += def.rankz * def.Nz / def.sizez + min(def.rankz, def.Nz % def.sizez) - min(def.rankz, 1);
+		global_index += def.rankz * (def.Nz / def.sizez) + min(def.rankz, def.Nz % def.sizez) - min(def.rankz, 1);
 		break;
 	}
 	default:
@@ -231,7 +231,7 @@ void sizes_initialization(consts *def)
 {
 	if((*def).size == 1) 
 	{
-		(*def).sizex = (*def).size;
+		(*def).sizex = 1;
 		(*def).sizey = 1;
 		(*def).sizez = 1;
 	} else {
