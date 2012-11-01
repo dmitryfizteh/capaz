@@ -485,9 +485,9 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						HostArraysPtr.S_n[local] = def.S_n_init;
 					}
 
-					double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
+					/*double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
 					+ def.ro0_w * HostArraysPtr.S_w[local]
-					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);
+					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);*/
 
 					// Если отдельно задаем значения на границах через градиент
 					//if (j == 0)

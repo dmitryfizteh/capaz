@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
 	// Тест
-	print_hosts_configuration(def);
+	//print_hosts_configuration(def);
 	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 
 	task_time = clock();

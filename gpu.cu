@@ -72,7 +72,7 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 
 #ifdef THREE_PHASE
 
-	double q = 0.;
+	//double q = 0.;
 	*q_w = 0.0;
 	*q_g = 0.0;
 	*q_n = 0.0;
@@ -295,9 +295,9 @@ __device__ int device_local_to_global(int local_index, char axis)
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
 __device__ int device_is_active_point(int i, int j, int k)
 {
-	if ((gpu_def->rank % gpu_def->sizex != 0 && i == 0) || (gpu_def->rank % gpu_def->sizex != gpu_def->sizex - 1 && i == gpu_def->locNx - 1)
-	    || ((gpu_def->rank % ((gpu_def->sizex) * (gpu_def->sizey))) / gpu_def->sizex != 0 && j == 0)	|| ((gpu_def->rank % ((gpu_def->sizex) * (gpu_def->sizey))) / gpu_def->sizex != gpu_def->sizey - 1 && j == gpu_def->locNy - 1)
-	    || (((gpu_def->rank / (gpu_def->sizex) / (gpu_def->sizey) != 0 && k == 0) || (gpu_def->rank / (gpu_def->sizex) / (gpu_def->sizey) == gpu_def->sizez - 1 && k == gpu_def->locNz - 1)) && gpu_def->sizez > 1))
+	if (((gpu_def -> rankx) != 0 && i == 0) || ((gpu_def -> rankx) != (gpu_def -> sizex) - 1 && i == (gpu_def -> locNx) - 1)
+		|| ((gpu_def -> ranky) != 0 && j == 0)	|| ((gpu_def -> ranky) != (gpu_def -> sizey) - 1 && j == (gpu_def -> locNy) - 1)
+		|| ((((gpu_def -> rankz) != 0 && k == 0) || ((gpu_def -> rankz) != (gpu_def -> sizez) - 1 && k == (gpu_def -> locNz) - 1)) && (gpu_def -> Nz) >= 2))
 	{
 		return 0;
 	}
@@ -983,7 +983,7 @@ void load_exchange_data_part_xl(double* HostArrayPtr, double* DevArrayPtr, doubl
 	checkErrors("load_exchange_data_part_xl", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Ny) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNy) * (def.locNz) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -994,7 +994,7 @@ void load_exchange_data_part_xr(double* HostArrayPtr, double* DevArrayPtr, doubl
 	checkErrors("load_exchange_data_part_xr", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Ny) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNy) * (def.locNz) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -1005,7 +1005,7 @@ void load_exchange_data_part_yl(double* HostArrayPtr, double* DevArrayPtr, doubl
 	checkErrors("load_exchange_data_part_yl", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNx) * (def.locNz) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -1016,7 +1016,7 @@ void load_exchange_data_part_yr(double* HostArrayPtr, double* DevArrayPtr, doubl
 	checkErrors("load_exchange_data_part_yr", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Nz) * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNx) * (def.locNz) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -1026,8 +1026,8 @@ void load_exchange_data_part_zl(double* HostArrayPtr, double* DevArrayPtr, doubl
 	load_exchange_data_part_zl_kernel <<< dim3(def.blocksX, def.blocksY), dim3(BlockNX, BlockNY)>>>(DevArrayPtr, DevBuffer);
 	checkErrors("load_exchange_data_part_zl", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
-
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Ny) * sizeof(double), cudaMemcpyDeviceToHost);
+	
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNx) * (def.locNy) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }
@@ -1038,7 +1038,7 @@ void load_exchange_data_part_zr(double* HostArrayPtr, double* DevArrayPtr, doubl
 	checkErrors("load_exchange_data_part_zr", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 
-	cudaMemcpy(HostBuffer, DevBuffer, (def.Nx) * (def.Ny) * sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(HostBuffer, DevBuffer, (def.locNx) * (def.locNy) * sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 	cudaPrintfDisplay(stdout, true);
 }

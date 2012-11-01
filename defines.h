@@ -34,7 +34,7 @@
 
 // Размеры сетки из процессоров
 #define SizeX 2
-#define SizeY 2
+#define SizeY 2 
 #define SizeZ 2
 
 #include <float.h>
