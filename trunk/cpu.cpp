@@ -67,7 +67,7 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 
 #ifdef THREE_PHASE
 
-	double q = 0.;
+	//double q = 0.;
 	*q_w = 0.0;
 	*q_g = 0.0;
 	*q_n = 0.0;
