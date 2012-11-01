@@ -15,8 +15,8 @@
 #endif
 
 #define MEASURE_COUNT 10
-#define MAX_BUFFER_SIZE 10000000
-#define MIN_BUFFER_SIZE 1000000
+#define MAX_BUFFER_SIZE 200000000
+#define MIN_BUFFER_SIZE 100000000
 
 void exchange(double* HostBuffer, int buffer_size, int size, int rank);
 void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id);
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 	if (!(fp = fopen(fname, "w")))
 		printf("Not open file: %s", fname);
 	fprintf(fp, "Buffer size\tExchange time, s\n");
-	
+
 	for(int i = 0; i < MEASURE_COUNT; i++)
 	{
 		result[i].buffer_size = MIN_BUFFER_SIZE + (int)((MAX_BUFFER_SIZE - MIN_BUFFER_SIZE) * i / (MEASURE_COUNT - 1));
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 		exchange(HostBuffer, result[i].buffer_size, size, rank);
 		MPI_Barrier(MPI_COMM_WORLD);
 		result[i].task_time = clock() - result[i].task_time;
-		fprintf(fp, "%.15f\n", (double)result[i].task_time / CLOCKS_PER_SEC);
+		fprintf(fp, "%.5f\n", (double)result[i].task_time / CLOCKS_PER_SEC);
 	}
 
 
@@ -74,18 +74,20 @@ int main(int argc, char* argv[])
 	for(int i = 0; i < MEASURE_COUNT - 1; i++)
 	{
 		result[i].send_double_time = (double)(result[i + 1].task_time - result[i].task_time) 
-			/ (result[i + 1].buffer_size - result[i].buffer_size) / CLOCKS_PER_SEC;
-		result[i].latency = (double) result[i].task_time / CLOCKS_PER_SEC - result[i].send_double_time * result[i].buffer_size;
+			/ (result[i + 1].buffer_size - result[i].buffer_size);
+		result[i].latency = (double) result[i].task_time - result[i].send_double_time * result[i].buffer_size;
 		send_double_time += result[i].send_double_time;
 		latency += result[i].latency;
 	}
 
+	send_double_time /= CLOCKS_PER_SEC;
 	send_double_time /= (MEASURE_COUNT - 1);
+	latency /= CLOCKS_PER_SEC;
 	latency /= (MEASURE_COUNT - 1);
-	
+
 	if (!(rank))
 	{
-		printf("double_send_time = %.15f\tlatency = %.10f\n", send_double_time, latency);
+		printf("double_send_time = %.12f\tlatency = %.5f\n", send_double_time, latency);
 	}
 
 	delete HostBuffer;
