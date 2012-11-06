@@ -15,8 +15,8 @@
 #endif
 
 #define MEASURE_COUNT 10
-#define MAX_BUFFER_SIZE 200000000
-#define MIN_BUFFER_SIZE 100000000
+#define MAX_BUFFER_SIZE 20000000
+#define MIN_BUFFER_SIZE 10000000
 
 void exchange(double* HostBuffer, int buffer_size, int size, int rank);
 void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id);
@@ -24,7 +24,6 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 
 struct params
 {
-	double latency, send_double_time;
 	clock_t task_time;
 	int buffer_size;
 };
@@ -32,15 +31,16 @@ typedef struct params params;
 
 int main(int argc, char* argv[])
 {
-	double *HostBuffer, latency, send_double_time;
+	double *HostBuffer, latency, send_double_time; 
+	double sum_x, sum_xy, sum_x_2, sum_y; // переменные для метода наименьших квадратов
 	int size, rank;
 	params result[MEASURE_COUNT];
 	char fname[] = "times.txt";
 	FILE *fp;
 
 	MPI_Init(&argc, &argv);
-	MPI_Comm_size(MPI_COMM_WORLD, &size); // The amount of processors
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank); // The number of processor
+	MPI_Comm_size(MPI_COMM_WORLD, &size); 
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
 
 	if (!(HostBuffer = new double[MAX_BUFFER_SIZE]))
 		printf("Memory for *HostBuffer is not allocated in function host_memory_alloc");
@@ -65,25 +65,27 @@ int main(int argc, char* argv[])
 		fprintf(fp, "%.5f\n", (double)result[i].task_time / CLOCKS_PER_SEC);
 	}
 
-
 	fclose(fp);
 
 	send_double_time = 0;
 	latency = 0;
+	sum_x = sum_y = sum_x_2 = sum_xy = 0;
 
-	for(int i = 0; i < MEASURE_COUNT - 1; i++)
+	for(int i = 0; i < MEASURE_COUNT; i++)
 	{
-		result[i].send_double_time = (double)(result[i + 1].task_time - result[i].task_time) 
-			/ (result[i + 1].buffer_size - result[i].buffer_size);
-		result[i].latency = (double) result[i].task_time - result[i].send_double_time * result[i].buffer_size;
-		send_double_time += result[i].send_double_time;
-		latency += result[i].latency;
+		sum_x += result[i].buffer_size;
+		sum_y += result[i].task_time;
+		sum_x_2 += result[i].buffer_size * result[i].buffer_size;
+		sum_xy += result[i].buffer_size * result[i].task_time;
 	}
 
+	// Метод наименьших квадратов для нахождения коэффициентов прямой
+	send_double_time = (sum_xy - sum_x * sum_y) / (sum_x_2 - sum_x * sum_x);
+	latency = (sum_y - send_double_time * sum_x) / MEASURE_COUNT;
+
+	// Переход от clock_t к секундам
 	send_double_time /= CLOCKS_PER_SEC;
-	send_double_time /= (MEASURE_COUNT - 1);
 	latency /= CLOCKS_PER_SEC;
-	latency /= (MEASURE_COUNT - 1);
 
 	if (!(rank))
 	{
