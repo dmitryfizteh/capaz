@@ -444,7 +444,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 					else
 					{
-						HostArraysPtr.S_w[local] = def.S_w_init;
+						HostArraysPtr.S_w[local] = def.S_w_init + def.rank * 0.01;
 						HostArraysPtr.S_n[local] = def.S_n_init;
 					}
 
