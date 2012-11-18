@@ -886,6 +886,7 @@ void device_initialization(consts* def)
 	}
 
 	// (def.locNx)+2 потому что 2NyNz на буфер обмена выделяется
+	// Нужно переписать!!! Учесть размер буфера правильно!!!
 	if (((*def).locNx + 2) * ((*def).locNy) * ((*def).locNz) > (devProp.totalGlobalMem / (sizeof(ptr_Arrays)*sizeof(double) / 4)))
 	{
 		printf("\nError! Not enough memory at GPU, rank=%d\n", (*def).rank);
