@@ -1,4 +1,4 @@
-#include "../defines.h"
+ï»¿#include "../defines.h"
 #include "two-phase.h"
 
 void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
@@ -55,7 +55,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
-// Çàäàíèå ãðàíè÷íûõ óñëîâèé
+// Ð—Ð°Ð´Ð°Ð½Ð¸Ðµ Ð³Ñ€Ð°Ð½Ð¸Ñ‡Ð½Ñ‹Ñ… ÑƒÑÐ»Ð¾Ð²Ð¸Ð¹
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
@@ -118,14 +118,14 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					// Ïðåîáðàçîâàíèå ëîêàëüíûõ êîîðäèíàò ïðîöåññîðà ê ãëîáàëüíûì
+					// ÐŸÑ€ÐµÐ¾Ð±Ñ€Ð°Ð·Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð»Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ñ… ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚ Ð¿Ñ€Ð¾Ñ†ÐµÑÑÐ¾Ñ€Ð° Ðº Ð³Ð»Ð¾Ð±Ð°Ð»ÑŒÐ½Ñ‹Ð¼
 					int I = local_to_global(i, 'x', def);
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
 
-					// Åñëè òî÷êà íà âåðõíåé ãðàíèöå, íå äàëåå (def.source) òî÷åê îò öåíòðà,
-					// òî â íåé íà÷àëüíàÿ íàñûùåííîñòü. Èíà÷å, íóëåâàÿ
+					// Ð•ÑÐ»Ð¸ Ñ‚Ð¾Ñ‡ÐºÐ° Ð½Ð° Ð²ÐµÑ€Ñ…Ð½ÐµÐ¹ Ð³Ñ€Ð°Ð½Ð¸Ñ†Ðµ, Ð½Ðµ Ð´Ð°Ð»ÐµÐµ (def.source) Ñ‚Ð¾Ñ‡ÐµÐº Ð¾Ñ‚ Ñ†ÐµÐ½Ñ‚Ñ€Ð°,
+					// Ñ‚Ð¾ Ð² Ð½ÐµÐ¹ Ð½Ð°Ñ‡Ð°Ð»ÑŒÐ½Ð°Ñ Ð½Ð°ÑÑ‹Ñ‰ÐµÐ½Ð½Ð¾ÑÑ‚ÑŒ. Ð˜Ð½Ð°Ñ‡Ðµ, Ð½ÑƒÐ»ÐµÐ²Ð°Ñ
 					if ((j == 0) && (I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
 					{
 						HostArraysPtr.S_n[local] = def.S_n_gr;
@@ -146,7 +146,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
 
-					///!!!! Íå ó÷èòûâàþòñÿ êàïèëëÿðíûå ñèëû! Èëè íàäî ñ÷èòàòü ïåðåä ýòèì øàãîì P_n
+					///!!!! ÐÐµ ÑƒÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÑŽÑ‚ÑÑ ÐºÐ°Ð¿Ð¸Ð»Ð»ÑÑ€Ð½Ñ‹Ðµ ÑÐ¸Ð»Ñ‹! Ð˜Ð»Ð¸ Ð½Ð°Ð´Ð¾ ÑÑ‡Ð¸Ñ‚Ð°Ñ‚ÑŒ Ð¿ÐµÑ€ÐµÐ´ ÑÑ‚Ð¸Ð¼ ÑˆÐ°Ð³Ð¾Ð¼ P_n
 					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] - def.P_atm));
 
 					/*
