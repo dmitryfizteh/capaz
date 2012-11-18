@@ -1,4 +1,4 @@
-#ifndef DEFINES_H
+п»ї#ifndef DEFINES_H
 #define DEFINES_H
 
 #ifdef B_L
@@ -13,29 +13,29 @@
 #define VERSION "0.55"
 
 #ifdef TWO_PHASE
-//Если 1, то считать двухслойной РС
+//Р•СЃР»Рё 1, С‚Рѕ СЃС‡РёС‚Р°С‚СЊ РґРІСѓС…СЃР»РѕР№РЅРѕР№ Р РЎ
 #define TWO_LAYERS 0
-// Считать направленными разностями (если не определена NR, то считается без них)
+// РЎС‡РёС‚Р°С‚СЊ РЅР°РїСЂР°РІР»РµРЅРЅС‹РјРё СЂР°Р·РЅРѕСЃС‚СЏРјРё (РµСЃР»Рё РЅРµ РѕРїСЂРµРґРµР»РµРЅР° NR, С‚Рѕ СЃС‡РёС‚Р°РµС‚СЃСЏ Р±РµР· РЅРёС…)
 #define NR
 #else
 #define TWO_LAYERS 1
 #define NR
 #endif
 
-// Количество видеоускорителей на узле кластера
-// Для К-100 - 3, для МВС-Экспресс 1 или 2
+// РљРѕР»РёС‡РµСЃС‚РІРѕ РІРёРґРµРѕСѓСЃРєРѕСЂРёС‚РµР»РµР№ РЅР° СѓР·Р»Рµ РєР»Р°СЃС‚РµСЂР°
+// Р”Р»СЏ Рљ-100 - 3, РґР»СЏ РњР’РЎ-Р­РєСЃРїСЂРµСЃСЃ 1 РёР»Рё 2
 #define GPU_PER_NODE 3
 #define DEFINES_FILE "..//defines.ini"
 
-// Нитей в блоке ускорителя
+// РќРёС‚РµР№ РІ Р±Р»РѕРєРµ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 #define BlockNX 8
 #define BlockNY 8
 #define BlockNZ 8
 
-// Размеры сетки из процессоров
+// Р Р°Р·РјРµСЂС‹ СЃРµС‚РєРё РёР· РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ
 #define SizeX 2
 #define SizeY 2 
-#define SizeZ 2
+#define SizeZ 1
 
 #include <float.h>
 #include <stdio.h>
@@ -52,11 +52,11 @@
 #include <sys/stat.h>
 #endif
 
-// Псевдо-функция минимума/максимума
+// РџСЃРµРІРґРѕ-С„СѓРЅРєС†РёСЏ РјРёРЅРёРјСѓРјР°/РјР°РєСЃРёРјСѓРјР°
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
-// Вывод графиков BjnIO
+// Р’С‹РІРѕРґ РіСЂР°С„РёРєРѕРІ BjnIO
 //#include "bjnio.h"
 
 struct ptr_Arrays_tag
@@ -69,7 +69,7 @@ struct ptr_Arrays_tag
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
 
-// Структура параметров сред и характерных размеров задачи
+// РЎС‚СЂСѓРєС‚СѓСЂР° РїР°СЂР°РјРµС‚СЂРѕРІ СЃСЂРµРґ Рё С…Р°СЂР°РєС‚РµСЂРЅС‹С… СЂР°Р·РјРµСЂРѕРІ Р·Р°РґР°С‡Рё
 struct consts_tag
 {
 	double upscale_l, upscale_t;
@@ -81,7 +81,7 @@ struct consts_tag
 	int Nx, Ny, Nz;
 	int source, save_plots, print_screen, newton_iterations;
 	double K[2];
-	double Q, InjWell_Pw, InjWell_Sn, OutWell_Pw, OutWell_Sn, Background_Sn, Background_Pw; // Дебит скважины
+	double Q, InjWell_Pw, InjWell_Sn, OutWell_Pw, OutWell_Sn, Background_Sn, Background_Pw; // Р”РµР±РёС‚ СЃРєРІР°Р¶РёРЅС‹
 #ifdef TWO_PHASE
 	double P_d[2];
 #endif
@@ -93,15 +93,15 @@ struct consts_tag
 	double P_d_gn[2];
 	double c_g, beta_g, mu_g, ro0_g, S_w_gr;
 #endif
-	// Локальные размеры
+	// Р›РѕРєР°Р»СЊРЅС‹Рµ СЂР°Р·РјРµСЂС‹
 	int locNx, locNy, locNz;
-	// Число процессоров и ранг процессора
+	// Р§РёСЃР»Рѕ РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ Рё СЂР°РЅРі РїСЂРѕС†РµСЃСЃРѕСЂР°
 	int size, rank;
-	// Число частей дробления области по измерениям
+	// Р§РёСЃР»Рѕ С‡Р°СЃС‚РµР№ РґСЂРѕР±Р»РµРЅРёСЏ РѕР±Р»Р°СЃС‚Рё РїРѕ РёР·РјРµСЂРµРЅРёСЏРј
 	int sizex, sizey, sizez;
-	// Разложение ранга для трехмерного дробления области между процессорами
+	// Р Р°Р·Р»РѕР¶РµРЅРёРµ СЂР°РЅРіР° РґР»СЏ С‚СЂРµС…РјРµСЂРЅРѕРіРѕ РґСЂРѕР±Р»РµРЅРёСЏ РѕР±Р»Р°СЃС‚Рё РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
 	int rankx, ranky, rankz;
-	// Количество блоков ускорителя
+	// РљРѕР»РёС‡РµСЃС‚РІРѕ Р±Р»РѕРєРѕРІ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 	int blocksX, blocksY, blocksZ;
 };
 typedef struct consts_tag consts;
@@ -132,7 +132,7 @@ extern void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts 
 extern void device_initialization(consts* def);
 extern void device_finalization(void);
 
-// Служебные
+// РЎР»СѓР¶РµР±РЅС‹Рµ
 extern void print_plots_top(double t, consts def);
 extern void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J);
 extern void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, consts def);
@@ -145,7 +145,7 @@ extern void read_defines(int argc, char *argv[], consts* def);
 extern void read_version(void);
 extern void print_error(char *error, char *file, int line);
 
-// Unit-тесты
+// Unit-С‚РµСЃС‚С‹
 #ifndef THREE_PHASE
 extern void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def);
 #endif
@@ -160,7 +160,7 @@ extern void test_tau(double S_old, double S_now, double S_new, int local, consts
 extern void read_defines_test(consts def);
 
 
-// Расчеты в каждой точке
+// Р Р°СЃС‡РµС‚С‹ РІ РєР°Р¶РґРѕР№ С‚РѕС‡РєРµ
 extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);

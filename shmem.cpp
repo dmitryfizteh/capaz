@@ -1,4 +1,4 @@
-#define MVSE
+п»ї#define MVSE
 #ifdef K100
 	#include <mpi.h>
 	#include <shmem.h>
@@ -11,12 +11,12 @@
 #define MX 20000
 static double *pf, *cf[MX];
 
-// Обмен данными на границах между всеми процессорами
-// 0. Загружаем данные с усорителя в память хоста
-// 1.1 передаем правую границу, 
-// 1.2 передаем левую границу.
-// Для крайних процессоров соответствующие обмены не требуются
-// 3. Загружаем полученные данные в память ускорителя
+// РћР±РјРµРЅ РґР°РЅРЅС‹РјРё РЅР° РіСЂР°РЅРёС†Р°С… РјРµР¶РґСѓ РІСЃРµРјРё РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
+// 0. Р—Р°РіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ СЃ СѓСЃРѕСЂРёС‚РµР»СЏ РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р°
+// 1.1 РїРµСЂРµРґР°РµРј РїСЂР°РІСѓСЋ РіСЂР°РЅРёС†Сѓ, 
+// 1.2 РїРµСЂРµРґР°РµРј Р»РµРІСѓСЋ РіСЂР°РЅРёС†Сѓ.
+// Р”Р»СЏ РєСЂР°Р№РЅРёС… РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ РѕР±РјРµРЅС‹ РЅРµ С‚СЂРµР±СѓСЋС‚СЃСЏ
+// 3. Р—Р°РіСЂСѓР¶Р°РµРј РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void exchange(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 	load_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
@@ -31,7 +31,7 @@ void exchange(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, dou
 	save_exchange_data(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (3)
 }
 
-// Обмен граничными значениями давления P2, плотностей ro1 и ro2, Xi между процессорами
+// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё РґР°РІР»РµРЅРёСЏ P2, РїР»РѕС‚РЅРѕСЃС‚РµР№ ro1 Рё ro2, Xi РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
 void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 #ifdef THREE_PHASE
@@ -49,9 +49,9 @@ void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double*
 }
 
 
-// Обмен граничными значениями скоростей между процессорами
-// В случае распределения расчетной области между процессорами по оси X
-// передача u1y и u2y не требуется
+// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃРєРѕСЂРѕСЃС‚РµР№ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
+// Р’ СЃР»СѓС‡Р°Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕ РѕСЃРё X
+// РїРµСЂРµРґР°С‡Р° u1y Рё u2y РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 	exchange(HostArraysPtr.ux_w, DevArraysPtr.ux_w, HostBuffer, DevBuffer, def);
@@ -61,7 +61,7 @@ void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostB
 #endif
 }
 
-// Обмен граничными значениями давления воды P1 и насыщенности NAPL S2 между процессорами
+// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё РґР°РІР»РµРЅРёСЏ РІРѕРґС‹ P1 Рё РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚Рё NAPL S2 РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
 void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 #ifdef THREE_PHASE
@@ -90,7 +90,7 @@ void communication_finalization(void)
 	shmem_finalize();
 }
 
-// Реализация фунции Barrier для различных коммуникаций
+// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
 void barrier(void)
 {
 	shmem_barrier_all();

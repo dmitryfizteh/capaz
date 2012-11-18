@@ -1,6 +1,6 @@
-#include "defines.h"
+п»ї#include "defines.h"
 
-// Буферные массивы для обмена между процессорами
+// Р‘СѓС„РµСЂРЅС‹Рµ РјР°СЃСЃРёРІС‹ РґР»СЏ РѕР±РјРµРЅР° РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
 double *HostBuffer;
 double *DevBuffer;
 
@@ -14,30 +14,30 @@ int main(int argc, char* argv[])
 	consts def;
 	read_defines(argc, argv, &def);
 
-	// Хостовый массив данных расчетной области процессора
+	// РҐРѕСЃС‚РѕРІС‹Р№ РјР°СЃСЃРёРІ РґР°РЅРЅС‹С… СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё РїСЂРѕС†РµСЃСЃРѕСЂР°
 	ptr_Arrays HostArraysPtr;
-	// GPU-массив данных расчетной области процессора
+	// GPU-РјР°СЃСЃРёРІ РґР°РЅРЅС‹С… СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё РїСЂРѕС†РµСЃСЃРѕСЂР°
 	ptr_Arrays DevArraysPtr;
-	// Счетчик шагов по времени
+	// РЎС‡РµС‚С‡РёРє С€Р°РіРѕРІ РїРѕ РІСЂРµРјРµРЅРё
 	long int time_counter = 0;
-	// Счетчик времени исполнения вычислительной части программы
+	// РЎС‡РµС‚С‡РёРє РІСЂРµРјРµРЅРё РёСЃРїРѕР»РЅРµРЅРёСЏ РІС‹С‡РёСЃР»РёС‚РµР»СЊРЅРѕР№ С‡Р°СЃС‚Рё РїСЂРѕРіСЂР°РјРјС‹
 	clock_t task_time;
 
-	// Инициализация коммуникаций, перевод глобальных параметров в локальные процессора,
-	// выделение памяти, загрузка начальных/сохраненных данных
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРјРјСѓРЅРёРєР°С†РёР№, РїРµСЂРµРІРѕРґ РіР»РѕР±Р°Р»СЊРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РІ Р»РѕРєР°Р»СЊРЅС‹Рµ РїСЂРѕС†РµСЃСЃРѕСЂР°,
+	// РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё, Р·Р°РіСЂСѓР·РєР° РЅР°С‡Р°Р»СЊРЅС‹С…/СЃРѕС…СЂР°РЅРµРЅРЅС‹С… РґР°РЅРЅС‹С…
 	initialization(&HostArraysPtr, &DevArraysPtr, &time_counter, argc, argv, &def);
 
-	// Тест
+	// РўРµСЃС‚
 	//print_hosts_configuration(def);
 	save_data_plots(HostArraysPtr, DevArraysPtr, 0, def);
 
 	task_time = clock();
 
-	// Цикл шагов по времени (каждая итерация - новый слой по времени)
-	// 1. Проводятся расчеты P1 и S2 на следующем временном слое
-	// 2. Каждые (def.print_screen) раз на экран выводится информация о временном слое
-	// 3. Каждые save_plots раз данные выгружаются в память хоста и
-	//    сохраняются в файлы графиков (**), в файл сохраняется состояние задачи (***)
+	// Р¦РёРєР» С€Р°РіРѕРІ РїРѕ РІСЂРµРјРµРЅРё (РєР°Р¶РґР°СЏ РёС‚РµСЂР°С†РёСЏ - РЅРѕРІС‹Р№ СЃР»РѕР№ РїРѕ РІСЂРµРјРµРЅРё)
+	// 1. РџСЂРѕРІРѕРґСЏС‚СЃСЏ СЂР°СЃС‡РµС‚С‹ P1 Рё S2 РЅР° СЃР»РµРґСѓСЋС‰РµРј РІСЂРµРјРµРЅРЅРѕРј СЃР»РѕРµ
+	// 2. РљР°Р¶РґС‹Рµ (def.print_screen) СЂР°Р· РЅР° СЌРєСЂР°РЅ РІС‹РІРѕРґРёС‚СЃСЏ РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ РІСЂРµРјРµРЅРЅРѕРј СЃР»РѕРµ
+	// 3. РљР°Р¶РґС‹Рµ save_plots СЂР°Р· РґР°РЅРЅС‹Рµ РІС‹РіСЂСѓР¶Р°СЋС‚СЃСЏ РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р° Рё
+	//    СЃРѕС…СЂР°РЅСЏСЋС‚СЃСЏ РІ С„Р°Р№Р»С‹ РіСЂР°С„РёРєРѕРІ (**), РІ С„Р°Р№Р» СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ СЃРѕСЃС‚РѕСЏРЅРёРµ Р·Р°РґР°С‡Рё (***)
 	for (time_counter++; time_counter <= def.timeX / (def.dt); time_counter++)
 	{
 		if ((time_counter % (def.print_screen) == 0) && (def.rank) == 0) // (2)
@@ -50,26 +50,26 @@ int main(int argc, char* argv[])
 
 		if ((time_counter % (def.save_plots)) == 0) // (3)
 		{
-			// Следующие 2 функции вызываются строго в таком порядке,
-			// т.к. save использует данные, загруженные save_data_plots
+			// РЎР»РµРґСѓСЋС‰РёРµ 2 С„СѓРЅРєС†РёРё РІС‹Р·С‹РІР°СЋС‚СЃСЏ СЃС‚СЂРѕРіРѕ РІ С‚Р°РєРѕРј РїРѕСЂСЏРґРєРµ,
+			// С‚.Рє. save РёСЃРїРѕР»СЊР·СѓРµС‚ РґР°РЅРЅС‹Рµ, Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ save_data_plots
 			save_data_plots(HostArraysPtr, DevArraysPtr, time_counter * (def.dt) /def.upscale_t, def); // (**)
 			//save(HostArraysPtr, DevArraysPtr, time_counter, def); // (***)
 		}
 	}
 
-	// Ждем пока все процессоры закончат расчеты
+	// Р–РґРµРј РїРѕРєР° РІСЃРµ РїСЂРѕС†РµСЃСЃРѕСЂС‹ Р·Р°РєРѕРЅС‡Р°С‚ СЂР°СЃС‡РµС‚С‹
 	barrier();
-	// Вывод информации о времени работы программы в секундах
+	// Р’С‹РІРѕРґ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РІСЂРµРјРµРЅРё СЂР°Р±РѕС‚С‹ РїСЂРѕРіСЂР°РјРјС‹ РІ СЃРµРєСѓРЅРґР°С…
 	task_time = clock() - task_time;
 	if (!(def.rank))
 	{
 		printf("Task time in seconds:\t%.2f\n", (double) task_time / CLOCKS_PER_SEC);
 	}
 
-	// Завершение работы и освобождение памяти
+	// Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ Рё РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё
 	finalization(HostArraysPtr, DevArraysPtr, DevBuffer);
 
-	// При запуске в Windows после работы программы оставлять окно консоли
+	// РџСЂРё Р·Р°РїСѓСЃРєРµ РІ Windows РїРѕСЃР»Рµ СЂР°Р±РѕС‚С‹ РїСЂРѕРіСЂР°РјРјС‹ РѕСЃС‚Р°РІР»СЏС‚СЊ РѕРєРЅРѕ РєРѕРЅСЃРѕР»Рё
 #ifdef _WIN32
 	printf("\nPress <Enter> to exit...\n");
 	fflush(stdout);
@@ -78,15 +78,15 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-// Функция полного цикла расчетов на следующем временном слое
-// 1. Расчет плотности жидкостей ro, давлений NAPL P2, переменных Xi
-// 2. Обмен между процессорами пограничными значениями P2, ro и Xi
-// 3. Расчет скоростей жидкостей
-// 4. Обмен между процессорами пограничными значениями скоростей жидкостей
-// 5. Расчет переменной roS на следующем временном слое
-// 6. Расчет методом Ньютона давления воды P1 и насыщенности DNAPL S2
-// 7. Применение граничных условий для P1 и S2
-// 8. Обмен между процессорами пограничными значениями P1 и S2
+// Р¤СѓРЅРєС†РёСЏ РїРѕР»РЅРѕРіРѕ С†РёРєР»Р° СЂР°СЃС‡РµС‚РѕРІ РЅР° СЃР»РµРґСѓСЋС‰РµРј РІСЂРµРјРµРЅРЅРѕРј СЃР»РѕРµ
+// 1. Р Р°СЃС‡РµС‚ РїР»РѕС‚РЅРѕСЃС‚Рё Р¶РёРґРєРѕСЃС‚РµР№ ro, РґР°РІР»РµРЅРёР№ NAPL P2, РїРµСЂРµРјРµРЅРЅС‹С… Xi
+// 2. РћР±РјРµРЅ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕРіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё P2, ro Рё Xi
+// 3. Р Р°СЃС‡РµС‚ СЃРєРѕСЂРѕСЃС‚РµР№ Р¶РёРґРєРѕСЃС‚РµР№
+// 4. РћР±РјРµРЅ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕРіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃРєРѕСЂРѕСЃС‚РµР№ Р¶РёРґРєРѕСЃС‚РµР№
+// 5. Р Р°СЃС‡РµС‚ РїРµСЂРµРјРµРЅРЅРѕР№ roS РЅР° СЃР»РµРґСѓСЋС‰РµРј РІСЂРµРјРµРЅРЅРѕРј СЃР»РѕРµ
+// 6. Р Р°СЃС‡РµС‚ РјРµС‚РѕРґРѕРј РќСЊСЋС‚РѕРЅР° РґР°РІР»РµРЅРёСЏ РІРѕРґС‹ P1 Рё РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚Рё DNAPL S2
+// 7. РџСЂРёРјРµРЅРµРЅРёРµ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№ РґР»СЏ P1 Рё S2
+// 8. РћР±РјРµРЅ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕРіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё P1 Рё S2
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t)
 {
 	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (8)
@@ -99,11 +99,11 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
 }
 
-// Преобразование локальных координат процессора к глобальным
-// Каждый процессор содержит дополнительную точку в массиве для
-// обмена данными, если имеет соседа
-// (если 2 соседа с обеих сторон,то +2 точки).
-// Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р»РѕРєР°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РїСЂРѕС†РµСЃСЃРѕСЂР° Рє РіР»РѕР±Р°Р»СЊРЅС‹Рј
+// РљР°Р¶РґС‹Р№ РїСЂРѕС†РµСЃСЃРѕСЂ СЃРѕРґРµСЂР¶РёС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅСѓСЋ С‚РѕС‡РєСѓ РІ РјР°СЃСЃРёРІРµ РґР»СЏ
+// РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё, РµСЃР»Рё РёРјРµРµС‚ СЃРѕСЃРµРґР°
+// (РµСЃР»Рё 2 СЃРѕСЃРµРґР° СЃ РѕР±РµРёС… СЃС‚РѕСЂРѕРЅ,С‚Рѕ +2 С‚РѕС‡РєРё).
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РіСЂР°РЅРёС†С‹ С…СЂР°РЅСЏС‚СЃСЏ РєР°Рє РѕР±С‹С‡РЅС‹Рµ С‚РѕС‡РєРё (РѕС‚СЃСЋРґР° Рё СѓСЃР»РѕРІРёРµ РЅР° (def.rank)==0)
 int local_to_global(int local_index, char axis, consts def)
 {
 	int global_index = local_index;
@@ -133,12 +133,12 @@ int local_to_global(int local_index, char axis, consts def)
 	return global_index;
 }
 
-// Вычисление расчетной области (нагрузки) процессора
-// Если поровну не распределяется, то первые (def.NX)%size получают +1 в нагрузку.
-// Каждый процессор содержит дополнительную точку в массиве для
-// обмена данными, если имеет соседа
-// (если 2 соседа с обеих сторон,то +2 точки).
-// Глобальные границы хранятся как обычные точки (отсюда и условие на (def.rank)==0)
+// Р’С‹С‡РёСЃР»РµРЅРёРµ СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё (РЅР°РіСЂСѓР·РєРё) РїСЂРѕС†РµСЃСЃРѕСЂР°
+// Р•СЃР»Рё РїРѕСЂРѕРІРЅСѓ РЅРµ СЂР°СЃРїСЂРµРґРµР»СЏРµС‚СЃСЏ, С‚Рѕ РїРµСЂРІС‹Рµ (def.NX)%size РїРѕР»СѓС‡Р°СЋС‚ +1 РІ РЅР°РіСЂСѓР·РєСѓ.
+// РљР°Р¶РґС‹Р№ РїСЂРѕС†РµСЃСЃРѕСЂ СЃРѕРґРµСЂР¶РёС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅСѓСЋ С‚РѕС‡РєСѓ РІ РјР°СЃСЃРёРІРµ РґР»СЏ
+// РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё, РµСЃР»Рё РёРјРµРµС‚ СЃРѕСЃРµРґР°
+// (РµСЃР»Рё 2 СЃРѕСЃРµРґР° СЃ РѕР±РµРёС… СЃС‚РѕСЂРѕРЅ,С‚Рѕ +2 С‚РѕС‡РєРё).
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РіСЂР°РЅРёС†С‹ С…СЂР°РЅСЏС‚СЃСЏ РєР°Рє РѕР±С‹С‡РЅС‹Рµ С‚РѕС‡РєРё (РѕС‚СЃСЋРґР° Рё СѓСЃР»РѕРІРёРµ РЅР° (def.rank)==0)
 void global_to_local_vars(consts *def)
 {
 	(*def).locNx = (*def).Nx / (*def).sizex;
@@ -148,9 +148,9 @@ void global_to_local_vars(consts *def)
 		((*def).locNx) ++;
 	}
 
-	// Крайние процессоры получают по 1 точке для граничных данных,
-	// остальные - по 2 на обе границы
-	// Если процессор один, то границ у него нет и дополнительные точки не нужны
+	// РљСЂР°Р№РЅРёРµ РїСЂРѕС†РµСЃСЃРѕСЂС‹ РїРѕР»СѓС‡Р°СЋС‚ РїРѕ 1 С‚РѕС‡РєРµ РґР»СЏ РіСЂР°РЅРёС‡РЅС‹С… РґР°РЅРЅС‹С…,
+	// РѕСЃС‚Р°Р»СЊРЅС‹Рµ - РїРѕ 2 РЅР° РѕР±Рµ РіСЂР°РЅРёС†С‹
+	// Р•СЃР»Рё РїСЂРѕС†РµСЃСЃРѕСЂ РѕРґРёРЅ, С‚Рѕ РіСЂР°РЅРёС† Сѓ РЅРµРіРѕ РЅРµС‚ Рё РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ С‚РѕС‡РєРё РЅРµ РЅСѓР¶РЅС‹
 	if ((*def).sizex > 1)
 	{
 		if (((*def).rankx == 0) || ((*def).rankx  == (*def).sizex - 1))
@@ -211,7 +211,7 @@ void global_to_local_vars(consts *def)
 	test_positive((*def).locNz, __FILE__, __LINE__);
 }
 
-// Является ли точка активной (т.е. не предназначенной только для обмена на границах)
+// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° Р°РєС‚РёРІРЅРѕР№ (С‚.Рµ. РЅРµ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅРЅРѕР№ С‚РѕР»СЊРєРѕ РґР»СЏ РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Р°С…)
 int is_active_point(int i, int j, int k, consts def)
 {
 	if (((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1)
@@ -226,7 +226,7 @@ int is_active_point(int i, int j, int k, consts def)
 	}
 }
 
-// Применение начальных данных во всех точках
+// РџСЂРёРјРµРЅРµРЅРёРµ РЅР°С‡Р°Р»СЊРЅС‹С… РґР°РЅРЅС‹С… РІРѕ РІСЃРµС… С‚РѕС‡РєР°С…
 void sizes_initialization(consts *def)
 {
 	if((*def).size == 1) 
@@ -251,7 +251,7 @@ void blocks_initialization(consts *def)
 	(*def).blocksZ = 0;
 }
 
-// Функция вычисления "эффективной" плотности * g * hy
+// Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ "СЌС„С„РµРєС‚РёРІРЅРѕР№" РїР»РѕС‚РЅРѕСЃС‚Рё * g * hy
 double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def)
 {
 #ifdef THREE_PHASE
@@ -267,12 +267,12 @@ double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def)
 }
 
 //----------------------------------------------------------------------------------------------------
-// Служебные функции
+// РЎР»СѓР¶РµР±РЅС‹Рµ С„СѓРЅРєС†РёРё
 
-// Вывод запускаемой задачи
+// Р’С‹РІРѕРґ Р·Р°РїСѓСЃРєР°РµРјРѕР№ Р·Р°РґР°С‡Рё
 void print_task_name(consts def)
 {
-	// Нулевой процессор выводит название запускаемой задачи
+	// РќСѓР»РµРІРѕР№ РїСЂРѕС†РµСЃСЃРѕСЂ РІС‹РІРѕРґРёС‚ РЅР°Р·РІР°РЅРёРµ Р·Р°РїСѓСЃРєР°РµРјРѕР№ Р·Р°РґР°С‡Рё
 	if (!(def.rank))
 	{
 #ifdef TWO_PHASE
@@ -290,9 +290,9 @@ void print_task_name(consts def)
 	}
 }
 
-// Инициализация коммуникаций (1), перевод глобальных параметров в локальные процессора (2),
-// инициализация ускорителя (2.5), выделение памяти (3), загрузка начальных/сохраненных данных (4)
-// Для задачи Б-Л загрузка проницаемостей из файла.
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРјРјСѓРЅРёРєР°С†РёР№ (1), РїРµСЂРµРІРѕРґ РіР»РѕР±Р°Р»СЊРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РІ Р»РѕРєР°Р»СЊРЅС‹Рµ РїСЂРѕС†РµСЃСЃРѕСЂР° (2),
+// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ (2.5), РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё (3), Р·Р°РіСЂСѓР·РєР° РЅР°С‡Р°Р»СЊРЅС‹С…/СЃРѕС…СЂР°РЅРµРЅРЅС‹С… РґР°РЅРЅС‹С… (4)
+// Р”Р»СЏ Р·Р°РґР°С‡Рё Р‘-Р› Р·Р°РіСЂСѓР·РєР° РїСЂРѕРЅРёС†Р°РµРјРѕСЃС‚РµР№ РёР· С„Р°Р№Р»Р°.
 void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long int* time_counter, int argc, char* argv[], consts* def)
 {
 	FILE *f_save;
@@ -314,8 +314,8 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 	load_permeability((*HostArraysPtr).K, *def); // (5)
 	load_data_to_device((*HostArraysPtr).K, (*DevArraysPtr).K, *def);
 
-	// Если процессор может открыть файл сохраненного состояния,
-	// то восстанавливаем состояние, иначе применяем начальные условия
+	// Р•СЃР»Рё РїСЂРѕС†РµСЃСЃРѕСЂ РјРѕР¶РµС‚ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» СЃРѕС…СЂР°РЅРµРЅРЅРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ,
+	// С‚Рѕ РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ, РёРЅР°С‡Рµ РїСЂРёРјРµРЅСЏРµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ СѓСЃР»РѕРІРёСЏ
 	if (f_save = fopen("save/save.dat", "rb"))
 	{
 		fclose(f_save);
@@ -339,7 +339,7 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 	load_data_to_device((*HostArraysPtr).m, (*DevArraysPtr).m, *def);
 }
 
-// Завершение работы (1), освобождение памяти (2)
+// Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ (1), РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё (2)
 void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer)
 {
 	memory_free(HostArraysPtr, DevArraysPtr); // (2)
@@ -347,21 +347,21 @@ void finalization(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* Dev
 	device_finalization(); // (1)
 }
 
-// Выделение памяти хоста (1) и ускорителя (2) под массив точек расчетной области
+// Р’С‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё С…РѕСЃС‚Р° (1) Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ (2) РїРѕРґ РјР°СЃСЃРёРІ С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void memory_allocation(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, consts def)
 {
 	host_memory_allocation(HostArraysPtr, def); // (1)
 	device_memory_allocation(DevArraysPtr, &DevBuffer, def); // (2)
 }
 
-// Освобожение памяти хоста (1) и ускорителя (2) из под массива точек расчетной области
+// РћСЃРІРѕР±РѕР¶РµРЅРёРµ РїР°РјСЏС‚Рё С…РѕСЃС‚Р° (1) Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ (2) РёР· РїРѕРґ РјР°СЃСЃРёРІР° С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void memory_free(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr)
 {
 	host_memory_free(HostArraysPtr); // (1)
 	device_memory_free(DevArraysPtr, DevBuffer); // (2)
 }
 
-// Выделение памяти хоста под массив точек расчетной области
+// Р’С‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё С…РѕСЃС‚Р° РїРѕРґ РјР°СЃСЃРёРІ С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 {
 	int buffer_size = 0;
@@ -415,7 +415,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 	}
 }
 
-// Освобожение памяти хоста из под массива точек расчетной области
+// РћСЃРІРѕР±РѕР¶РµРЅРёРµ РїР°РјСЏС‚Рё С…РѕСЃС‚Р° РёР· РїРѕРґ РјР°СЃСЃРёРІР° С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void host_memory_free(ptr_Arrays ArraysPtr)
 {
 	delete HostBuffer;
@@ -451,10 +451,10 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.S_n;
 }
 
-// Функция сохранения графиков в файлы
+// Р¤СѓРЅРєС†РёСЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РіСЂР°С„РёРєРѕРІ РІ С„Р°Р№Р»С‹
 void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
-	// Загрузка в память хоста результатов расчета
+	// Р—Р°РіСЂСѓР·РєР° РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂР°СЃС‡РµС‚Р°
 #ifdef THREE_PHASE
 	load_data_to_host(HostArraysPtr.S_w, DevArraysPtr.S_w , def);
 	load_data_to_host(HostArraysPtr.ux_w, DevArraysPtr.ux_w , def);
@@ -471,13 +471,13 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	load_data_to_host(HostArraysPtr.uz_n, DevArraysPtr.uz_n , def);
 
 #ifndef THREE_PHASE
-	// Проверка на выход из допустимого диапазона значений P и S
+	// РџСЂРѕРІРµСЂРєР° РЅР° РІС‹С…РѕРґ РёР· РґРѕРїСѓСЃС‚РёРјРѕРіРѕ РґРёР°РїР°Р·РѕРЅР° Р·РЅР°С‡РµРЅРёР№ P Рё S
 #ifdef MY_TEST
 	test_correct_P_S(HostArraysPtr, def);
 #endif
 #endif
 
-	// Нулевой процессор создает директории, файлы и прописывает заголовки файлов
+	// РќСѓР»РµРІРѕР№ РїСЂРѕС†РµСЃСЃРѕСЂ СЃРѕР·РґР°РµС‚ РґРёСЂРµРєС‚РѕСЂРёРё, С„Р°Р№Р»С‹ Рё РїСЂРѕРїРёСЃС‹РІР°РµС‚ Р·Р°РіРѕР»РѕРІРєРё С„Р°Р№Р»РѕРІ
 	if ((def.rank) == 0)
 	{
 		print_plots_top(t, def);
@@ -485,11 +485,11 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 
 	if((def.sizey == 1) && (def.sizez == 1))
 	{
-		// По очереди для каждого из процессоров вызываем функцию вывода на график
-		// своей части массива.
+		// РџРѕ РѕС‡РµСЂРµРґРё РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР· РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ РІС‹Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ РІС‹РІРѕРґР° РЅР° РіСЂР°С„РёРє
+		// СЃРІРѕРµР№ С‡Р°СЃС‚Рё РјР°СЃСЃРёРІР°.
 		for (int cpu = 0; cpu < ((def.sizex) * (def.sizey) * (def.sizez)); cpu ++)
 		{
-			// Реализация фунции Barrier для различных коммуникаций
+			// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
 			barrier();
 			if ((def.rank) == cpu)
 			{
@@ -499,15 +499,15 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	} 
 	else 
 	{
-		// Выстраиваем такую очередь вывода своей части массива каждого из процессоров, 
-		// чтобы значения создавали последовательность, корректно отображаемую Tecplot.
+		// Р’С‹СЃС‚СЂР°РёРІР°РµРј С‚Р°РєСѓСЋ РѕС‡РµСЂРµРґСЊ РІС‹РІРѕРґР° СЃРІРѕРµР№ С‡Р°СЃС‚Рё РјР°СЃСЃРёРІР° РєР°Р¶РґРѕРіРѕ РёР· РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ, 
+		// С‡С‚РѕР±С‹ Р·РЅР°С‡РµРЅРёСЏ СЃРѕР·РґР°РІР°Р»Рё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ, РєРѕСЂСЂРµРєС‚РЅРѕ РѕС‚РѕР±СЂР°Р¶Р°РµРјСѓСЋ Tecplot.
 		for (int cpux = 0; cpux < (def.sizex); cpux ++)
 			for (int i = 0; i < def.Nx / def.sizex + 3; i++)
 				for (int cpuy = 0; cpuy < (def.sizey); cpuy ++)
 					for (int j = 0; j < def.Ny / def.sizey + 3; j++)
 						for (int cpuz = 0; cpuz < (def.sizez); cpuz ++)
 						{
-							// Реализация фунции Barrier для различных коммуникаций
+							// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
 							barrier();
 							if ((def.rank) == cpux + cpuy * (def.sizex) + cpuz * (def.sizex) * (def.sizey) && i < def.locNx && j < def.locNy)
 							{
@@ -518,7 +518,7 @@ void save_data_plots(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 
 }
 
-// Функция создания директорий, файлов для графиков и сохранения заголовков в них
+// Р¤СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ РґРёСЂРµРєС‚РѕСЂРёР№, С„Р°Р№Р»РѕРІ РґР»СЏ РіСЂР°С„РёРєРѕРІ Рё СЃРѕС…СЂР°РЅРµРЅРёСЏ Р·Р°РіРѕР»РѕРІРєРѕРІ РІ РЅРёС…
 void print_plots_top(double t, consts def)
 {
 	char fname[30];
@@ -532,11 +532,11 @@ void print_plots_top(double t, consts def)
 	mkdir("plots", 0000777);
 #endif
 
-	// Создание (или перезапись) файла с графиками
-	// 1. Для распределения насыщенностей NAPL S_n
-	// 2. Для распределения давлений воды P_w
-	// 3. Для распределения скоростей {u_x, u_y, u_z}
-	// 4. Для распределения типов грунтов
+	// РЎРѕР·РґР°РЅРёРµ (РёР»Рё РїРµСЂРµР·Р°РїРёСЃСЊ) С„Р°Р№Р»Р° СЃ РіСЂР°С„РёРєР°РјРё
+	// 1. Р”Р»СЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚РµР№ NAPL S_n
+	// 2. Р”Р»СЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РґР°РІР»РµРЅРёР№ РІРѕРґС‹ P_w
+	// 3. Р”Р»СЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ СЃРєРѕСЂРѕСЃС‚РµР№ {u_x, u_y, u_z}
+	// 4. Р”Р»СЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ С‚РёРїРѕРІ РіСЂСѓРЅС‚РѕРІ
 	if (!(fp = fopen(fname, "wt")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
@@ -580,9 +580,9 @@ void print_plots_top(double t, consts def)
 	fclose(fp);
 }
 
-// Функция сохранения данных в файлы графиков
-// Если деления между процессорами по y, z нет, то параметры I, J не используются. 
-// Если же есть, но хочется писать в файл в простой последовательности, то должно быть I=J=-1
+// Р¤СѓРЅРєС†РёСЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РІ С„Р°Р№Р»С‹ РіСЂР°С„РёРєРѕРІ
+// Р•СЃР»Рё РґРµР»РµРЅРёСЏ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕ y, z РЅРµС‚, С‚Рѕ РїР°СЂР°РјРµС‚СЂС‹ I, J РЅРµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ. 
+// Р•СЃР»Рё Р¶Рµ РµСЃС‚СЊ, РЅРѕ С…РѕС‡РµС‚СЃСЏ РїРёСЃР°С‚СЊ РІ С„Р°Р№Р» РІ РїСЂРѕСЃС‚РѕР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё, С‚Рѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ I=J=-1
 void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J)
 {
 	char fname[30];
@@ -590,7 +590,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J)
 
 	sprintf(fname, "plots/S=%012.4f.dat", t);
 
-	// Открытие на дозапись и сохранение графиков
+	// РћС‚РєСЂС‹С‚РёРµ РЅР° РґРѕР·Р°РїРёСЃСЊ Рё СЃРѕС…СЂР°РЅРµРЅРёРµ РіСЂР°С„РёРєРѕРІ
 	if (!(fp = fopen(fname, "at")))
 		print_error("Not open file(s) in function SAVE_DATA_PLOTS", __FILE__, __LINE__);
 
@@ -626,7 +626,7 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J)
 			int j1=def.locNz/3;
 			int j2=def.locNz/2;
 			int j3=def.locNz/3*2;
-			// Если is_active_point(i, j1, k, def) правда, то и для j2, j3 тоже правда
+			// Р•СЃР»Рё is_active_point(i, j1, k, def) РїСЂР°РІРґР°, С‚Рѕ Рё РґР»СЏ j2, j3 С‚РѕР¶Рµ РїСЂР°РІРґР°
 				if (is_active_point(i, j1, k, def))
 				{
 					local = i + j2 * def.locNx + k * def.locNx * def.locNy;
@@ -639,17 +639,17 @@ void print_plots(ptr_Arrays HostArraysPtr, double t, consts def, int I, int J)
 #endif
 }
 
-// Функция записи строчки значений параметров, которые нужны для построения графиков,  для всех задач.
-// Включает в себя:
-// 1. Распределение насыщенностей NAPL S_n
-// 2. Распределение давлений воды P_w
-// 3. Распределение скоростей {u_x, u_y, u_z}
-// 4. Распределение типов грунтов
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РїРёСЃРё СЃС‚СЂРѕС‡РєРё Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ, РєРѕС‚РѕСЂС‹Рµ РЅСѓР¶РЅС‹ РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РіСЂР°С„РёРєРѕРІ,  РґР»СЏ РІСЃРµС… Р·Р°РґР°С‡.
+// Р’РєР»СЋС‡Р°РµС‚ РІ СЃРµР±СЏ:
+// 1. Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚РµР№ NAPL S_n
+// 2. Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РґР°РІР»РµРЅРёР№ РІРѕРґС‹ P_w
+// 3. Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚РµР№ {u_x, u_y, u_z}
+// 4. Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ С‚РёРїРѕРІ РіСЂСѓРЅС‚РѕРІ
 void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, consts def)
 {
 	int local = i + j * def.locNx + k * def.locNx * def.locNy;
 
-	// Преобразование локальных координат процессора к глобальным
+	// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р»РѕРєР°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РїСЂРѕС†РµСЃСЃРѕСЂР° Рє РіР»РѕР±Р°Р»СЊРЅС‹Рј
 	int I = local_to_global(i, 'x', def);
 	int J = def.Ny - 1 - local_to_global(j, 'y', def);
 	int K = local_to_global(k, 'z', def); 
@@ -706,7 +706,7 @@ void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, con
 #endif
 }
 
-// Функция сохранения данных в файлы графиков формата BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
+// Р¤СѓРЅРєС†РёСЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РІ С„Р°Р№Р»С‹ РіСЂР°С„РёРєРѕРІ С„РѕСЂРјР°С‚Р° BjnIO [http://lira.imamod.ru/BjnIO_3D.html]
 void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 {
 	/*
@@ -722,27 +722,27 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 		F1D = (double *)malloc(def.locNx, def.locNy, def.locNz*sizeof(double));
 		if(F1D == NULL) exit(0);
 
-		// Инициализация файла с данными функции
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„Р°Р№Р»Р° СЃ РґР°РЅРЅС‹РјРё С„СѓРЅРєС†РёРё
 		int err = WriteBjnGzippedScalar8RecInit(targetfuncs, "r2dgrid.bjn", def.Nx, def.Ny, def.Nz);
 		if(err)
 			fprintf(stderr, "Can't create file %s.\n", targetfuncs);
 
-		// Запись блока данных значений функции
-		err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 5); // Поправить def.locNx*(def.rank) на точное смещение
+		// Р—Р°РїРёСЃСЊ Р±Р»РѕРєР° РґР°РЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№ С„СѓРЅРєС†РёРё
+		err = WriteBjnGzippedScalar8RecFuncByBlock(targetfuncs, "S_n", F1D, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 5); // РџРѕРїСЂР°РІРёС‚СЊ def.locNx*(def.rank) РЅР° С‚РѕС‡РЅРѕРµ СЃРјРµС‰РµРЅРёРµ
 		if(err)
 			fprintf(stderr, "Can't add func block data err %d\n", err);
 
-		// Запись минимального и максимального значения сеточной функции S_n
+		// Р—Р°РїРёСЃСЊ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ СЃРµС‚РѕС‡РЅРѕР№ С„СѓРЅРєС†РёРё S_n
 		err = WriteBjnGzippedScalar8RecFuncMinMax(targetfuncs, "S_n", 0, 1);
 		if(err)
 			fprintf(stderr, "Can't add data about block err %d\n", err);
 
-		// Инициализация файла сетки
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„Р°Р№Р»Р° СЃРµС‚РєРё
 		err = WriteBjnGzippedScalar8RecInit(targetgrid, "", def.Nx, def.Ny, def.Nz);
 		if(err)
 			fprintf(stderr, "Can't create file %s.\n", targetgrid);
 
-		// Для каждого из направлений
+		// Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№
 		for(direct=0;direct<3;direct++)
 		{
 			for(i1=0; i1<m1; i1++)
@@ -767,13 +767,13 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 									fmax=maxab(fmax,F1[i][j][k]);
 								}
 
-					// Запись блока данных сетки
-					err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 9); // Поправить def.locNx*(def.rank) на точное смещение
+					// Р—Р°РїРёСЃСЊ Р±Р»РѕРєР° РґР°РЅРЅС‹С… СЃРµС‚РєРё
+					err = WriteBjnGzippedScalar8RecFuncByBlock(targetgrid, dname, F1, def.locNx*(def.rank), 0, 0, def.locNx, def.locNy, def.locNz, 9); // РџРѕРїСЂР°РІРёС‚СЊ def.locNx*(def.rank) РЅР° С‚РѕС‡РЅРѕРµ СЃРјРµС‰РµРЅРёРµ
 					if(err)
 						fprintf(stderr, "Can't add grid `%s` block data err %d\n", dname, err);
 					}
 
-			// Запись максимального и минимального значений сетки
+			// Р—Р°РїРёСЃСЊ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Рё РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёР№ СЃРµС‚РєРё
 			err = WriteBjnGzippedScalar8RecFuncMinMax(targetgrid, dname, fmin, fmax);
 			if(err)
 				fprintf(stderr, "Can't add data about block err %d\n", err);
@@ -781,7 +781,7 @@ void print_plots_BjnIO(ptr_Arrays HostArraysPtr, double t, consts def)
 	*/
 }
 
-// Функция вывода на экран двумерного массива(для тестирования пересылок)
+// Р¤СѓРЅРєС†РёСЏ РІС‹РІРѕРґР° РЅР° СЌРєСЂР°РЅ РґРІСѓРјРµСЂРЅРѕРіРѕ РјР°СЃСЃРёРІР°(РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ РїРµСЂРµСЃС‹Р»РѕРє)
 void print_array_console(double* Arr, consts def, char axis)
 {
 	printf("\n");
@@ -841,7 +841,7 @@ void print_array_console(double* Arr, consts def, char axis)
 	printf("\n");
 }
 
-// Функция загрузки файла проницаемостей
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё С„Р°Р№Р»Р° РїСЂРѕРЅРёС†Р°РµРјРѕСЃС‚РµР№
 void load_permeability(double* K, consts def)
 {
 #ifndef LOAD_K_FROM_FILE
@@ -888,7 +888,7 @@ void load_permeability(double* K, consts def)
 	}
 
 	/*
-	// Версия для считывания файлов SPE-10 
+	// Р’РµСЂСЃРёСЏ РґР»СЏ СЃС‡РёС‚С‹РІР°РЅРёСЏ С„Р°Р№Р»РѕРІ SPE-10 
 	double s[6];
 	long int row = 0, bigN = 0;
 	int index = 0;
@@ -923,7 +923,7 @@ void load_permeability(double* K, consts def)
 			}
 */
 
-	// версия для считывания файлов от Антона
+	// РІРµСЂСЃРёСЏ РґР»СЏ СЃС‡РёС‚С‹РІР°РЅРёСЏ С„Р°Р№Р»РѕРІ РѕС‚ РђРЅС‚РѕРЅР°
 	char* str=new char[30*Nx];
 
 	char value[30];
@@ -958,12 +958,12 @@ for (int i = 0; i < def.locNx; i++)
 
 }
 
-// Сохранение состояния в файл
+// РЎРѕС…СЂР°РЅРµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ С„Р°Р№Р»
 void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_counter, consts def)
 {
-	// Загружаем в память хоста данные по roS_old
-	// P1 и S2 загружены уже для функции сохранения графиков,
-	// x,y и porosity не изменились и загрузки не требуют.
+	// Р—Р°РіСЂСѓР¶Р°РµРј РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р° РґР°РЅРЅС‹Рµ РїРѕ roS_old
+	// P1 Рё S2 Р·Р°РіСЂСѓР¶РµРЅС‹ СѓР¶Рµ РґР»СЏ С„СѓРЅРєС†РёРё СЃРѕС…СЂР°РЅРµРЅРёСЏ РіСЂР°С„РёРєРѕРІ,
+	// x,y Рё porosity РЅРµ РёР·РјРµРЅРёР»РёСЃСЊ Рё Р·Р°РіСЂСѓР·РєРё РЅРµ С‚СЂРµР±СѓСЋС‚.
 	//load_data_to_host(HostArraysPtr.P1, DevArraysPtr.P1 , localNx);
 	//load_data_to_host(HostArraysPtr.S2, DevArraysPtr.S2 , localNx);
 	load_data_to_host(HostArraysPtr.roS_w_old, DevArraysPtr.roS_w_old , def);
@@ -993,7 +993,7 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 
 	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu++)
 	{
-		// Реализация фунции Barrier для различных коммуникаций
+		// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
 		barrier();
 		if ((def.rank) == cpu)
 		{
@@ -1020,13 +1020,13 @@ void save(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, long int time_count
 	}
 }
 
-// Восстановление состояния из файла
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· С„Р°Р№Р»Р°
 void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 {
 	FILE *f_save;
 	for (int cpu = 0; cpu < (def.sizex * (def.sizey) * (def.sizez)); cpu++)
 	{
-		// Реализация фунции Barrier для различных коммуникаций
+		// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
 		barrier();
 
 		consts def_tmp;
@@ -1075,7 +1075,7 @@ void restore(ptr_Arrays HostArraysPtr, long int* time_counter, consts def)
 
 //------------------------------------------------------------------------------------------
 
-// Собирает и печатает версию запускаемой программы
+// РЎРѕР±РёСЂР°РµС‚ Рё РїРµС‡Р°С‚Р°РµС‚ РІРµСЂСЃРёСЋ Р·Р°РїСѓСЃРєР°РµРјРѕР№ РїСЂРѕРіСЂР°РјРјС‹
 void read_version(void)
 {
 
@@ -1099,10 +1099,10 @@ void read_version(void)
 	printf("Version %s.%d compiled %s %s.\n\n", VERSION, revision, __DATE__, __TIME__);
 }
 
-// Масштабирование размерностей входных данных
+// РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ СЂР°Р·РјРµСЂРЅРѕСЃС‚РµР№ РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
 void resize_defines(consts* def, double l, double t)
 {
-	// h_i - максимум из hx, hy, hz
+	// h_i - РјР°РєСЃРёРјСѓРј РёР· hx, hy, hz
 	double h_i = max(def->hx, def->hy);
 	if (def->Nz > 1)
 		h_i = max(h_i, def->hz);
@@ -1147,7 +1147,7 @@ void resize_defines(consts* def, double l, double t)
 }
 
 #ifdef GTEST
-// Тест функции resize_defines
+// РўРµСЃС‚ С„СѓРЅРєС†РёРё resize_defines
 TEST(Main,ResizeDefines)
 {
 	consts tdef;
@@ -1203,7 +1203,7 @@ TEST(Main,ResizeDefines)
 #endif
 
 
-// Считывание параметров задачи из файла
+// РЎС‡РёС‚С‹РІР°РЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ Р·Р°РґР°С‡Рё РёР· С„Р°Р№Р»Р°
 void read_defines(int argc, char *argv[], consts* def)
 {
 	FILE *defs;
@@ -1555,7 +1555,7 @@ void read_defines(int argc, char *argv[], consts* def)
 
 	fclose(defs);
 
-	// Если нет масштабирования, то 1
+	// Р•СЃР»Рё РЅРµС‚ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ, С‚Рѕ 1
 	def->upscale_l=1;
 	def->upscale_t=1;
 
@@ -1565,7 +1565,7 @@ void read_defines(int argc, char *argv[], consts* def)
 	read_defines_test(*def);
 }
 
-// Вывод на экран распределения процессоров в системе и области по процессорам
+// Р’С‹РІРѕРґ РЅР° СЌРєСЂР°РЅ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ РІ СЃРёСЃС‚РµРјРµ Рё РѕР±Р»Р°СЃС‚Рё РїРѕ РїСЂРѕС†РµСЃСЃРѕСЂР°Рј
 void print_hosts_configuration(consts def) {
 	printf("\n  size = %d : (%d, %d, %d)\n  rank = %d : (%d, %d, %d)\n  locN = %d : (%d, %d, %d)\n", 
 		 (def).size, (def).sizex, (def).sizey, (def).sizez,

@@ -1,8 +1,8 @@
-//#include "../defines.h"
+п»ї//#include "../defines.h"
 #include "../gpu.h"
 //#include "two-phase.h"
 
-// Заглушка! Убрать как функция будет перенесена
+// Р—Р°РіР»СѓС€РєР°! РЈР±СЂР°С‚СЊ РєР°Рє С„СѓРЅРєС†РёСЏ Р±СѓРґРµС‚ РїРµСЂРµРЅРµСЃРµРЅР°
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
 	*t = 0;
@@ -11,14 +11,14 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 			for (int k = 0; k < def.locNz; k++)
 				if (is_active_point(i, j, k, def))
 				{
-					// Преобразование локальных координат процессора к глобальным
+					// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р»РѕРєР°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РїСЂРѕС†РµСЃСЃРѕСЂР° Рє РіР»РѕР±Р°Р»СЊРЅС‹Рј
 					int I = local_to_global(i, 'x', def);
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
 
-					// Если точка на верхней границе, не далее (def.source) точек от центра,
-					// то в ней начальная насыщенность. Иначе, нулевая
+					// Р•СЃР»Рё С‚РѕС‡РєР° РЅР° РІРµСЂС…РЅРµР№ РіСЂР°РЅРёС†Рµ, РЅРµ РґР°Р»РµРµ (def.source) С‚РѕС‡РµРє РѕС‚ С†РµРЅС‚СЂР°,
+					// С‚Рѕ РІ РЅРµР№ РЅР°С‡Р°Р»СЊРЅР°СЏ РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚СЊ. РРЅР°С‡Рµ, РЅСѓР»РµРІР°СЏ
 					if ((j == 0) && (I >= (def.Nx) / 2 - (def.source)) && (I <= (def.Nx) / 2 + (def.source)) && (k >= (def.Nz) / 2 - (def.source)) && (k <= (def.Nz) / 2 + (def.source)))
 					{
 						HostArraysPtr.S_n[local] = def.S_n_gr;
@@ -39,7 +39,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
 
-					///!!!! Не учитываются капиллярные силы! Или надо считать перед этим шагом P_n
+					///!!!! РќРµ СѓС‡РёС‚С‹РІР°СЋС‚СЃСЏ РєР°РїРёР»Р»СЏСЂРЅС‹Рµ СЃРёР»С‹! РР»Рё РЅР°РґРѕ СЃС‡РёС‚Р°С‚СЊ РїРµСЂРµРґ СЌС‚РёРј С€Р°РіРѕРј P_n
 					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_w[local] - def.P_atm));
 
 					/*
@@ -64,7 +64,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				}
 }
 
-// Расчет плотностей, давления NAPL P2 и Xi в каждой точке сетки (независимо от остальных точек)
+// Р Р°СЃС‡РµС‚ РїР»РѕС‚РЅРѕСЃС‚РµР№, РґР°РІР»РµРЅРёСЏ NAPL P2 Рё Xi РІ РєР°Р¶РґРѕР№ С‚РѕС‡РєРµ СЃРµС‚РєРё (РЅРµР·Р°РІРёСЃРёРјРѕ РѕС‚ РѕСЃС‚Р°Р»СЊРЅС‹С… С‚РѕС‡РµРє)
 __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -94,7 +94,7 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 }
 
 
-// Метод Ньютона для каждой точки сетки (независимо от остальных точек)
+// РњРµС‚РѕРґ РќСЊСЋС‚РѕРЅР° РґР»СЏ РєР°Р¶РґРѕР№ С‚РѕС‡РєРё СЃРµС‚РєРё (РЅРµР·Р°РІРёСЃРёРјРѕ РѕС‚ РѕСЃС‚Р°Р»СЊРЅС‹С… С‚РѕС‡РµРє)
 __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -135,7 +135,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// Задание граничных условий
+// Р—Р°РґР°РЅРёРµ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№
 __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;

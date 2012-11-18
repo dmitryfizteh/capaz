@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # ADD: remove temp files
 # ADD: test script parameters: 
 #	* processors_count time_limit_in_minutes !=0
