@@ -1,11 +1,11 @@
-п»ї#include "../defines.h"
+#include "../defines.h"
 #include "b-l.h"
 
-// Р Р°СЃС‡РµС‚ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹С… РїСЂРѕРЅРёС†Р°РµРјРѕСЃС‚РµР№ РІ С‚РѕС‡РєРµ
+// Расчет относительных проницаемостей в точке
 void assing_k(double* k_w, double* k_n, double S_w)
 {
 	/*
-	// SPE-РїРѕСЃС‚Р°РЅРѕРІРєР°
+	// SPE-постановка
 	double S_wc = 0.2;
 	double S_or = 0.2;
 	double S_e = (S_w - S_wc) / (1. - S_wc - S_or);
@@ -26,7 +26,7 @@ void assing_k(double* k_w, double* k_n, double S_w)
 	}
 	*/
 	
-	// РїРѕСЃС‚Р°РЅРѕРІРєР° РРџРњ
+	// постановка ИПМ
 	double S_sv = 0.1;
 	double S_zv = 0.8;
 	double S_1 = 0.70324;
@@ -100,7 +100,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
-// Р—Р°РґР°РЅРёРµ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№ СЃ РјРµРЅСЊС€РёРј С‡РёСЃР»РѕРј РїСЂРѕРІРµСЂРѕРє, РЅРѕ СЃ РІРІРµРґРµРЅРёРµРј РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… РїРµСЂРµРјРµРЅРЅС‹С…
+// Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	//if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
@@ -111,13 +111,13 @@ void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local1];
 
 		/*
-		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅР°СЏ СЃРєРІР°Р¶РёРЅР°
+		// В центре резервуара находится нагнетательная скважина
 		if (is_injection_well(i, j, k, def))
 		{
 			HostArraysPtr.S_n[local] = INJECTION_WELL_Sn;
 		}
 
-		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
+		// В центре резервуара находится добывающая скважина
 		if (is_output_well(i, j, k, def))
 		{
 			HostArraysPtr.S_n[local] = OUTPUT_WELL_Sn;
@@ -150,14 +150,14 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 
 	
-		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РЅР°РіРЅРµС‚Р°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
+		// В центре резервуара находится нагнетающая скважина
 		if (is_injection_well(i, j, k, def))
 		//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 		{
 			HostArraysPtr.P_w[local] = def.InjWell_Pw;
 		}
 
-		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
+		// В центре резервуара находится добывающая скважина
 		if (is_output_well(i, j, k, def))
 		//if (((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 		{
@@ -169,7 +169,7 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	//}
 }
 
-// РџСЂРёСЃРІРѕРµРЅРёРµ РЅР°С‡Р°Р»СЊРЅС‹С… СѓСЃР»РѕРІРёР№
+// Присвоение начальных условий
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
 	*t = 0;
@@ -195,13 +195,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 
 					/*
-					// РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅР°СЏ СЃРєРІР°Р¶РёРЅР°
+					// нагнетательная скважина
 					if (is_injection_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[local] = Injection_well_P(HostArraysPtr, i, j, k, def);
 					}
 
-					// РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
+					// добывающая скважина
 					if (is_output_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[local] = Production_well_P(HostArraysPtr, i, j, k, def);

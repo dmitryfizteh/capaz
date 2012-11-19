@@ -1,7 +1,6 @@
 #ifndef MEASURING_H
 #define MEASURING_H
 
-#include <mpi.h>
 #include <float.h>
 #include <stdio.h>
 #include <iostream>
@@ -21,7 +20,7 @@
 #define MAX_BUFFER_SIZE 20000000
 #define MIN_BUFFER_SIZE 10000000
 
-#define USE_GPU
+//#define USE_GPU
 #define GPU_PER_NODE 3
 
 // Нитей в блоке ускорителя

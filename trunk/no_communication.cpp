@@ -1,4 +1,4 @@
-п»ї#include "defines.h"
+#include "defines.h"
 
 void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
@@ -22,7 +22,7 @@ void communication_finalization(void)
 {
 }
 
-// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
+// Реализация фунции Barrier для различных коммуникаций
 void barrier(void)
 {
 }

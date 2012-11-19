@@ -1,8 +1,8 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Two cpu and one gpu are needed
 # 
 
-debug_name = "measuring"
+debug_name="measuring"
 
 hostname=`hostname`
 #echo $hostname
@@ -26,18 +26,16 @@ else 	if [ "$hostname" = "k100" ]
 	fi
 fi
 
-echo "nvcc -c -arch sm_$ARCH gpu.o ./measuring.cu"
-	  nvcc -c -arch sm_$ARCH gpu.o ./measuring.cu
-arch_file="gpu.o"
+echo "nvcc -c -arch sm_$ARCH ../Debug/measuring.o ./measuring.cu"
+	  nvcc -c -arch sm_$ARCH ../Debug/measuring.o ./measuring.cu
+arch_file="../Debug/measuring.o"
 
 if [ "$hostname" = "k100" ]
 then
       compilator="mpicxx"
-   fi
 else 	if [ "$hostname" = "mvse" ]
 	then		
 			compilator="mpicc"
-	    fi
 	else
 		compilator="mpicxx"
 	fi
@@ -45,7 +43,7 @@ fi
 
 mkdir ../Debug
 
-echo "$compilator $lib_path ./measuring.cpp $comm_file ../shared_test.cpp $arch_file -o ../Debug/$2_$3$debug_name.px"
+echo "$compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px"
       $compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px
 
 cd ../Debug
@@ -53,3 +51,4 @@ echo "mpirun $PPN -np 2 10 ./$debug_name.px"
 mpirun $PPN -np 2 10 ./$debug_name.px
 
 exit
+
