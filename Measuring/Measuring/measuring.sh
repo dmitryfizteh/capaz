@@ -26,9 +26,9 @@ else 	if [ "$hostname" = "k100" ]
 	fi
 fi
 
-echo "nvcc -c -arch sm_$ARCH ../Debug/measuring.o ./measuring.cu"
-	  nvcc -c -arch sm_$ARCH ../Debug/measuring.o ./measuring.cu
-arch_file="../Debug/measuring.o"
+echo "nvcc -c -arch sm_$ARCH measuring.o ./measuring.cu"
+	  nvcc -c -arch sm_$ARCH measuring.o ./measuring.cu
+arch_file="measuring.o"
 
 if [ "$hostname" = "k100" ]
 then
@@ -47,8 +47,8 @@ echo "$compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.p
       $compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px
 
 cd ../Debug
-echo "mpirun $PPN -np 2 10 ./$debug_name.px"
-mpirun $PPN -np 2 10 ./$debug_name.px
+echo "mpirun $PPN -np 2 -maxtime 10 ./$debug_name.px"
+mpirun $PPN -np 2 -maxtime 10 ./$debug_name.px
 
 exit
 
