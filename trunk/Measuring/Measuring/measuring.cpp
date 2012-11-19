@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 	if (!(rank))
 	{
-		printf("Host-host: double_send_time = %.12f\tlatency = %.5f\n", send_double_time, latency);
+		printf("Host-host: double_send_time = %e\tlatency = %.5f\n", send_double_time, latency);
 	}
 
 #ifdef USE_GPU
@@ -177,7 +177,7 @@ void measuring_host_device_exchange(double *HostBuffer, double *DevBuffer, int r
 
 	if (!(rank))
 	{
-		printf("Host-device: double_send_time = %.12f\tlatency = %.5f\n", send_double_time, latency);
+		printf("Host-device: double_send_time = %e\tlatency = %.5f\n", send_double_time, latency);
 	}
 
 	device_memory_free(DevBuffer);
