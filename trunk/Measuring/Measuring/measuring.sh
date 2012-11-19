@@ -1,6 +1,12 @@
 #!/bin/bash
-# Two cpu and one gpu are needed
-# 
+# Two cpu are required
+# ./measuring.sh gpu - it will measure both host-host and host-device times
+# In this case two cpu and one gpu are required
+
+if [ "$1" = "gpu" ]
+then
+    taskD="-D USE_GPU"
+fi
 
 debug_name="measuring"
 
@@ -26,9 +32,14 @@ else 	if [ "$hostname" = "k100" ]
 	fi
 fi
 
-echo "nvcc -c -arch sm_$ARCH measuring.o ./measuring.cu"
-	  nvcc -c -arch sm_$ARCH measuring.o ./measuring.cu
-arch_file="measuring.o"
+if [ "$1" = "gpu" ]
+then
+	echo "nvcc $taskD -c -arch sm_$ARCH ./measuring.cu -o ../Debug/measuring.o"
+	nvcc $taskD -c -arch sm_$ARCH ./measuring.cu -o ../Debug/measuring.o
+	arch_file="../Debug/measuring.o"
+else
+	arch_file=""
+fi
 
 if [ "$hostname" = "k100" ]
 then
@@ -43,8 +54,8 @@ fi
 
 mkdir ../Debug
 
-echo "$compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px"
-      $compilator $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px
+echo "$compilator $taskD $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px"
+      $compilator $taskD $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px
 
 cd ../Debug
 echo "mpirun $PPN -np 2 -maxtime 10 ./$debug_name.px"
