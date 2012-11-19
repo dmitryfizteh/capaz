@@ -1,6 +1,6 @@
-п»ї#include "defines.h"
+#include "defines.h"
 
-// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅРѕР№ СЃРєРІР°Р¶РёРЅРѕР№
+// Является ли точка нагнетательной скважиной
 int is_injection_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
@@ -20,7 +20,7 @@ if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && 
 		return 0;
 }
 
-// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° РґРѕР±С‹РІР°СЋС‰РµР№ СЃРєРІР°Р¶РёРЅРѕР№
+// Является ли точка добывающей скважиной
 int is_output_well(int i, int j, int k, consts def)
 {
 #ifdef B_L
@@ -40,11 +40,11 @@ if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && 
 		return 0;
 }
 
-// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РІС‚РµРєР°РµРјС‹С…/РІС‹С‚РµРєР°РµРјС‹С… Р¶РёРґРєРѕСЃС‚РµР№ q_i РЅР° СЃРєРІР°Р¶РёРЅР°С…
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
 void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
 {
 #ifdef B_L
-	// РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅР°СЏ СЃРєРІР°Р¶РёРЅР°
+	// нагнетательная скважина
 	if (is_injection_well(i, j, k, def))
 	{
 		*q_w = def.Q;
@@ -52,7 +52,7 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 		*q_g = 0.;
 	}
 
-	// РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
+	// добывающая скважина
 	if (is_output_well(i, j, k, def))
 	{
 		*q_g = 0;
@@ -152,7 +152,7 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 				}
 }
 
-// Р’С‹С‡РёСЃР»РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РєРё, С‡РµСЂРµР· РєРѕС‚РѕСЂСѓСЋ Р±СѓРґРµС‚ РІС‹С‡РёСЃР»СЏС‚СЊСЃСЏ Р·РЅР°С‡РµРЅРёРµ РЅР° РіСЂР°РЅРёС†Рµ (i1, j1, k1)
+// Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
 int set_boundary_basic_coordinate(int i, int j, int k, consts def)
 {
 	int i1, j1, k1;
@@ -203,7 +203,7 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	test_ro(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
 }
 
-// Р Р°СЃС‡РµС‚ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
+// Расчет центральной разности
 double central_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -228,7 +228,7 @@ double central_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Р Р°СЃС‡РµС‚ РЅР°РїСЂР°РІР»РµРЅРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
+// Расчет направленной разности
 double directed_difference (double x1, double x2, double* Xi, double* ro, char axis, consts def)
 {
 	switch (axis)
@@ -259,7 +259,7 @@ double directed_difference (double x1, double x2, double* Xi, double* ro, char a
 	}
 }
 
-// Р Р°СЃС‡РµС‚ Р»РµРІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
+// Расчет левой разности
 double left_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -284,7 +284,7 @@ double left_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Р Р°СЃС‡РµС‚ РїСЂР°РІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
+// Расчет правой разности
 double right_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -309,7 +309,7 @@ double right_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Р Р°СЃС‡РµС‚ СЃРєРѕСЂРѕСЃС‚РµР№ РІ С‚РѕС‡РєРµ
+// Расчет скоростей в точке
 void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
@@ -562,7 +562,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 		double q_n = 0.;
 		double q_g = 0.;
 
-		// Р—РЅР°С‡РµРЅРёСЏ q РЅР° СЃРєРІР°Р¶РёРЅР°С…
+		// Значения q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 		if ((t < 2 * (def.dt)) || TWO_LAYERS)
@@ -625,7 +625,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		double q_n = 0.;
 		double q_g = 0.;
 
-		// Р—РЅР°С‡РµРЅРёСЏ q РЅР° СЃРєРІР°Р¶РёРЅР°С…
+		// Значения q на скважинах
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 #ifdef THREE_PHASE
@@ -711,42 +711,42 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 	}
 }
 
-// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р°
+// Функция загрузки данных в память хоста
 void load_data_to_host(double *HostArrayPtr, double *DevArrayPtr, consts def)
 {
 }
 
-// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° double РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Функция загрузки данных типа double в память ускорителя
 void load_data_to_device(double *HostArrayPtr, double *DevArrayPtr, consts def)
 {
 }
 
-// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° int РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Функция загрузки данных типа int в память ускорителя
 void load_data_to_device_int(int *HostArrayPtr, int *DevArrayPtr, consts def)
 {
 }
 
-// Р’С‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РїРѕРґ РјР°СЃСЃРёРІ С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
+// Выделение памяти ускорителя под массив точек расчетной области
 void device_memory_allocation(ptr_Arrays *ArraysPtr, double **DevBuffer, consts def)
 {
 }
 
-// РћСЃРІРѕР±РѕР¶РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РёР· РїРѕРґ РјР°СЃСЃРёРІР° С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
+// Освобожение памяти ускорителя из под массива точек расчетной области
 void device_memory_free(ptr_Arrays ptDev, double *DevBuffer)
 {
 }
 
-// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Инициализация ускорителя
 void device_initialization(consts *def)
 {
 }
 
-// Р¤РёРЅР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Финализация ускорителя
 void device_finalization(void)
 {
 }
 
-// Р—Р°РіСЂСѓР·РєР° РІ Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РґР»СЏ РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Рµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№ СЃРІРѕСЏ С„СѓРЅРєС†РёСЏ. РќР°РїСЂР°РІР»РµРЅРёРµ - СЌС‚Рѕ РѕСЃСЊ РєРѕРѕСЂРґРёРЅР°С‚ Рё Р»РµРІРѕ/РїСЂР°РІРѕ.
+// Загрузка в буфер данных для обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
 void load_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
 	for (int j = 0; j < (def.locNy); j++)
@@ -807,7 +807,7 @@ void load_exchange_data_part_zr(double *HostArrayPtr, double *DevArrayPtr, doubl
 		}
 }
 
-// Р—Р°РіСЂСѓР·РєР° РёР· Р±СѓС„РµСЂР° РґР°РЅРЅС‹С… РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Рµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№ СЃРІРѕСЏ С„СѓРЅРєС†РёСЏ. РќР°РїСЂР°РІР»РµРЅРёРµ - СЌС‚Рѕ РѕСЃСЊ РєРѕРѕСЂРґРёРЅР°С‚ Рё Р»РµРІРѕ/РїСЂР°РІРѕ.
+// Загрузка из буфера данных обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
 void save_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
 	for (int j = 0; j < (def.locNy); j++)

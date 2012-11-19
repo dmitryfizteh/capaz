@@ -1,8 +1,8 @@
-ï»¿#include "defines.h"
+#include "defines.h"
 
-// Ð¢ÐµÑÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ
+// Òåñòèðîâàíèå
 
-// ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð° Ð¿Ñ€ÐµÐ´Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð¼Ð°ÐºÑ€Ð¾ÑÐ° Ð·Ð°Ð´Ð°Ñ‡Ð¸
+// Ïðîâåðêà íà ïðåäîïðåäåëåíèå ìàêðîñà çàäà÷è
 #ifndef THREE_PHASE
 #ifndef TWO_PHASE
 #ifndef B_L
@@ -12,14 +12,14 @@
 #endif
 
 #ifdef GTEST
-// "Ð¢ÐµÑÑ‚Ð¾Ð²Ñ‹Ð¹ Ñ‚ÐµÑÑ‚" google test'Ð°
+// "Òåñòîâûé òåñò" google test'à
 TEST(FirstClass,Summ)
 {
 	EXPECT_EQ(4, 2+2);
 }
 #endif
 
-// Ð¤ÑƒÐ½ÐºÑ†Ð¸Ñ, Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼Ð°Ñ Ð¿Ñ€Ð¸ Ð¾ÑˆÐ¸Ð±ÐºÐµ
+// Ôóíêöèÿ, âûçûâàåìàÿ ïðè îøèáêå
 void print_error(char *error, char *file, int line)
 {
 	printf("Error: %s\nFile: \"%s\"\nLine: %d\n\n", error, file, line);
@@ -32,8 +32,8 @@ void print_error(char *error, char *file, int line)
 	exit(1);
 }
 
-// Ð¤ÑƒÐ½ÐºÑ†Ð¸Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸ Ð½Ð° Ð²Ñ‹Ñ…Ð¾Ð´ Ð¸Ð· Ð´Ð¾Ð¿ÑƒÑÑ‚Ð¸Ð¼Ð¾Ð³Ð¾ Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½Ð° Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ð¹
-// Ð²Ð¾ Ð²ÑÐµÑ… Ñ‚Ð¾Ñ‡ÐºÐ°Ñ… Ñ€Ð°ÑÑ‡ÐµÑ‚Ð½Ð¾Ð¹ Ð¾Ð±Ð»Ð°ÑÑ‚Ð¸ Ð¿Ñ€Ð¾Ñ†ÐµÑÑÐ¾Ñ€Ð°
+// Ôóíêöèÿ ïðîâåðêè íà âûõîä èç äîïóñòèìîãî äèàïàçîíà çíà÷åíèé
+// âî âñåõ òî÷êàõ ðàñ÷åòíîé îáëàñòè ïðîöåññîðà
 
 void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 {
@@ -51,8 +51,8 @@ void test_correct_P_S(ptr_Arrays HostArraysPtr, consts def)
 #endif
 }
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° NaN
-// Ð¡Ð¸Ð½Ñ‚Ð°ÐºÑÐ¸Ñ Ð²Ñ‹Ð·Ð¾Ð²Ð° test_nan(x, __FILE__, __LINE__);
+// Òåñò íà NaN
+// Ñèíòàêñèñ âûçîâà test_nan(x, __FILE__, __LINE__);
 void test_nan(double x, char *file, int line)
 {
 #ifdef MY_TEST
@@ -60,7 +60,7 @@ void test_nan(double x, char *file, int line)
 	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
 	}
-	// Ð¢ÐµÑÑ‚Ð¾Ð²Ð¾Ðµ Ð±Ð¾Ð»ÐµÐµ Ð¶ÐµÑÑ‚ÐºÐ¾Ðµ Ð¾Ð³Ñ€Ð°Ð½Ð¸Ñ‡ÐµÐ½Ð¸Ðµ Ð¸Ð¼ÐµÐ½Ð½Ð¾ Ð´Ð»Ñ ÑÑ‚Ð¾Ð¹ Ð·Ð°Ð´Ð°Ñ‡Ð¸
+	// Òåñòîâîå áîëåå æåñòêîå îãðàíè÷åíèå èìåííî äëÿ ýòîé çàäà÷è
 	/*if (x > 1e30 || x < -1e30)
 	{
 		printf("Error: NaN\nFile:\"%s\"\nLine:\"%d\"\n\n", file, line);
@@ -69,8 +69,8 @@ void test_nan(double x, char *file, int line)
 #endif
 }
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° Ð¿Ð¾Ð»Ð¾Ð¶Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾Ðµ Ð¸ Ð½Ðµ NaN
-// Ð¡Ð¸Ð½Ñ‚Ð°ÐºÑÐ¸Ñ Ð²Ñ‹Ð·Ð¾Ð²Ð° test_positive(x, __FILE__, __LINE__);
+// Òåñò íà ïîëîæèòåëüíîå è íå NaN
+// Ñèíòàêñèñ âûçîâà test_positive(x, __FILE__, __LINE__);
 void test_positive(double x, char *file, int line)
 {
 #ifdef MY_TEST
@@ -85,8 +85,8 @@ void test_positive(double x, char *file, int line)
 #endif
 }
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° Ð²Ñ…Ð¾Ð¶Ð´ÐµÐ½Ð¸Ðµ Ð½Ð°ÑÑ‹Ñ‰ÐµÐ½Ð½Ð¾ÑÑ‚ÐµÐ¹ Ð² [0;1]
-// Ð¡Ð¸Ð½Ñ‚Ð°ÐºÑÐ¸Ñ Ð²Ñ‹Ð·Ð¾Ð²Ð° test_S(x, __FILE__, __LINE__);
+// Òåñò íà âõîæäåíèå íàñûùåííîñòåé â [0;1]
+// Ñèíòàêñèñ âûçîâà test_S(x, __FILE__, __LINE__);
 void test_S(double S, char *file, int line)
 {
 #ifdef MY_TEST
@@ -105,8 +105,8 @@ void test_S(double S, char *file, int line)
 #endif
 }
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° Ð²Ñ…Ð¾Ð¶Ð´ÐµÐ½Ð¸Ðµ ÑÐºÐ¾Ñ€Ð¾ÑÑ‚ÐµÐ¹ Ð² [-100;100]
-// Ð¡Ð¸Ð½Ñ‚Ð°ÐºÑÐ¸Ñ Ð²Ñ‹Ð·Ð¾Ð²Ð° test_u(x, __FILE__, __LINE__);
+// Òåñò íà âõîæäåíèå ñêîðîñòåé â [-100;100]
+// Ñèíòàêñèñ âûçîâà test_u(x, __FILE__, __LINE__);
 void test_u(double u, char *file, int line)
 {
 #ifdef MY_TEST
@@ -126,8 +126,8 @@ void test_u(double u, char *file, int line)
 }
 
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° Ð²Ñ…Ð¾Ð¶Ð´ÐµÐ½Ð¸Ðµ Ð¿Ð»Ð¾Ñ‚Ð½Ð¾ÑÑ‚ÐµÐ¹ Ð² [-0;1500]
-// Ð¡Ð¸Ð½Ñ‚Ð°ÐºÑÐ¸Ñ Ð²Ñ‹Ð·Ð¾Ð²Ð° test_ro(x, __FILE__, __LINE__);
+// Òåñò íà âõîæäåíèå ïëîòíîñòåé â [-0;1500]
+// Ñèíòàêñèñ âûçîâà test_ro(x, __FILE__, __LINE__);
 void test_ro(double ro, char *file, int line)
 {
 #ifdef MY_TEST
@@ -146,8 +146,8 @@ void test_ro(double ro, char *file, int line)
 #endif
 }
 
-// Ð¤ÑƒÐ½ÐºÑ†Ð¸Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÐµÑ‚, Ñ‡Ñ‚Ð¾ Ð¿ÐµÑ€Ð²Ñ‹Ð¹ Ð°Ñ€Ð³ÑƒÐ¼ÐµÐ½Ñ‚ Ð¼Ð½Ð¾Ð³Ð¾ Ð±Ð¾Ð»ÑŒÑˆÐµ (Ð¿Ð¾ Ð¼Ð¾Ð´ÑƒÐ»ÑŽ) Ð²Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾
-// Ð•ÑÐ»Ð¸ ÑÑ‚Ð¾ Ð½Ðµ Ñ‚Ð°Ðº, Ð¿ÐµÑ‡Ð°Ñ‚Ð°ÐµÑ‚ÑÑ Ð¿Ñ€ÐµÐ´ÑƒÐ¿Ñ€ÐµÐ¶Ð´ÐµÐ½Ð¸Ðµ
+// Ôóíêöèÿ ïðîâåðÿåò, ÷òî ïåðâûé àðãóìåíò ìíîãî áîëüøå (ïî ìîäóëþ) âòîðîãî
+// Åñëè ýòî íå òàê, ïå÷àòàåòñÿ ïðåäóïðåæäåíèå
 void test_arrowhead(double big, double small, char *file, int line)
 {
 #ifdef MY_TEST_1
@@ -158,8 +158,8 @@ void test_arrowhead(double big, double small, char *file, int line)
 #endif
 }
 
-// Ð¤ÑƒÐ½ÐºÑ†Ð¸Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÐµÑ‚, Ñ‡Ñ‚Ð¾ Ð¿ÐµÑ€Ð²Ð¾Ðµ ÑÐ»Ð°Ð³Ð°ÐµÐ¼Ð¾Ðµ ÑƒÑ€Ð°Ð²Ð½ÐµÐ½Ð¸Ñ Ð½ÐµÑ€Ð°Ð·Ñ€Ñ‹Ð²Ð½Ð¾ÑÑ‚Ð¸ Ð¼Ð½Ð¾Ð³Ð¾ Ð±Ð¾Ð»ÑŒÑˆÐµ (Ð¿Ð¾ Ð¼Ð¾Ð´ÑƒÐ»ÑŽ) Ð²Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾
-// Ð•ÑÐ»Ð¸ ÑÑ‚Ð¾ Ð½Ðµ Ñ‚Ð°Ðº, Ð¿ÐµÑ‡Ð°Ñ‚Ð°ÐµÑ‚ÑÑ Ð¿Ñ€ÐµÐ´ÑƒÐ¿Ñ€ÐµÐ¶Ð´ÐµÐ½Ð¸Ðµ
+// Ôóíêöèÿ ïðîâåðÿåò, ÷òî ïåðâîå ñëàãàåìîå óðàâíåíèÿ íåðàçðûâíîñòè ìíîãî áîëüøå (ïî ìîäóëþ) âòîðîãî
+// Åñëè ýòî íå òàê, ïå÷àòàåòñÿ ïðåäóïðåæäåíèå
 void test_tau(double S_old, double S_now, double S_new, int local, consts def, char *file, int line)
 {
 #ifdef MY_TEST_1
@@ -173,7 +173,7 @@ void test_tau(double S_old, double S_now, double S_new, int local, consts def, c
 #endif
 }
 
-// Ð¢ÐµÑÑ‚ Ð½Ð° ÐºÐ¾Ñ€Ñ€ÐµÐºÑ‚Ð½Ð¾ÑÑ‚ÑŒ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð² Ð·Ð°Ð´Ð°Ñ‡Ð¸
+// Òåñò íà êîððåêòíîñòü ïàðàìåòðîâ çàäà÷è
 void read_defines_test(consts def)
 {
 #ifdef MY_TEST

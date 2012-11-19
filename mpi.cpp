@@ -1,8 +1,8 @@
-п»ї#include <mpi.h>
+#include <mpi.h>
 #include "defines.h"
 
 /*
-// РќРµРґРѕРїРёСЃР°РЅРЅР°СЏ С„СѓРЅРєС†РёСЏ РѕРїС‚РёРјР°Р»СЊРЅРѕРіРѕ РґРµР»РµРЅРёСЏ СЃРµС‚РєРё РїРѕ РїСЂРѕС†РµСЃСЃРѕСЂР°Рј
+// Недописанная функция оптимального деления сетки по процессорам
 void kak_delit(void)
 {
 	unsigned int Nx=250, Ny=240;
@@ -47,7 +47,7 @@ void kak_delit(void)
 }
 */
 
-// РџРµСЂРµРґР°С‡Р° Рё РїСЂРёРµРј РґР°РЅРЅС‹С… РїСЂР°РІРѕР№ РіСЂР°РЅРёС†Рµ
+// Передача и прием данных правой границе
 void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
@@ -58,7 +58,7 @@ void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, 
 	}
 }
 
-// РџРѕР»СѓС‡РµРЅРёРµ Рё РїРµСЂРµРґР°С‡Р° РґР°РЅРЅС‹С… РЅР° Р»РµРІРѕР№ РіСЂР°РЅРёС†Рµ
+// Получение и передача данных на левой границе
 void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
@@ -69,15 +69,15 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 	}
 }
 
-// РћР±РјРµРЅ РґР°РЅРЅС‹РјРё РЅР° РіСЂР°РЅРёС†Р°С… РјРµР¶РґСѓ РІСЃРµРјРё РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
-// 0. Р—Р°РіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ СЃ СѓСЃРѕСЂРёС‚РµР»СЏ РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р°
-// 1.  Р”Р»СЏ РІСЃРµС… С‡РµС‚РЅС‹С… РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ
-// 1.1 РїРµСЂРµРґР°РµРј/РїРѕР»СѓС‡Р°РµРј РїСЂР°РІСѓСЋ РіСЂР°РЅРёС†Сѓ,
-// 1.2 РїРѕР»СѓС‡Р°РµРј/РїРµСЂРµРґР°РµРј Р»РµРІСѓСЋ РіСЂР°РЅРёС†Сѓ.
-// 2.2 Р”Р»СЏ РЅРµС‡РµС‚РЅС‹С… - РїРѕР»СѓС‡Р°РµРј/РїРµСЂРµРґР°РµРј Р»РµРІСѓСЋ РіСЂР°РЅРёС†Сѓ,
-// 2.2 РїРµСЂРµРґР°РµРј/РїРѕР»СѓС‡Р°РµРј РїСЂР°РІСѓСЋ.
-// Р”Р»СЏ РєСЂР°Р№РЅРёС… РїСЂРѕС†РµСЃСЃРѕСЂРѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ РѕР±РјРµРЅС‹ РЅРµ С‚СЂРµР±СѓСЋС‚СЃСЏ
-// 3. Р—Р°РіСЂСѓР¶Р°РµРј РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Обмен данными на границах между всеми процессорами
+// 0. Загружаем данные с усорителя в память хоста
+// 1.  Для всех четных процессоров
+// 1.1 передаем/получаем правую границу,
+// 1.2 получаем/передаем левую границу.
+// 2.2 Для нечетных - получаем/передаем левую границу,
+// 2.2 передаем/получаем правую.
+// Для крайних процессоров соответствующие обмены не требуются
+// 3. Загружаем полученные данные в память ускорителя
 
 void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, double* DevBuffer, consts def, char axis)
 {
@@ -107,7 +107,7 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			}
 			else
 			{
-				if ((def.rankx) != 0) // Р’ РїСЂРёРЅС†РёРїРµ, Р»РёС€РЅСЏСЏ РїСЂРѕРІРµСЂРєР°
+				if ((def.rankx) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data_part_xl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNy) * (def.locNz), (def.rank) - 1, 500);    // (2.1)
@@ -144,7 +144,7 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			}
 			else
 			{
-				if ((def.ranky) != 0) // Р’ РїСЂРёРЅС†РёРїРµ, Р»РёС€РЅСЏСЏ РїСЂРѕРІРµСЂРєР°
+				if ((def.ranky) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data_part_yl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNz), (def.rank) - (def.sizex), 504);    // (2.1)
@@ -181,7 +181,7 @@ void exchange_direct(double* HostArrayPtr, double* DevArrayPtr, double* HostBuff
 			}
 			else
 			{
-				if ((def.rankz) != 0) // Р’ РїСЂРёРЅС†РёРїРµ, Р»РёС€РЅСЏСЏ РїСЂРѕРІРµСЂРєР°
+				if ((def.rankz) != 0) // В принципе, лишняя проверка
 				{
 					load_exchange_data_part_zl(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def); // (0)
 					left_recv_send(HostBuffer, (def.locNx) * (def.locNy), (def.rank) - (def.sizex) * (def.sizey), 508);    // (2.1)
@@ -209,7 +209,7 @@ void exchange(double* HostArrayPtr, double* DevArrayPtr, double* HostBuffer, dou
 	exchange_direct(HostArrayPtr, DevArrayPtr, HostBuffer, DevBuffer, def, 'z');
 }
 
-// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё РґР°РІР»РµРЅРёСЏ P2, РїР»РѕС‚РЅРѕСЃС‚РµР№ ro1 Рё ro2, Xi РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
+// Обмен граничными значениями давления P2, плотностей ro1 и ro2, Xi между процессорами
 void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 #ifdef THREE_PHASE
@@ -225,9 +225,9 @@ void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double*
 }
 
 
-// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё СЃРєРѕСЂРѕСЃС‚РµР№ РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
-// Р’ СЃР»СѓС‡Р°Рµ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё РїРѕ РѕСЃРё X
-// РїРµСЂРµРґР°С‡Р° u1y Рё u2y РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
+// Обмен граничными значениями скоростей между процессорами
+// В случае распределения расчетной области между процессорами по оси X
+// передача u1y и u2y не требуется
 void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 	exchange_direct(HostArraysPtr.ux_w, DevArraysPtr.ux_w, HostBuffer, DevBuffer, def, 'x');
@@ -249,7 +249,7 @@ void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostB
 	}
 }
 
-// РћР±РјРµРЅ РіСЂР°РЅРёС‡РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё РґР°РІР»РµРЅРёСЏ РІРѕРґС‹ P1 Рё РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚Рё NAPL S2 РјРµР¶РґСѓ РїСЂРѕС†РµСЃСЃРѕСЂР°РјРё
+// Обмен граничными значениями давления воды P1 и насыщенности NAPL S2 между процессорами
 void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 #ifdef THREE_PHASE
@@ -272,7 +272,7 @@ void communication_finalization(void)
 	MPI_Finalize();
 }
 
-// Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅС†РёРё Barrier РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РєРѕРјРјСѓРЅРёРєР°С†РёР№
+// Реализация фунции Barrier для различных коммуникаций
 void barrier(void)
 {
 	MPI_Barrier(MPI_COMM_WORLD);

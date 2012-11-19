@@ -1,4 +1,4 @@
-﻿#ifndef B_L_H
+#ifndef B_L_H
 #define B_L_H
 
 #endif

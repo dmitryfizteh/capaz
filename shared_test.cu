@@ -1,7 +1,7 @@
-п»ї#include "gpu.h"
+#include "gpu.h"
 #include "cuPrintf.cu"
 
-// РџСЂРѕРІРµСЂРєР° РѕС€РёР±РѕРє GPU
+// Проверка ошибок GPU
 void checkErrors(char *label, char *file, int line)
 {
 #ifdef MY_TEST
@@ -24,14 +24,14 @@ void checkErrors(char *label, char *file, int line)
 #endif
 }
 
-// Р¤СѓРЅРєС†РёСЏ, РІС‹Р·С‹РІР°РµРјР°СЏ РїСЂРё РѕС€РёР±РєРµ
+// Функция, вызываемая при ошибке
 __device__ void device_print_error(char *error, char *file, int line)
 {
 	CUPRINTF("Error: %s\nFile: \"%s\"\nLine: %d\n\n", error, file, line);
 }
 
-// РўРµСЃС‚ РЅР° NaN
-// РЎРёРЅС‚Р°РєСЃРёСЃ РІС‹Р·РѕРІР° device_test_nan(x, __FILE__, __LINE__);
+// Тест на NaN
+// Синтаксис вызова device_test_nan(x, __FILE__, __LINE__);
 __device__ void device_test_nan(double x, char *file, int line)
 {
 #ifdef MY_TEST
@@ -42,8 +42,8 @@ __device__ void device_test_nan(double x, char *file, int line)
 #endif
 }
 
-// РўРµСЃС‚ РЅР° РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ Рё РЅРµ NaN
-// РЎРёРЅС‚Р°РєСЃРёСЃ РІС‹Р·РѕРІР° device_test_positive(x, __FILE__, __LINE__);
+// Тест на положительное и не NaN
+// Синтаксис вызова device_test_positive(x, __FILE__, __LINE__);
 __device__ void device_test_positive(double x, char *file, int line)
 {
 #ifdef MY_TEST
@@ -54,8 +54,8 @@ __device__ void device_test_positive(double x, char *file, int line)
 #endif
 }
 
-// РўРµСЃС‚ РЅР° РІС…РѕР¶РґРµРЅРёРµ РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚РµР№ РІ [0;1]
-// РЎРёРЅС‚Р°РєСЃРёСЃ РІС‹Р·РѕРІР° device_test_S(x, __FILE__, __LINE__);
+// Тест на вхождение насыщенностей в [0;1]
+// Синтаксис вызова device_test_S(x, __FILE__, __LINE__);
 __device__ void device_test_S(double S, char *file, int line)
 {
 #ifdef MY_TEST
@@ -70,8 +70,8 @@ __device__ void device_test_S(double S, char *file, int line)
 #endif
 }
 
-// РўРµСЃС‚ РЅР° РІС…РѕР¶РґРµРЅРёРµ СЃРєРѕСЂРѕСЃС‚РµР№ РІ [-100;100]
-// РЎРёРЅС‚Р°РєСЃРёСЃ РІС‹Р·РѕРІР° test_u(x, __FILE__, __LINE__);
+// Тест на вхождение скоростей в [-100;100]
+// Синтаксис вызова test_u(x, __FILE__, __LINE__);
 __device__ void device_test_u(double u, char *file, int line)
 {
 #ifdef MY_TEST
@@ -86,8 +86,8 @@ __device__ void device_test_u(double u, char *file, int line)
 #endif
 }
 
-// РўРµСЃС‚ РЅР° РІС…РѕР¶РґРµРЅРёРµ РїР»РѕС‚РЅРѕСЃС‚РµР№ РІ [0;3000]
-// РЎРёРЅС‚Р°РєСЃРёСЃ РІС‹Р·РѕРІР° test_ro(x, __FILE__, __LINE__);
+// Тест на вхождение плотностей в [0;3000]
+// Синтаксис вызова test_ro(x, __FILE__, __LINE__);
 __device__ void device_test_ro(double ro, char *file, int line)
 {
 #ifdef MY_TEST

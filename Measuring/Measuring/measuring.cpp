@@ -1,4 +1,5 @@
 ﻿#include "measuring.h"
+#include <mpi.h>
 
 struct params
 {
@@ -136,6 +137,8 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 	}
 }
 
+
+#ifdef USE_GPU
 void measuring_host_device_exchange(double *HostBuffer, double *DevBuffer, int rank) 
 {
 	params host_device_result[MEASURE_COUNT];
@@ -183,3 +186,4 @@ void measuring_host_device_exchange(double *HostBuffer, double *DevBuffer, int r
 	device_memory_free(DevBuffer);
 	device_finalization();
 }
+#endif
