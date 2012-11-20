@@ -24,22 +24,22 @@ int main(int argc, char* argv[])
 	ptr_Arrays DevArraysPtr;
 
 	// —четчик времени исполнени€ вычислительной части программы
-	char fname[] = "3ph_cpu_point_times.txt";
+	char fname[] = "3ph_point_times.txt";
 	FILE *fp;
 
 	clock_t task_times[MEASURE_COUNT];
 	int smesh_sizes[MEASURE_COUNT];
 	double task_time_av = 0;
 
-	if (!(fp = fopen(fname, "w")))
+	if (!(fp = fopen(fname, "a")))
 		printf("Not open file: %s", fname);
 	fprintf(fp, "size\t time, s\n");
 
 	for(int i = 0; i < MEASURE_COUNT; i++)
 	{
-		def.Nx = 10 + i;
-		def.Ny = 10 + i;
-		def.Nz = 10 + i;
+		def.Nx = 20 + 2 * i;
+		def.Ny = 20 + 2 * i;
+		def.Nz = 20 + 2 * i;
 
 		task_times[i] = main_part(&HostArraysPtr, &DevArraysPtr, argc, argv, &def);
 		smesh_sizes[i] = (def.Nx) * (def.Ny) * (def.Nz);
