@@ -32,6 +32,9 @@
     <ClCompile Include="..\OnePointTime\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\shared_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\gpu.cu">
@@ -40,5 +43,16 @@
     <CudaCompile Include="..\..\Three-phase\three-phase.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="..\..\cuPrintf.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\shared_test.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\cuPrintf.cuh">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
