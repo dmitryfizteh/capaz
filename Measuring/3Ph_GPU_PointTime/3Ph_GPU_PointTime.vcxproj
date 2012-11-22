@@ -85,8 +85,14 @@
     <ClInclude Include="..\..\Three-phase\three-phase.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\cuPrintf.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </CudaCompile>
     <CudaCompile Include="..\..\gpu.cu">
       <FileType>Document</FileType>
+    </CudaCompile>
+    <CudaCompile Include="..\..\shared_test.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="..\..\Three-phase\three-phase.cu">
       <FileType>Document</FileType>
@@ -95,7 +101,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\no_communication.cpp" />
+    <ClCompile Include="..\..\shared_test.cpp" />
     <ClCompile Include="..\OnePointTime\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\cuPrintf.cuh">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
