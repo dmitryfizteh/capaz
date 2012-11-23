@@ -14,11 +14,12 @@
 #include <direct.h>
 #else
 #include <sys/stat.h>
+#include <sys/timeb.h>
 #endif
 
-#define MEASURE_COUNT 10
-#define MAX_BUFFER_SIZE 20000000
-#define MIN_BUFFER_SIZE 10000000
+#define MEASURE_COUNT 30
+#define MAX_BUFFER_SIZE 1000000
+#define MIN_BUFFER_SIZE 100000
 
 //#define USE_GPU
 #define GPU_PER_NODE 3
