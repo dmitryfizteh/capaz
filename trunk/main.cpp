@@ -235,9 +235,7 @@ void sizes_initialization(consts *def)
 		(*def).sizey = 1;
 		(*def).sizez = 1;
 	} else {
-		(*def).sizex = SizeX;
-		(*def).sizey = SizeY;
-		(*def).sizez = SizeZ;
+		division(def);
 	}
 	(*def).rankx = (*def).rank % (*def).sizex;
 	(*def).ranky = ((*def).rank / (*def).sizex) % (*def).sizey;
@@ -298,8 +296,6 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 	FILE *f_save;
 
 	communication_initialization(argc, argv, def); // (1)
-
-	division(*def);
 
 	print_task_name(*def);
 

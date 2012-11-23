@@ -29,17 +29,17 @@ double t_gpu_calc (unsigned int N)
 }
 
 // Недописанная функция оптимального деления сетки по процессорам
-void division(consts def)
+void division(consts *def)
 {
 	unsigned int Nx, Ny, Nz, size;
 	unsigned int N_parameters=20;
 	double T=0, T_min=0;
 	int flag=0;
 
-	size = def.size;
-	Nx = def.Nx;
-	Ny = def.Ny;
-	Nz = def.Nz;
+	size = (*def).size;
+	Nx = (*def).Nx;
+	Ny = (*def).Ny;
+	Nz = (*def).Nz;
 
 	unsigned int s_x, s_y, s_z;
 
@@ -61,7 +61,12 @@ void division(consts def)
 				}
 			}
 
-		std::cout<<"s_x="<<s_x<<"  s_y="<<s_y<<"  s_z="<<s_z<<"  T_min="<<T_min<<"  flag="<<flag<<"\n";
+		if(!(*def).rank)
+			std::cout<<"s_x="<<s_x<<"  s_y="<<s_y<<"  s_z="<<s_z<<"  T_min="<<T_min<<"  flag="<<flag<<"\n";
+
+		(*def).sizex = s_x;
+		(*def).sizey = s_y;
+		(*def).sizez = s_z;
 }
 
 // Передача и прием данных правой границе
