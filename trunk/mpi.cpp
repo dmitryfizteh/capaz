@@ -7,40 +7,61 @@ int int_ceil(int a, int b)
 {
 	return (a + b-1) / b;
 }
+// Время обмена одним double между узлами
+double t_exch (unsigned int N)
+{
+	return 5.78E-9 * N + 5.54E-5;
+}
+// Время последовательных загрузки и выгрузки одного double с cpu на gpu
+double t_gpu_load (unsigned int N)
+{
+	return 3.57E-9 * N + 5.94E-3;
+}
+// Время расчета одной точки на сpu, с
+double t_cpu_calc (unsigned int N)
+{
+	return 1.91E-6 * N - 2.96E-2;
+}
+// Время расчета одной точки на gpu, с
+double t_gpu_calc (unsigned int N)
+{
+	return 4.7E-8 * N + 5.72E-4;
+}
 
 // Недописанная функция оптимального деления сетки по процессорам
-void kak_delit(void)
+void division(consts def)
 {
-	unsigned int Nx=250, Ny=240, Nz=200;
-	unsigned int size=8;
-	double t_lat_per=0.001;
-	double t_per=1;
-	unsigned int N_per_parameters=5;
-	double t_rasch=2;
-	double T=0;
+	unsigned int Nx, Ny, Nz, size;
+	unsigned int N_parameters=20;
+	double T=0, T_min=0;
+	int flag=0;
 
-	double T_min=0;
+	size = def.size;
+	Nx = def.Nx;
+	Ny = def.Ny;
+	Nz = def.Nz;
+
 	unsigned int s_x, s_y, s_z;
 
-	for(unsigned int s1=1;s1<size && s1<Nx;s1++)
-		for(unsigned int s2=1;s2<size/s1 && s2<Ny;s2++)
-			for(unsigned int s3=1;s3<size/(s1*s2) && s3<Nz;s3++)
+	for(unsigned int s1=1;s1<=size && s1<Nx;s1++)
+		for(unsigned int s2=1;s2<=size/s1 && s2<Ny;s2++)
+			for(unsigned int s3=1;s3<=size/(s1*s2) && s3<Nz;s3++)
 			{
-				double V_per = min(s1-1,1) * int_ceil(Ny, s2) * int_ceil(Nz, s3) + min(s2-1,1) * int_ceil(Nx, s1) * int_ceil(Nz, s3) + min(s3-1,1) * int_ceil(Ny, s2) * int_ceil(Nx, s1);
-				double T_rasch = t_rasch * int_ceil(Nx, s1) * int_ceil(Ny, s2) * int_ceil(Nz, s3);
-				double T_per = 2. * N_per_parameters * (t_lat_per + t_per * V_per);
-				double T_gpu_cpu = N_per_parameters * (t_lat_gpu_cpu + t_gpu_cpu * V_per);
-				T=T_rasch + T_per + T_gpu_cpu;
-				if (T<T_min)
+				int N_exch = min(s1-1,1) * int_ceil(Ny, s2) * int_ceil(Nz, s3) + min(s2-1,1) * int_ceil(Nx, s1) * int_ceil(Nz, s3) + min(s3-1,1) * int_ceil(Ny, s2) * int_ceil(Nx, s1);
+				double T_calc = t_cpu_calc(int_ceil(Nx, s1) * int_ceil(Ny, s2) * int_ceil(Nz, s3));
+				double T_exch = 2. * (min(s1-1,1) + min(s2-1,1) + min(s3-1,1)) * N_parameters * t_exch(N_exch);
+				double T_gpu_cpu = 0;//N_parameters * t_gpu_load(N_exch);
+				T=T_calc + T_exch + T_gpu_cpu;
+				if (T < T_min || T_min == 0)
 				{
-					T_min=T;
-					s_x=s1;
-					s_y=s2;
-					s_z=s3;
+					T_min = T;
+					s_x = s1;
+					s_y = s2;
+					s_z = s3;
 				}
 			}
 
-		std::cout<<"s2="<<s2<<"  s3="<<s3<<"  flag="<<flag<<"\n";
+		std::cout<<"s_x="<<s_x<<"  s_y="<<s_y<<"  s_z="<<s_z<<"  T_min="<<T_min<<"  flag="<<flag<<"\n";
 }
 
 // Передача и прием данных правой границе

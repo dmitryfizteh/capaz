@@ -58,8 +58,8 @@ echo "$compilator $taskD $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug
       $compilator $taskD $lib_path ./measuring.cpp $arch_file -o ../Debug/$debug_name.px
 
 cd ../Debug
-echo "mpirun $PPN -np 2 -maxtime 10 ./$debug_name.px"
-mpirun $PPN -np 2 -maxtime 10 ./$debug_name.px
+echo "mpirun $PPN -np 2 -maxtime 30 ./$debug_name.px"
+mpirun $PPN -np 2 -maxtime 30 ./$debug_name.px
 
 exit
 

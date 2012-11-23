@@ -299,6 +299,8 @@ void initialization(ptr_Arrays* HostArraysPtr, ptr_Arrays* DevArraysPtr, long in
 
 	communication_initialization(argc, argv, def); // (1)
 
+	division(*def);
+
 	print_task_name(*def);
 
 	sizes_initialization(def);
