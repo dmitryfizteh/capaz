@@ -1,5 +1,12 @@
 #include "defines.h"
 
+void division(consts *def)
+{
+			(*def).sizex = 1;
+			(*def).sizey = 1;
+			(*def).sizez = 1;
+}
+
 void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def)
 {
 }
