@@ -1,52 +1,39 @@
 #include "../gpu.h"
 #include "three-phase.h"
 
+// Номер среды
+__constant__ int media = 0;
+// Переломные точки насыщенностей при вычислении капиллярных давлений
+__constant__ double S_w_range[2] = {0.1, 0.99};
+__constant__ double S_g_range[2] = {0.005, 0.95};
+
 // Функции вычисления эффективных значений насыщенностей
 __device__ double device_assign_S_w_e(ptr_Arrays DevArraysPtr, int local)
 {
-	int media = 0;
 	return (DevArraysPtr.S_w[local] - gpu_def->S_wr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
 }
 
 __device__ double device_assign_S_n_e(ptr_Arrays DevArraysPtr, int local)
 {
-	int media = 0;
 	return (DevArraysPtr.S_n[local] - gpu_def->S_nr[media]) / (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
 }
 
 // Вычисление капиллярных давлений
-
-// Функции задания переломных точек насыщенностей для вычисления капиллярных давлений
-__device__ void device_assign_S_w_range(double* S1, double* S2)
-{
-	(*S1) = 0.1;
-	(*S2) = 0.99;
-}
-
-__device__ void device_assign_S_g_range(double* S1, double* S2)
-{
-	(*S1) = 0.005;
-	(*S2) = 0.95;
-}
-
 // Функции кап. давлений и их производных для центральной части интервала
 __device__ double device_P_k_nw(double S)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	return gpu_def->P_d_nw[media] * pow((pow(S, A / (1. - A)) - 1.), 1. / A);
 }
 
 __device__ double device_P_k_gn(double S)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	return gpu_def->P_d_gn[media] * pow(pow((1. - S), A / (1. - A)) - 1., 1. / A);
 }
 
 __device__ double device_P_k_nw_S(double S)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	return gpu_def->P_d_nw[media] * pow(pow(S, A / (1. - A)) - 1., 1. / A - 1.) * pow(S, (A / (1. - A) - 1.)) / (1. - A)
 		/ (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
@@ -54,7 +41,6 @@ __device__ double device_P_k_nw_S(double S)
 
 __device__ double device_P_k_gn_S(double S)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	return gpu_def->P_d_gn[media] * pow(pow(1. - S, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S, A / (1. - A) - 1.) / (1. - A)
 		/ (1. - gpu_def->S_wr[media] - gpu_def->S_nr[media] - gpu_def->S_gr[media]);
@@ -66,8 +52,6 @@ __device__ double device_P_k_gn_S(double S)
 __device__ double device_assign_P_k_nw(double S_w_e)
 {
 	double Pk_nw = 0;
-/*	double S_w_range[2];
-	device_assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
 	{
@@ -81,15 +65,13 @@ __device__ double device_assign_P_k_nw(double S_w_e)
 	{
 		Pk_nw = device_P_k_nw(S_w_e);
 	}
-*/
+
 	return Pk_nw;
 }
 
 __device__ double device_assign_P_k_gn(double S_g_e)
 {
 	double Pk_gn = 0;
-/*	double S_g_range[2];
-	device_assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
 	{
@@ -103,7 +85,7 @@ __device__ double device_assign_P_k_gn(double S_g_e)
 	{
 		Pk_gn = device_P_k_gn(S_g_e);
 	}
-*/
+
 	return Pk_gn;
 }
 
@@ -111,8 +93,6 @@ __device__ double device_assign_P_k_gn(double S_g_e)
 __device__ double device_assign_P_k_nw_S(double S_w_e)
 {
 	double PkSw = 0;
-/*	double S_w_range[2];
-	device_assign_S_w_range(S_w_range, S_w_range + 1);
 
 	if (S_w_e <= S_w_range[0])
 	{
@@ -126,15 +106,13 @@ __device__ double device_assign_P_k_nw_S(double S_w_e)
 	{
 		PkSw = device_P_k_nw_S(S_w_e);
 	}
-*/
+
 	return PkSw;
 }
 
 __device__ double device_assign_P_k_gn_S(double S_g_e)
 {
 	double PkSn = 0;
-/*	double S_g_range[2];
-	device_assign_S_g_range(S_g_range, S_g_range + 1);
 
 	if (S_g_e <= S_g_range[0])
 	{
@@ -148,14 +126,13 @@ __device__ double device_assign_P_k_gn_S(double S_g_e)
 	{
 		PkSn = device_P_k_gn_S(S_g_e);
 	}
-*/
+
 	return PkSn;
 }
 
 // Функции вычисления относительных проницаемостей
 __device__ double device_assign_k_w(double S_w_e)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	double k_w = 0;
 
@@ -169,7 +146,6 @@ __device__ double device_assign_k_w(double S_w_e)
 
 __device__ double device_assign_k_g(double S_g_e)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	double k_g = 0;
 
@@ -183,7 +159,6 @@ __device__ double device_assign_k_g(double S_g_e)
 
 __device__ double device_assign_k_n(double S_w_e, double S_n_e)
 {
-	int media = 0;
 	double A = gpu_def->lambda[media];
 	double k_n = 0;
 	double S_g_e = 1. - S_w_e - S_n_e;
