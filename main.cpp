@@ -229,14 +229,8 @@ int is_active_point(int i, int j, int k, consts def)
 // ѕрименение начальных данных во всех точках
 void sizes_initialization(consts *def)
 {
-	if((*def).size == 1) 
-	{
-		(*def).sizex = 1;
-		(*def).sizey = 1;
-		(*def).sizez = 1;
-	} else {
-		division(def);
-	}
+	division(def);
+
 	(*def).rankx = (*def).rank % (*def).sizex;
 	(*def).ranky = ((*def).rank / (*def).sizex) % (*def).sizey;
 	(*def).rankz = ((*def).rank / (*def).sizex) / (*def).sizey;
