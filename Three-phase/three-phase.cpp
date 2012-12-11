@@ -399,6 +399,12 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
+void S_local_initialization(ptr_Arrays HostArraysPtr, int local, consts def)
+{
+	HostArraysPtr.S_w[local] = def.S_w_init + 0.1 * cos(0.1 * local) + 0.1 / (local + 1.) + 0.1 * exp(-0.01 * local);
+	HostArraysPtr.S_n[local] = def.S_n_init + 0.1 * sin((double)local) - 0.1 / (local + 1.) - 0.1 * exp(-0.005 * local);;
+}
+
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
 	*t = 0;
@@ -410,17 +416,19 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
 					HostArraysPtr.m[local]=def.porosity[0];
+					S_local_initialization(HostArraysPtr, local, def);
 
-					if ((j == 0) && ((def.source) > 0))
+
+					/*if ((j == 0) && ((def.source) > 0))
 					{
 						HostArraysPtr.S_w[local] = def.S_w_gr;
 						HostArraysPtr.S_n[local] = def.S_n_gr;
 					}
 					else
 					{
-						HostArraysPtr.S_w[local] = def.S_w_init + def.rank * 0.01;
+						HostArraysPtr.S_w[local] = def.S_w_init;
 						HostArraysPtr.S_n[local] = def.S_n_init;
-					}
+					}*/
 
 					/*double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
 					+ def.ro0_w * HostArraysPtr.S_w[local]
@@ -454,4 +462,5 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					test_positive(HostArraysPtr.ro_g[local], __FILE__, __LINE__);
 				}
 }
+
 
