@@ -22,21 +22,21 @@ double assign_S_n_e(ptr_Arrays HostArraysPtr, int local, consts def)
 // ‘ункции кап. давлений и их производных дл€ центральной части интервала
 double P_k_nw(double S, consts def)
 {
-	return 0;
+	//return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow((pow(S, A / (1. - A)) - 1.), 1. / A);
 }
 
 double P_k_gn(double S, consts def)
 {
-	return 0;
+	//return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow((1. - S), A / (1. - A)) - 1., 1. / A);
 }
 
 double P_k_nw_S(double S, consts def)
 {
-	return 0;
+	//return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow(pow(S, A / (1. - A)) - 1., 1. / A - 1.) * pow(S, (A / (1. - A) - 1.)) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -44,7 +44,7 @@ double P_k_nw_S(double S, consts def)
 
 double P_k_gn_S(double S, consts def)
 {
-	return 0;
+	//return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow(1. - S, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S, A / (1. - A) - 1.) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -366,14 +366,14 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 		else if (j == 0)
 		{
-			/*if((i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
+			if((i > (def.locNx) / 3) && (i < 2 * (def.locNx) / 3) && (((def.locNz) < 2) || (k > (def.locNz) / 3) && (k < 2 * (def.locNz) / 3)))
 			{
 				//ќткрыта€ верхн€€ граница
 				HostArraysPtr.P_w[local] = def.P_atm;
 				HostArraysPtr.P_n[local] = def.P_atm;
 				HostArraysPtr.P_g[local] = def.P_atm;
 			}
-			else*/
+			else
 			{
 				// ”слови€ непротекани€
 				HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
@@ -405,8 +405,10 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 void S_local_initialization(ptr_Arrays HostArraysPtr, int local, consts def)
 {
-	HostArraysPtr.S_w[local] = def.S_w_init + 0.1 * cos(0.1 * local) + 0.1 / (local + 1.) + 0.1 * exp(-0.01 * local);
-	HostArraysPtr.S_n[local] = def.S_n_init + 0.1 * sin((double)local) - 0.1 / (local + 1.) - 0.1 * exp(-0.005 * local);;
+	HostArraysPtr.S_w[local] = def.S_w_init;
+	HostArraysPtr.S_n[local] = def.S_n_init;
+//	HostArraysPtr.S_w[local] = def.S_w_init + 0.1 * cos(0.1 * local) + 0.1 / (local + 1.) + 0.1 * exp(-0.01 * local);
+//	HostArraysPtr.S_n[local] = def.S_n_init + 0.1 * sin((double)local) - 0.1 / (local + 1.) - 0.1 * exp(-0.005 * local);;
 }
 
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
