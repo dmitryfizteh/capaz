@@ -22,18 +22,21 @@ double assign_S_n_e(ptr_Arrays HostArraysPtr, int local, consts def)
 // Функции кап. давлений и их производных для центральной части интервала
 double P_k_nw(double S, consts def)
 {
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow((pow(S, A / (1. - A)) - 1.), 1. / A);
 }
 
 double P_k_gn(double S, consts def)
 {
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow((1. - S), A / (1. - A)) - 1., 1. / A);
 }
 
 double P_k_nw_S(double S, consts def)
 {
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow(pow(S, A / (1. - A)) - 1., 1. / A - 1.) * pow(S, (A / (1. - A) - 1.)) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -41,6 +44,7 @@ double P_k_nw_S(double S, consts def)
 
 double P_k_gn_S(double S, consts def)
 {
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow(1. - S, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S, A / (1. - A) - 1.) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
