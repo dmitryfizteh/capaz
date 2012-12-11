@@ -7,11 +7,11 @@ int is_injection_well(int i, int j, int k, consts def)
 	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 #endif
 #ifdef THREE_PHASE
-//	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
-if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1) 
+	if((j == 1) && ((i > (def.locNx) / 3) && (i < 2 * (def.locNx) / 3) && (((def.locNz) < 2) || (k > (def.locNz) / 3) && (k < 2 * (def.locNz) / 3))))
+/*if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1) 
 	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
 	|| (i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
-	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1))
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1))*/
 #endif
 #ifndef TWO_PHASE
 		return 1;
@@ -27,13 +27,13 @@ int is_output_well(int i, int j, int k, consts def)
 	if (((i == def.Nx - 2) && (j == def.Ny - 2)) || ((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
 #endif
 #ifdef THREE_PHASE
-//	if ((j == 1) && (i > 0) && (i < (def.locNx) / 3 - 1) && (((def.locNz) < 2) || (k > 0) && (k < (def.locNz) / 3 - 1)))
-if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1) 
+	if(i < 0) 
+/*if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1) 
 	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
 	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
-	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1))
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1))*/
 #endif
-#ifndef TWO_PHASE
+#ifndef TWO_PHASEs
 		return 1;
 	else
 #endif
@@ -72,13 +72,13 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 	*q_g = 0.0;
 	*q_n = 0.0;
 
-/*	if (is_injection_well(i, j, k, def))
+	if (is_injection_well(i, j, k, def))
 	{
 		*q_w = 0.01;
-		*q_g = 0.005;
+		*q_g = 0.0;
 		*q_n = 0.0;
 	}
-	if (is_output_well(i, j, k, def))
+	/*if (is_output_well(i, j, k, def))
 	{
 		q = 0.015;
 
