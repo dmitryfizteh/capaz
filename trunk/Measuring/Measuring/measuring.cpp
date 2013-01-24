@@ -25,7 +25,7 @@ typedef struct params params;
 int main(int argc, char* argv[])
 {
 	double *HostBuffer, *DevBuffer = 0, latency, send_double_time; 
-	double sum_x, sum_xy, sum_x_2, sum_y; // переменные для метода наименьших квадратов
+	double sum_x, sum_xy, sum_x_2, sum_y; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РјРµС‚РѕРґР° РЅР°РёРјРµРЅСЊС€РёС… РєРІР°РґСЂР°С‚РѕРІ
 	int size, rank;
 	params result[MEASURE_COUNT];
 	char fname[] = "cpu_times.txt";
@@ -78,11 +78,11 @@ int main(int argc, char* argv[])
 		sum_xy += result[i].buffer_size * result[i].task_time;
 	}
 
-	// Метод наименьших квадратов для нахождения коэффициентов прямой
+	// РњРµС‚РѕРґ РЅР°РёРјРµРЅСЊС€РёС… РєРІР°РґСЂР°С‚РѕРІ РґР»СЏ РЅР°С…РѕР¶РґРµРЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РїСЂСЏРјРѕР№
 	send_double_time = (sum_xy - sum_x * sum_y) / (sum_x_2 - sum_x * sum_x);
 	latency = (sum_y - send_double_time * sum_x) / MEASURE_COUNT;
 
-	// Переход от clock_t к секундам
+	// РџРµСЂРµС…РѕРґ РѕС‚ clock_t Рє СЃРµРєСѓРЅРґР°Рј
 	send_double_time /= CLOCKS_PER_SEC;
 	latency /= CLOCKS_PER_SEC;
 
@@ -129,7 +129,7 @@ void exchange(double* HostBuffer, int buffer_size, int size, int rank)
 		}
 		else
 		{
-			if ((rank) != 0) // В принципе, лишняя проверка
+			if ((rank) != 0) // Р’ РїСЂРёРЅС†РёРїРµ, Р»РёС€РЅСЏСЏ РїСЂРѕРІРµСЂРєР°
 				left_recv_send(HostBuffer, buffer_size, (rank) - 1, 500); 
 
 			if ((rank) != (size) - 1)
@@ -138,7 +138,7 @@ void exchange(double* HostBuffer, int buffer_size, int size, int rank)
 	}
 }
 
-// Передача и прием данных правой границе
+// РџРµСЂРµРґР°С‡Р° Рё РїСЂРёРµРј РґР°РЅРЅС‹С… РїСЂР°РІРѕР№ РіСЂР°РЅРёС†Рµ
 void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
@@ -149,7 +149,7 @@ void right_send_recv(double* HostBuffer, int buffer_size, int destination_rank, 
 	}
 }
 
-// Получение и передача данных на левой границе
+// РџРѕР»СѓС‡РµРЅРёРµ Рё РїРµСЂРµРґР°С‡Р° РґР°РЅРЅС‹С… РЅР° Р»РµРІРѕР№ РіСЂР°РЅРёС†Рµ
 void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, int send_recv_id)
 {
 	MPI_Status status;
@@ -165,7 +165,7 @@ void left_recv_send(double* HostBuffer, int buffer_size, int destination_rank, i
 void measuring_host_device_exchange(double *HostBuffer, double *DevBuffer, int rank) 
 {
 	params host_device_result[MEASURE_COUNT];
-	double sum_x, sum_xy, sum_x_2, sum_y; // переменные для метода наименьших квадратов
+	double sum_x, sum_xy, sum_x_2, sum_y; // РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РјРµС‚РѕРґР° РЅР°РёРјРµРЅСЊС€РёС… РєРІР°РґСЂР°С‚РѕРІ
 	double latency, send_double_time; 
 	char fname[] = "gpu_times.txt";
 	FILE *fp;
@@ -208,11 +208,11 @@ void measuring_host_device_exchange(double *HostBuffer, double *DevBuffer, int r
 		sum_xy += host_device_result[i].buffer_size * host_device_result[i].task_time;
 	}
 
-	// Метод наименьших квадратов для нахождения коэффициентов прямой
+	// РњРµС‚РѕРґ РЅР°РёРјРµРЅСЊС€РёС… РєРІР°РґСЂР°С‚РѕРІ РґР»СЏ РЅР°С…РѕР¶РґРµРЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ РїСЂСЏРјРѕР№
 	send_double_time = (sum_xy - sum_x * sum_y) / (sum_x_2 - sum_x * sum_x);
 	latency = (sum_y - send_double_time * sum_x) / MEASURE_COUNT;
 
-	// Переход от clock_t к секундам
+	// РџРµСЂРµС…РѕРґ РѕС‚ clock_t Рє СЃРµРєСѓРЅРґР°Рј
 	send_double_time /= CLOCKS_PER_SEC;
 	latency /= CLOCKS_PER_SEC;
 

@@ -13,7 +13,7 @@ __constant__ consts gpu_def [1];
 #include "Backley-Leverett/b-l.cu"
 #endif
 
-// Является ли точка нагнетательной скважиной
+// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅРѕР№ СЃРєРІР°Р¶РёРЅРѕР№
 __device__ int device_is_injection_well(int i, int j, int k)
 {
 #ifdef B_L
@@ -29,7 +29,7 @@ __device__ int device_is_injection_well(int i, int j, int k)
 			return 0;
 }
 
-// Является ли точка добывающей скважиной
+// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° РґРѕР±С‹РІР°СЋС‰РµР№ СЃРєРІР°Р¶РёРЅРѕР№
 __device__ int device_is_output_well(int i, int j, int k)
 {
 #ifdef B_L
@@ -45,11 +45,11 @@ __device__ int device_is_output_well(int i, int j, int k)
 			return 0;
 }
 
-// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РІС‚РµРєР°РµРјС‹С…/РІС‹С‚РµРєР°РµРјС‹С… Р¶РёРґРєРѕСЃС‚РµР№ q_i РЅР° СЃРєРІР°Р¶РёРЅР°С…
 __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g)
 {
 #ifdef B_L
-	// нагнетательная скважина
+	// РЅР°РіРЅРµС‚Р°С‚РµР»СЊРЅР°СЏ СЃРєРІР°Р¶РёРЅР°
 	if (device_is_injection_well(i, j, k))
 	{
 		*q_w = gpu_def->Q;
@@ -57,7 +57,7 @@ __device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, dou
 		*q_g = 0.;
 	}
 
-	// добывающая скважина
+	// РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
 	if (device_is_output_well(i, j, k))
 	{
 		*q_g = 0;
@@ -115,7 +115,7 @@ __global__ void assign_ro_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РєРё, С‡РµСЂРµР· РєРѕС‚РѕСЂСѓСЋ Р±СѓРґРµС‚ РІС‹С‡РёСЃР»СЏС‚СЊСЃСЏ Р·РЅР°С‡РµРЅРёРµ РЅР° РіСЂР°РЅРёС†Рµ (i1, j1, k1)
 __device__ int device_set_boundary_basic_coordinate(int i, int j, int k)
 {
 	int i1, j1, k1;
@@ -152,7 +152,7 @@ __device__ int device_set_boundary_basic_coordinate(int i, int j, int k)
 	return (i1 + j1 * (gpu_def->locNx) + k1 * (gpu_def->locNx) * (gpu_def->locNy));
 }
 
-// Расчет центральной разности
+// Р Р°СЃС‡РµС‚ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 __device__ double central_difference (double* ptr, char axis)
 {
 	switch (axis)
@@ -177,7 +177,7 @@ __device__ double central_difference (double* ptr, char axis)
 	}
 }
 
-// Расчет направленной разности
+// Р Р°СЃС‡РµС‚ РЅР°РїСЂР°РІР»РµРЅРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 __device__ double directed_difference (double x1, double x2, double* Xi, double* ro, char axis)
 {
 	switch (axis)
@@ -208,7 +208,7 @@ __device__ double directed_difference (double x1, double x2, double* Xi, double*
 	}
 }
 
-// Расчет левой разности
+// Р Р°СЃС‡РµС‚ Р»РµРІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 __device__ double left_difference (double* ptr, char axis)
 {
 	switch (axis)
@@ -233,7 +233,7 @@ __device__ double left_difference (double* ptr, char axis)
 	}
 }
 
-// Расчет правой разности
+// Р Р°СЃС‡РµС‚ РїСЂР°РІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 __device__ double right_difference (double* ptr, char axis)
 {
 	switch (axis)
@@ -258,11 +258,11 @@ __device__ double right_difference (double* ptr, char axis)
 	}
 }
 
-// Преобразование локальных координат процессора к глобальным
-// Каждый процессор содержит дополнительную точку в массиве для
-// обмена данными, если имеет соседа
-// (если 2 соседа с обеих сторон,то +2 точки).
-// Глобальные границы хранятся как обычные точки (отсюда и условие на rank==0)
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ Р»РѕРєР°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РїСЂРѕС†РµСЃСЃРѕСЂР° Рє РіР»РѕР±Р°Р»СЊРЅС‹Рј
+// РљР°Р¶РґС‹Р№ РїСЂРѕС†РµСЃСЃРѕСЂ СЃРѕРґРµСЂР¶РёС‚ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅСѓСЋ С‚РѕС‡РєСѓ РІ РјР°СЃСЃРёРІРµ РґР»СЏ
+// РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё, РµСЃР»Рё РёРјРµРµС‚ СЃРѕСЃРµРґР°
+// (РµСЃР»Рё 2 СЃРѕСЃРµРґР° СЃ РѕР±РµРёС… СЃС‚РѕСЂРѕРЅ,С‚Рѕ +2 С‚РѕС‡РєРё).
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РіСЂР°РЅРёС†С‹ С…СЂР°РЅСЏС‚СЃСЏ РєР°Рє РѕР±С‹С‡РЅС‹Рµ С‚РѕС‡РєРё (РѕС‚СЃСЋРґР° Рё СѓСЃР»РѕРІРёРµ РЅР° rank==0)
 __device__ int device_local_to_global(int local_index, char axis)
 {
 	int global_index = local_index;
@@ -292,7 +292,7 @@ __device__ int device_local_to_global(int local_index, char axis)
 	return global_index;
 }
 
-// Является ли точка активной (т.е. не предназначенной только для обмена на границах)
+// РЇРІР»СЏРµС‚СЃСЏ Р»Рё С‚РѕС‡РєР° Р°РєС‚РёРІРЅРѕР№ (С‚.Рµ. РЅРµ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅРЅРѕР№ С‚РѕР»СЊРєРѕ РґР»СЏ РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Р°С…)
 __device__ int device_is_active_point(int i, int j, int k)
 {
 	if (((gpu_def -> rankx) != 0 && i == 0) || ((gpu_def -> rankx) != (gpu_def -> sizex) - 1 && i == (gpu_def -> locNx) - 1)
@@ -307,7 +307,7 @@ __device__ int device_is_active_point(int i, int j, int k)
 	}
 }
 
-// Функция вычисления "эффективной" плотности
+// Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ "СЌС„С„РµРєС‚РёРІРЅРѕР№" РїР»РѕС‚РЅРѕСЃС‚Рё
 __device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int local)
 {
 #ifdef THREE_PHASE
@@ -320,7 +320,7 @@ __device__ double device_ro_eff_gdy(ptr_Arrays DevArraysPtr, int local)
 	return ro_g_dy;
 }
 
-// Расчет плотностей, давления NAPL P2 и Xi во всех точках сетки
+// Р Р°СЃС‡РµС‚ РїР»РѕС‚РЅРѕСЃС‚РµР№, РґР°РІР»РµРЅРёСЏ NAPL P2 Рё Xi РІРѕ РІСЃРµС… С‚РѕС‡РєР°С… СЃРµС‚РєРё
 void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	assign_P_Xi_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
@@ -330,7 +330,7 @@ void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 	cudaPrintfDisplay(stdout, true);
 }
 
-// Расчет давления воды P1 и насыщенности NAPL S2 во всех точках сетки
+// Р Р°СЃС‡РµС‚ РґР°РІР»РµРЅРёСЏ РІРѕРґС‹ P1 Рё РЅР°СЃС‹С‰РµРЅРЅРѕСЃС‚Рё NAPL S2 РІРѕ РІСЃРµС… С‚РѕС‡РєР°С… СЃРµС‚РєРё
 void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	Newton_method_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
@@ -338,7 +338,7 @@ void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts d
 	cudaPrintfDisplay(stdout, true);
 }
 
-// Расчет скорости в каждой точке сетки
+// Р Р°СЃС‡РµС‚ СЃРєРѕСЂРѕСЃС‚Рё РІ РєР°Р¶РґРѕР№ С‚РѕС‡РєРµ СЃРµС‚РєРё
 __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -479,7 +479,7 @@ __global__ void assign_u_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// Расчет скоростей во всех точках сетки
+// Р Р°СЃС‡РµС‚ СЃРєРѕСЂРѕСЃС‚РµР№ РІРѕ РІСЃРµС… С‚РѕС‡РєР°С… СЃРµС‚РєРё
 void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	assign_u_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
@@ -487,7 +487,7 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 	cudaPrintfDisplay(stdout, true);
 }
 
-// Расчет ro*S в каждой точке сетки методом направленных разностей
+// Р Р°СЃС‡РµС‚ ro*S РІ РєР°Р¶РґРѕР№ С‚РѕС‡РєРµ СЃРµС‚РєРё РјРµС‚РѕРґРѕРј РЅР°РїСЂР°РІР»РµРЅРЅС‹С… СЂР°Р·РЅРѕСЃС‚РµР№
 __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -505,7 +505,7 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 		double q_n = 0.;
 		double q_g = 0.;
 
-		// Значения q на скважинах
+		// Р—РЅР°С‡РµРЅРёСЏ q РЅР° СЃРєРІР°Р¶РёРЅР°С…
 		device_wells_q(DevArraysPtr, i, j, k, &q_w, &q_n, &q_g);
 
 #ifdef THREE_PHASE
@@ -590,7 +590,7 @@ __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 	}
 }
 
-// Расчет ro*S в каждой точке сетки
+// Р Р°СЃС‡РµС‚ ro*S РІ РєР°Р¶РґРѕР№ С‚РѕС‡РєРµ СЃРµС‚РєРё
 __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, double t)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -638,14 +638,14 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, double t)
 		double q_n = 0;
 
 #ifdef B_L
-		// В центре резервуара находится нагнетающая скважина
+		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РЅР°РіРЅРµС‚Р°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
 		if ((i == gpu_def->Nx / 2) && (j == gpu_def->Ny - 3) && (k == gpu_def->Nz / 2))
 		{
 			q_w = gpu_def->Q;
 			q_n = 0;
 		}
 
-		// В центре резервуара находится добывающая скважина
+		// Р’ С†РµРЅС‚СЂРµ СЂРµР·РµСЂРІСѓР°СЂР° РЅР°С…РѕРґРёС‚СЃСЏ РґРѕР±С‹РІР°СЋС‰Р°СЏ СЃРєРІР°Р¶РёРЅР°
 		if ((i == gpu_def->Nx - 3) && (j == 3) && (k == gpu_def->Nz - 3))
 		{
 			double k_w=0., k_n=0.;
@@ -680,7 +680,7 @@ __global__ void assign_roS_kernel(ptr_Arrays DevArraysPtr, double t)
 	}
 }
 
-// Расчет ro*S во всех точках сетки
+// Р Р°СЃС‡РµС‚ ro*S РІРѕ РІСЃРµС… С‚РѕС‡РєР°С… СЃРµС‚РєРё
 void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
 #ifdef NR
@@ -692,7 +692,7 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 	cudaPrintfDisplay(stdout, true);
 }
 
-// Применение граничных условий
+// РџСЂРёРјРµРЅРµРЅРёРµ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№
 void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	Border_S_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
@@ -704,28 +704,28 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 	cudaPrintfDisplay(stdout, true);
 }
 
-// Функция загрузки данных в память хоста
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р°
 void load_data_to_host(double* HostArrayPtr, double* DevArrayPtr, consts def)
 {
 	cudaMemcpy(HostArrayPtr, DevArrayPtr, (def.locNx) * (def.locNy) * (def.locNz)*sizeof(double), cudaMemcpyDeviceToHost);
 	checkErrors("copy data to host", __FILE__, __LINE__);
 }
 
-// Функция загрузки данных типа double в память ускорителя
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° double РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void load_data_to_device(double* HostArrayPtr, double* DevArrayPtr, consts def)
 {
 	cudaMemcpy(DevArrayPtr, HostArrayPtr, (def.locNx) * (def.locNy) * (def.locNz)*sizeof(double), cudaMemcpyHostToDevice);
 	checkErrors("copy double data to device", __FILE__, __LINE__);
 }
 
-// Функция загрузки данных типа int в память ускорителя
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° int РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void load_data_to_device_int(int* HostArrayPtr, int* DevArrayPtr, consts def)
 {
 	cudaMemcpy(DevArrayPtr, HostArrayPtr, (def.locNx) * (def.locNy) * (def.locNz)*sizeof(int), cudaMemcpyHostToDevice);
 	checkErrors("copy int data to device", __FILE__, __LINE__);
 }
 
-// Выделение памяти ускорителя под массив точек расчетной области
+// Р’С‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РїРѕРґ РјР°СЃСЃРёРІ С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts def)
 {
 	int buffer_size = 0;
@@ -774,7 +774,7 @@ void device_memory_allocation(ptr_Arrays* ArraysPtr, double** DevBuffer, consts 
 	checkErrors("memory allocation", __FILE__, __LINE__);
 }
 
-// Освобожение памяти ускорителя из под массива точек расчетной области
+// РћСЃРІРѕР±РѕР¶РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РёР· РїРѕРґ РјР°СЃСЃРёРІР° С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 {
 	cudaFree(DevBuffer);
@@ -812,22 +812,22 @@ void device_memory_free(ptr_Arrays DevArraysPtr, double* DevBuffer)
 	checkErrors("memory release", __FILE__, __LINE__);
 }
 
-// Инициализация ускорителя
-// Расчет происходит на ускорителе, номер которого равен
-// номеру запускающего процессора
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+// Р Р°СЃС‡РµС‚ РїСЂРѕРёСЃС…РѕРґРёС‚ РЅР° СѓСЃРєРѕСЂРёС‚РµР»Рµ, РЅРѕРјРµСЂ РєРѕС‚РѕСЂРѕРіРѕ СЂР°РІРµРЅ
+// РЅРѕРјРµСЂСѓ Р·Р°РїСѓСЃРєР°СЋС‰РµРіРѕ РїСЂРѕС†РµСЃСЃРѕСЂР°
 void device_initialization(consts* def)
 {
-	// Было бы очень неплохо вместо GPU_PER_NODE использовать cudaGetDeviceCount
+	// Р‘С‹Р»Рѕ Р±С‹ РѕС‡РµРЅСЊ РЅРµРїР»РѕС…Рѕ РІРјРµСЃС‚Рѕ GPU_PER_NODE РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ cudaGetDeviceCount
 	//int deviceCount;
 	//cudaGetDeviceCount ( &deviceCount );
 
-	// Считаем, что ядер на узле не меньше, чем ускорителей
+	// РЎС‡РёС‚Р°РµРј, С‡С‚Рѕ СЏРґРµСЂ РЅР° СѓР·Р»Рµ РЅРµ РјРµРЅСЊС€Рµ, С‡РµРј СѓСЃРєРѕСЂРёС‚РµР»РµР№
 	int device = (*def).rank % GPU_PER_NODE;
 	cudaSetDevice(device);
 
-	// Количество запускаемых блоков
-	// Если число точек сетки не кратно размеру блока,
-	// то количество блоков будет на 1 больше.
+	// РљРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РїСѓСЃРєР°РµРјС‹С… Р±Р»РѕРєРѕРІ
+	// Р•СЃР»Рё С‡РёСЃР»Рѕ С‚РѕС‡РµРє СЃРµС‚РєРё РЅРµ РєСЂР°С‚РЅРѕ СЂР°Р·РјРµСЂСѓ Р±Р»РѕРєР°,
+	// С‚Рѕ РєРѕР»РёС‡РµСЃС‚РІРѕ Р±Р»РѕРєРѕРІ Р±СѓРґРµС‚ РЅР° 1 Р±РѕР»СЊС€Рµ.
 	(*def).blocksX = (*def).locNx / BlockNX;
 	if (((*def).locNx % BlockNX) != 0)
 	{
@@ -880,29 +880,29 @@ void device_initialization(consts* def)
 		}
 
 
-		// Максимальный размер расчетной сетки для ускорителя
-		// sizeof(ptr_Arrays)/4 - количество параметров в точке, т.к. 4 -размер одного указателя
+		// РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЂР°СЃС‡РµС‚РЅРѕР№ СЃРµС‚РєРё РґР»СЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
+		// sizeof(ptr_Arrays)/4 - РєРѕР»РёС‡РµСЃС‚РІРѕ РїР°СЂР°РјРµС‚СЂРѕРІ РІ С‚РѕС‡РєРµ, С‚.Рє. 4 -СЂР°Р·РјРµСЂ РѕРґРЅРѕРіРѕ СѓРєР°Р·Р°С‚РµР»СЏ
 		printf("\nTotal NAPL_Filtration grid size : %d\n\n", devProp.totalGlobalMem / (sizeof(ptr_Arrays)*sizeof(double) / 4));
 	}
 
-	// (def.locNx)+2 потому что 2NyNz на буфер обмена выделяется
-	// Нужно переписать!!! Учесть размер буфера правильно!!!
+	// (def.locNx)+2 РїРѕС‚РѕРјСѓ С‡С‚Рѕ 2NyNz РЅР° Р±СѓС„РµСЂ РѕР±РјРµРЅР° РІС‹РґРµР»СЏРµС‚СЃСЏ
+	// РќСѓР¶РЅРѕ РїРµСЂРµРїРёСЃР°С‚СЊ!!! РЈС‡РµСЃС‚СЊ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РїСЂР°РІРёР»СЊРЅРѕ!!!
 	if (((*def).locNx + 2) * ((*def).locNy) * ((*def).locNz) > (devProp.totalGlobalMem / (sizeof(ptr_Arrays)*sizeof(double) / 4)))
 	{
 		printf("\nError! Not enough memory at GPU, rank=%d\n", (*def).rank);
 	}
 	fflush(stdout);
 
-	// Инициализируем библиотеку cuPrintf для вывода текста на консоль
-	// прямо из kernel
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р±РёР±Р»РёРѕС‚РµРєСѓ cuPrintf РґР»СЏ РІС‹РІРѕРґР° С‚РµРєСЃС‚Р° РЅР° РєРѕРЅСЃРѕР»СЊ
+	// РїСЂСЏРјРѕ РёР· kernel
 	cudaPrintfInit();
 }
 
-// Финализация ускорителя
+// Р¤РёРЅР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void device_finalization(void)
 {
-	// Останавливаем библиотеку cuPrintf для вывода текста на консоль
-	// прямо из kernel
+	// РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±РёР±Р»РёРѕС‚РµРєСѓ cuPrintf РґР»СЏ РІС‹РІРѕРґР° С‚РµРєСЃС‚Р° РЅР° РєРѕРЅСЃРѕР»СЊ
+	// РїСЂСЏРјРѕ РёР· kernel
 	cudaPrintfEnd();
 }
 
