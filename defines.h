@@ -166,6 +166,7 @@ extern void read_defines_test(consts def);
 extern double ro_eff_gdy(ptr_Arrays HostArraysPtr, int local, consts def);
 extern void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
+extern void assign_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts def);
 extern void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts def);
@@ -178,6 +179,7 @@ extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPt
 extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);
 extern void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
 extern void u_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);
+extern void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
 extern void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def);
 extern void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
 extern void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);

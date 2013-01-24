@@ -114,6 +114,17 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 				}
 }
 
+void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+			for (int k = 0; k < (def.locNz); k++)
+				if (is_active_point(i, j, k, def))
+				{
+					assign_S(HostArraysPtr, i, j, k, def);
+				}
+}
+
 void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
 	for (int i = 0; i < (def.locNx); i++)
@@ -201,6 +212,19 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #endif
 	test_ro(HostArraysPtr.ro_w[local], __FILE__, __LINE__);
 	test_ro(HostArraysPtr.ro_n[local], __FILE__, __LINE__);
+}
+
+void assign_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+
+#ifdef THREE_PHASE
+	HostArraysPtr.S_g[local] = 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local];
+	test_S(HostArraysPtr.S_g[local], __FILE__, __LINE__);
+#else
+	HostArraysPtr.S_w[local] = 1. - HostArraysPtr.S_n[local];
+	test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+#endif
 }
 
 // Расчет центральной разности
