@@ -48,8 +48,16 @@ void division(consts *def)
 			for(unsigned int s3=1;s3<=size/(s1*s2) && s3<Nz;s3++)
 			{
 				double T_calc = t_cpu_calc(int_ceil(Nx, s1) * int_ceil(Ny, s2) * int_ceil(Nz, s3));
-				double T_exch = 2. * (min(s1-1,1) * t_exch(int_ceil(Ny, s2) * int_ceil(Nz, s3)) + min(s2-1,1) * t_exch(int_ceil(Nx, s1) * int_ceil(Nz, s3)) + min(s3-1,1) * t_exch(int_ceil(Ny, s2) * int_ceil(Nx, s1))) * N_parameters;
-				double T_gpu_cpu = 0;//N_parameters * t_gpu_load(N_exch);
+				double T_exch = 2. * (min(s1-1,1) * t_exch(int_ceil(Ny, s2) * int_ceil(Nz, s3)) 
+					+ min(s2-1,1) * t_exch(int_ceil(Nx, s1) * int_ceil(Nz, s3)) 
+					+ min(s3-1,1) * t_exch(int_ceil(Ny, s2) * int_ceil(Nx, s1))) * N_parameters;
+#ifdef GPU_H
+				double T_gpu_cpu = 2. * (min(s1-1,1) * t_gpu_load(int_ceil(Ny, s2) * int_ceil(Nz, s3)) 
+					+ min(s2-1,1) * t_gpu_load(int_ceil(Nx, s1) * int_ceil(Nz, s3)) 
+					+ min(s3-1,1) * t_gpu_load(int_ceil(Ny, s2) * int_ceil(Nx, s1))) * N_parameters;
+#else
+				double T_gpu_cpu = 0;
+#endif
 				T=T_calc + T_exch + T_gpu_cpu;
 				if (T < T_min || T_min == 0)
 				{
