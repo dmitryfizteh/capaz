@@ -487,6 +487,32 @@ void u_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 	cudaPrintfDisplay(stdout, true);
 }
 
+// Расчет вспомогательной насыщенности в каждой точке сетки
+__global__ void assign_S_kernel(ptr_Arrays DevArraysPtr)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int j = threadIdx.y + blockIdx.y * blockDim.y;
+	int k = threadIdx.z + blockIdx.z * blockDim.z;
+
+	if ((i < (gpu_def->locNx)) && (j < (gpu_def->locNy)) && (k < (gpu_def->locNz)))
+	{
+		int local=i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy);
+#ifdef THREE_PHASE
+		DevArraysPtr.S_g[local] = 1. - DevArraysPtr.S_w[local] - DevArraysPtr.S_n[local];
+#else
+		DevArraysPtr.S_w[local] = 1. - DevArraysPtr.S_n[local];
+#endif
+	}
+}
+
+// Расчет вспомогательных насыщенностей во всех точках сетки
+void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
+{
+	assign_S_kernel <<< dim3(def.blocksX, def.blocksY, def.blocksZ), dim3(BlockNX, BlockNY, BlockNZ)>>>(DevArraysPtr);
+	checkErrors("assign S", __FILE__, __LINE__);
+	cudaPrintfDisplay(stdout, true);
+}
+
 // Расчет ro*S в каждой точке сетки методом направленных разностей
 __global__ void assign_roS_kernel_nr(ptr_Arrays DevArraysPtr, double t)
 {
