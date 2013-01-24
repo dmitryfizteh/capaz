@@ -371,6 +371,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 	try
 	{
 		(*ArraysPtr).S_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).S_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).P_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).P_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).ro_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
@@ -391,7 +392,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 		(*ArraysPtr).K = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 #ifdef THREE_PHASE
 		(*ArraysPtr).P_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
-		(*ArraysPtr).S_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).S_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).ro_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).ux_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).uy_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
@@ -411,6 +412,8 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 void host_memory_free(ptr_Arrays ArraysPtr)
 {
 	delete HostBuffer;
+	delete[] ArraysPtr.S_n;
+	delete[] ArraysPtr.S_w;
 	delete[] ArraysPtr.P_w;
 	delete[] ArraysPtr.P_n;
 	delete[] ArraysPtr.ro_w;
@@ -431,7 +434,7 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.K;
 #ifdef THREE_PHASE
 	delete[] ArraysPtr.P_g;
-	delete[] ArraysPtr.S_w;
+	delete[] ArraysPtr.S_g;
 	delete[] ArraysPtr.ro_g;
 	delete[] ArraysPtr.ux_g;
 	delete[] ArraysPtr.uy_g;
@@ -440,7 +443,6 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.roS_g;
 	delete[] ArraysPtr.roS_g_old;
 #endif
-	delete[] ArraysPtr.S_n;
 }
 
 // Функция сохранения графиков в файлы
