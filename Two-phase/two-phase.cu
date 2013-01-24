@@ -201,3 +201,23 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 		device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
 	}
 }
+
+// Является ли точка нагнетательной скважиной
+__device__ int device_is_injection_well(int i, int j, int k)
+{
+	return 0;
+}
+
+// Является ли точка добывающей скважиной
+__device__ int device_is_output_well(int i, int j, int k)
+{
+	return 0;
+}
+
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+__device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g)
+{
+	*q_w = 0.0;
+	*q_g = 0.0;
+	*q_n = 0.0;
+}

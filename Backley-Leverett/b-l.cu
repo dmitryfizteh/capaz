@@ -237,3 +237,45 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 			device_test_positive(DevArraysPtr.P_w[local], __FILE__, __LINE__);
 		}
 }
+
+// Является ли точка нагнетательной скважиной
+__device__ int device_is_injection_well(int i, int j, int k)
+{
+	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
+			return 1;
+		else
+			return 0;
+}
+
+// Является ли точка добывающей скважиной
+__device__ int device_is_output_well(int i, int j, int k)
+{
+	if (((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 1)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 1)))
+			return 1;
+		else
+			return 0;
+}
+
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+__device__ void device_wells_q(ptr_Arrays DevArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g)
+{
+	// нагнетательная скважина
+	if (device_is_injection_well(i, j, k))
+	{
+		*q_w = gpu_def->Q;
+		*q_n = 0.;
+		*q_g = 0.;
+	}
+
+	// добывающая скважина
+	if (device_is_output_well(i, j, k))
+	{
+		*q_g = 0;
+		double k_w=0., k_n=0.;
+		device_assing_k(&k_w, &k_n, 1. - DevArraysPtr.S_n[i + j * (gpu_def->locNx) + k * (gpu_def->locNx) * (gpu_def->locNy)]);
+
+		double F_bl = (k_w / gpu_def->mu_w) / (k_w / gpu_def->mu_w + k_n / gpu_def->mu_n);
+		*q_w = -1. * gpu_def->Q * F_bl;
+		*q_n = -1. * gpu_def->Q * (1. - F_bl);
+	}
+}
