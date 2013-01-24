@@ -30,7 +30,6 @@ void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 	for (int i = 0; i < (def.locNx); i++)
 		for (int j = 0; j < (def.locNy); j++)
 			for (int k = 0; k < (def.locNz); k++)
-				if (is_active_point(i, j, k, def))
 				{
 					assign_S(HostArraysPtr, i, j, k, def);
 				}
