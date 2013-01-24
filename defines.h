@@ -200,6 +200,7 @@ extern void save_exchange_data_part_zr(double *HostArrayPtr, double *DevArrayPtr
 
 extern int is_injection_well(int i, int j, int k, consts def);
 extern int is_output_well(int i, int j, int k, consts def);
+extern void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def);
 extern void assing_k(double* k_w, double* k_n, double S_w);
 
 #endif
