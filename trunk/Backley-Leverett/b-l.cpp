@@ -216,3 +216,47 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					test_positive(HostArraysPtr.m[local], __FILE__, __LINE__);
 				}
 }
+
+// Является ли точка нагнетательной скважиной
+int is_injection_well(int i, int j, int k, consts def)
+{
+	if (((i == 1) && (j == 1)) || ((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
+		return 1;
+	else
+		return 0;
+}
+
+// Является ли точка добывающей скважиной
+int is_output_well(int i, int j, int k, consts def)
+{
+	if (((i == def.Nx - 2) && (j == def.Ny - 2)) || ((i == def.Nx - 1) && (j == def.Ny - 1)) || ((i == def.Nx - 1) && (j == def.Ny - 2)) || ((i == def.Nx - 2) && (j == def.Ny - 1)))
+		return 1;
+	else
+		return 0;
+}
+
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
+{
+	// нагнетательная скважина
+	if (is_injection_well(i, j, k, def))
+	{
+		*q_w = def.Q;
+		*q_n = 0.;
+		*q_g = 0.;
+	}
+
+	// добывающая скважина
+	if (is_output_well(i, j, k, def))
+	{
+		*q_g = 0;
+		double k_w=0., k_n=0.;
+		assing_k(&k_w, &k_n, 1. - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+
+		double F_bl = (k_w / def.mu_w) / (k_w / def.mu_w + k_n / def.mu_n);
+		*q_w = -1. * def.Q * F_bl;
+		*q_n = -1. * def.Q * (1. - F_bl);
+	}
+}
+
+

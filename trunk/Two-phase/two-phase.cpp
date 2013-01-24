@@ -171,4 +171,24 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				}
 }
 
+// Является ли точка нагнетательной скважиной
+int is_injection_well(int i, int j, int k, consts def)
+{
+	return 0;
+}
+
+// Является ли точка добывающей скважиной
+int is_output_well(int i, int j, int k, consts def)
+{
+	return 0;
+}
+
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
+{
+	*q_w = 0.0;
+	*q_g = 0.0;
+	*q_n = 0.0;
+}
+
 

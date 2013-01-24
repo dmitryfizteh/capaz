@@ -469,4 +469,55 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 				}
 }
 
+// Является ли точка нагнетательной скважиной
+int is_injection_well(int i, int j, int k, consts def)
+{
+	if((j == 1) && ((i > (def.locNx) / 3) && (i < 2 * (def.locNx) / 3) && (((def.locNz) < 2) || (k > (def.locNz) / 3) && (k < 2 * (def.locNz) / 3))))
+/*if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1) 
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
+	|| (i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1))*/
+		return 1;
+	else
+		return 0;
+}
+
+// Является ли точка добывающей скважиной
+int is_output_well(int i, int j, int k, consts def)
+{
+	if(i < 0) 
+/*if ((i <= (def.Nx) / 4 + 1 && i >= (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1) 
+	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= (def.Ny) / 4 + 1 && j >= (def.Ny) / 4 - 1)
+	|| (i <= (def.Nx) / 2 + 1 && i >= (def.Nx) / 2 - 1 && j <= 3 * (def.Ny) / 4 + 1 && j >= 3 * (def.Ny) / 4 - 1)
+	|| (i <= 3 * (def.Nx) / 4 + 1 && i >= 3 * (def.Nx) / 4 - 1 && j <= (def.Ny) / 2 + 1 && j >= (def.Ny) / 2 - 1))*/
+		return 1;
+	else
+		return 0;
+}
+
+// Устанавливает значения втекаемых/вытекаемых жидкостей q_i на скважинах
+void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double* q_n, double* q_g, consts def)
+{
+	//double q = 0.;
+	*q_w = 0.0;
+	*q_g = 0.0;
+	*q_n = 0.0;
+
+	if (is_injection_well(i, j, k, def))
+	{
+		*q_w = 0.01;
+		*q_g = 0.0;
+		*q_n = 0.0;
+	}
+	/*if (is_output_well(i, j, k, def))
+	{
+		q = 0.015;
+
+		*q_w = -q * HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+		*q_g = -q * (1 - HostArraysPtr.S_w[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)]);
+		*q_n = -q * HostArraysPtr.S_n[i + j * (def.locNx) + k * (def.locNx) * (def.locNy)];
+	}*/
+}
+
+
 
