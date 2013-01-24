@@ -6,7 +6,7 @@
 //TODO: copy to another place
 //****************************
 
-// Ïðèñâîåíèå íà÷àëüíûõ óñëîâèé
+// ÐŸÑ€Ð¸ÑÐ²Ð¾ÐµÐ½Ð¸Ðµ Ð½Ð°Ñ‡Ð°Ð»ÑŒÐ½Ñ‹Ñ… ÑƒÑÐ»Ð¾Ð²Ð¸Ð¹
 void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 {
 	*t = 0;
@@ -32,13 +32,13 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					}
 
 					/*
-					// íàãíåòàòåëüíàÿ ñêâàæèíà
+					// Ð½Ð°Ð³Ð½ÐµÑ‚Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð°Ñ ÑÐºÐ²Ð°Ð¶Ð¸Ð½Ð°
 					if (is_injection_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[local] = Injection_well_P(HostArraysPtr, i, j, k, def);
 					}
 
-					// äîáûâàþùàÿ ñêâàæèíà
+					// Ð´Ð¾Ð±Ñ‹Ð²Ð°ÑŽÑ‰Ð°Ñ ÑÐºÐ²Ð°Ð¶Ð¸Ð½Ð°
 					if (is_output_well(i, j, k, def))
 					{
 						HostArraysPtr.P_w[local] = Production_well_P(HostArraysPtr, i, j, k, def);
@@ -57,11 +57,11 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 //TODO: copy to another place
 //****************************
 
-// Ðàñ÷åò îòíîñèòåëüíûõ ïðîíèöàåìîñòåé â òî÷êå
+// Ð Ð°ÑÑ‡ÐµÑ‚ Ð¾Ñ‚Ð½Ð¾ÑÐ¸Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ñ… Ð¿Ñ€Ð¾Ð½Ð¸Ñ†Ð°ÐµÐ¼Ð¾ÑÑ‚ÐµÐ¹ Ð² Ñ‚Ð¾Ñ‡ÐºÐµ
 __device__ void device_assing_k(double* k_w, double* k_n, double S_w)
 {
 	/*
-	// SPE-ïîñòàíîâêà
+	// SPE-Ð¿Ð¾ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ°
 	double S_wc = 0.2;
 	double S_or = 0.2;
 	double S_e = (S_w - S_wc) / (1. - S_wc - S_or);
@@ -82,7 +82,7 @@ __device__ void device_assing_k(double* k_w, double* k_n, double S_w)
 	}
 	*/
 	
-	// ïîñòàíîâêà ÈÏÌ
+	// Ð¿Ð¾ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ° Ð˜ÐŸÐœ
 	double S_sv = 0.1;
 	double S_zv = 0.8;
 	double S_1 = 0.70324;
@@ -110,7 +110,7 @@ __device__ void device_assing_k(double* k_w, double* k_n, double S_w)
 	device_test_S(*k_w, __FILE__, __LINE__);
 }
 
-// Ðàñ÷åò ïëîòíîñòåé, äàâëåíèÿ NAPL P2 è Xi â êàæäîé òî÷êå ñåòêè (íåçàâèñèìî îò îñòàëüíûõ òî÷åê)
+// Ð Ð°ÑÑ‡ÐµÑ‚ Ð¿Ð»Ð¾Ñ‚Ð½Ð¾ÑÑ‚ÐµÐ¹, Ð´Ð°Ð²Ð»ÐµÐ½Ð¸Ñ NAPL P2 Ð¸ Xi Ð² ÐºÐ°Ð¶Ð´Ð¾Ð¹ Ñ‚Ð¾Ñ‡ÐºÐµ ÑÐµÑ‚ÐºÐ¸ (Ð½ÐµÐ·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ Ð¾Ñ‚ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ… Ñ‚Ð¾Ñ‡ÐµÐº)
 __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -134,7 +134,7 @@ __global__ void assign_P_Xi_kernel(ptr_Arrays DevArraysPtr)
 }
 
 
-// Ìåòîä Íüþòîíà äëÿ êàæäîé òî÷êè ñåòêè (íåçàâèñèìî îò îñòàëüíûõ òî÷åê)
+// ÐœÐµÑ‚Ð¾Ð´ ÐÑŒÑŽÑ‚Ð¾Ð½Ð° Ð´Ð»Ñ ÐºÐ°Ð¶Ð´Ð¾Ð¹ Ñ‚Ð¾Ñ‡ÐºÐ¸ ÑÐµÑ‚ÐºÐ¸ (Ð½ÐµÐ·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ Ð¾Ñ‚ Ð¾ÑÑ‚Ð°Ð»ÑŒÐ½Ñ‹Ñ… Ñ‚Ð¾Ñ‡ÐµÐº)
 __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -171,7 +171,7 @@ __global__ void Newton_method_kernel(ptr_Arrays DevArraysPtr)
 	}
 }
 
-// Çàäàíèå ãðàíè÷íûõ óñëîâèé ñ ìåíüøèì ÷èñëîì ïðîâåðîê, íî ñ ââåäåíèåì äîïîëíèòåëüíûõ ïåðåìåííûõ
+// Ð—Ð°Ð´Ð°Ð½Ð¸Ðµ Ð³Ñ€Ð°Ð½Ð¸Ñ‡Ð½Ñ‹Ñ… ÑƒÑÐ»Ð¾Ð²Ð¸Ð¹ Ñ Ð¼ÐµÐ½ÑŒÑˆÐ¸Ð¼ Ñ‡Ð¸ÑÐ»Ð¾Ð¼ Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¾Ðº, Ð½Ð¾ Ñ Ð²Ð²ÐµÐ´ÐµÐ½Ð¸ÐµÐ¼ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ñ… Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ñ…
 __global__ void Border_S_kernel(ptr_Arrays DevArraysPtr)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -219,14 +219,14 @@ __global__ void Border_P_kernel(ptr_Arrays DevArraysPtr)
 			}
 
 	
-			// Â öåíòðå ðåçåðâóàðà íàõîäèòñÿ íàãíåòàþùàÿ ñêâàæèíà
+			// Ð’ Ñ†ÐµÐ½Ñ‚Ñ€Ðµ Ñ€ÐµÐ·ÐµÑ€Ð²ÑƒÐ°Ñ€Ð° Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð½Ð°Ð³Ð½ÐµÑ‚Ð°ÑŽÑ‰Ð°Ñ ÑÐºÐ²Ð°Ð¶Ð¸Ð½Ð°
 			if (device_is_injection_well(i, j, k))
 			//if (((i == 0) && (j == 0)) || ((i == 1) && (j == 0)) || ((i == 0) && (j == 1)))
 			{
 				//DevArraysPtr.P_w[local] = gpu_def->InjWell_Pw;
 			}
 
-			// Â öåíòðå ðåçåðâóàðà íàõîäèòñÿ äîáûâàþùàÿ ñêâàæèíà
+			// Ð’ Ñ†ÐµÐ½Ñ‚Ñ€Ðµ Ñ€ÐµÐ·ÐµÑ€Ð²ÑƒÐ°Ñ€Ð° Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð´Ð¾Ð±Ñ‹Ð²Ð°ÑŽÑ‰Ð°Ñ ÑÐºÐ²Ð°Ð¶Ð¸Ð½Ð°
 			if (device_is_output_well(i, j, k))
 			//if (((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 1)) || ((i == gpu_def->Nx - 1) && (j == gpu_def->Ny - 2)) || ((i == gpu_def->Nx - 2) && (j == gpu_def->Ny - 1)))
 			{

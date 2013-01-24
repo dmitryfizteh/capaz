@@ -24,7 +24,7 @@
 //#define USE_GPU
 #define GPU_PER_NODE 3
 
-// Нитей в блоке ускорителя
+// РќРёС‚РµР№ РІ Р±Р»РѕРєРµ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 #define BlockNX 8
 #define BlockNY 8
 #define BlockNZ 8

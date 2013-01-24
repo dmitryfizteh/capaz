@@ -74,7 +74,7 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 				}
 }
 
-// Вычисление координаты точки, через которую будет вычисляться значение на границе (i1, j1, k1)
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РєРё, С‡РµСЂРµР· РєРѕС‚РѕСЂСѓСЋ Р±СѓРґРµС‚ РІС‹С‡РёСЃР»СЏС‚СЊСЃСЏ Р·РЅР°С‡РµРЅРёРµ РЅР° РіСЂР°РЅРёС†Рµ (i1, j1, k1)
 int set_boundary_basic_coordinate(int i, int j, int k, consts def)
 {
 	int i1, j1, k1;
@@ -138,7 +138,7 @@ void assign_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #endif
 }
 
-// Расчет центральной разности
+// Р Р°СЃС‡РµС‚ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 double central_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -163,7 +163,7 @@ double central_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Расчет центральной разности для произведения двух элементов структуры
+// Р Р°СЃС‡РµС‚ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё РґР»СЏ РїСЂРѕРёР·РІРµРґРµРЅРёСЏ РґРІСѓС… СЌР»РµРјРµРЅС‚РѕРІ СЃС‚СЂСѓРєС‚СѓСЂС‹
 double multi_central_difference (double* ptr1, double* ptr2, char axis, consts def)
 {
 	switch (axis)
@@ -189,7 +189,7 @@ double multi_central_difference (double* ptr1, double* ptr2, char axis, consts d
 	}
 }
 
-// Расчет направленной разности
+// Р Р°СЃС‡РµС‚ РЅР°РїСЂР°РІР»РµРЅРЅРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 double directed_difference (double x1, double x2, double* Xi, double* ro, char axis, consts def)
 {
 	switch (axis)
@@ -220,7 +220,7 @@ double directed_difference (double x1, double x2, double* Xi, double* ro, char a
 	}
 }
 
-// Расчет левой разности
+// Р Р°СЃС‡РµС‚ Р»РµРІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 double left_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -245,7 +245,7 @@ double left_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Расчет правой разности
+// Р Р°СЃС‡РµС‚ РїСЂР°РІРѕР№ СЂР°Р·РЅРѕСЃС‚Рё
 double right_difference (double* ptr, char axis, consts def)
 {
 	switch (axis)
@@ -270,7 +270,7 @@ double right_difference (double* ptr, char axis, consts def)
 	}
 }
 
-// Расчет divgrad для произведения двух элементов структуры
+// Р Р°СЃС‡РµС‚ divgrad РґР»СЏ РїСЂРѕРёР·РІРµРґРµРЅРёСЏ РґРІСѓС… СЌР»РµРјРµРЅС‚РѕРІ СЃС‚СЂСѓРєС‚СѓСЂС‹
 double multi_divgrad (double* ptr1, double* ptr2, char axis, consts def)
 {
 	switch (axis)
@@ -299,7 +299,7 @@ double multi_divgrad (double* ptr1, double* ptr2, char axis, consts def)
 }
 
 
-// Расчет скоростей в точке
+// Р Р°СЃС‡РµС‚ СЃРєРѕСЂРѕСЃС‚РµР№ РІ С‚РѕС‡РєРµ
 void assign_u(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
@@ -506,7 +506,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 		double q_n = 0.;
 		double q_g = 0.;
 
-		// Значения q на скважинах
+		// Р—РЅР°С‡РµРЅРёСЏ q РЅР° СЃРєРІР°Р¶РёРЅР°С…
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 		if ((t < 2 * (def.dt)) || TWO_LAYERS)
@@ -569,7 +569,7 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		double q_n = 0.;
 		double q_g = 0.;
 
-		// Значения q на скважинах
+		// Р—РЅР°С‡РµРЅРёСЏ q РЅР° СЃРєРІР°Р¶РёРЅР°С…
 		wells_q(HostArraysPtr, i, j, k, &q_w, &q_n, &q_g, def);
 
 #ifdef THREE_PHASE
@@ -655,42 +655,42 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 	}
 }
 
-// Функция загрузки данных в память хоста
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… РІ РїР°РјСЏС‚СЊ С…РѕСЃС‚Р°
 void load_data_to_host(double *HostArrayPtr, double *DevArrayPtr, consts def)
 {
 }
 
-// Функция загрузки данных типа double в память ускорителя
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° double РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void load_data_to_device(double *HostArrayPtr, double *DevArrayPtr, consts def)
 {
 }
 
-// Функция загрузки данных типа int в память ускорителя
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С‚РёРїР° int РІ РїР°РјСЏС‚СЊ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void load_data_to_device_int(int *HostArrayPtr, int *DevArrayPtr, consts def)
 {
 }
 
-// Выделение памяти ускорителя под массив точек расчетной области
+// Р’С‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РїРѕРґ РјР°СЃСЃРёРІ С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void device_memory_allocation(ptr_Arrays *ArraysPtr, double **DevBuffer, consts def)
 {
 }
 
-// Освобожение памяти ускорителя из под массива точек расчетной области
+// РћСЃРІРѕР±РѕР¶РµРЅРёРµ РїР°РјСЏС‚Рё СѓСЃРєРѕСЂРёС‚РµР»СЏ РёР· РїРѕРґ РјР°СЃСЃРёРІР° С‚РѕС‡РµРє СЂР°СЃС‡РµС‚РЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void device_memory_free(ptr_Arrays ptDev, double *DevBuffer)
 {
 }
 
-// Инициализация ускорителя
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void device_initialization(consts *def)
 {
 }
 
-// Финализация ускорителя
+// Р¤РёРЅР°Р»РёР·Р°С†РёСЏ СѓСЃРєРѕСЂРёС‚РµР»СЏ
 void device_finalization(void)
 {
 }
 
-// Загрузка в буфер данных для обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
+// Р—Р°РіСЂСѓР·РєР° РІ Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РґР»СЏ РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Рµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№ СЃРІРѕСЏ С„СѓРЅРєС†РёСЏ. РќР°РїСЂР°РІР»РµРЅРёРµ - СЌС‚Рѕ РѕСЃСЊ РєРѕРѕСЂРґРёРЅР°С‚ Рё Р»РµРІРѕ/РїСЂР°РІРѕ.
 void load_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
 	for (int j = 0; j < (def.locNy); j++)
@@ -751,7 +751,7 @@ void load_exchange_data_part_zr(double *HostArrayPtr, double *DevArrayPtr, doubl
 		}
 }
 
-// Загрузка из буфера данных обмена на границе. Для каждого из направлений своя функция. Направление - это ось координат и лево/право.
+// Р—Р°РіСЂСѓР·РєР° РёР· Р±СѓС„РµСЂР° РґР°РЅРЅС‹С… РѕР±РјРµРЅР° РЅР° РіСЂР°РЅРёС†Рµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№ СЃРІРѕСЏ С„СѓРЅРєС†РёСЏ. РќР°РїСЂР°РІР»РµРЅРёРµ - СЌС‚Рѕ РѕСЃСЊ РєРѕРѕСЂРґРёРЅР°С‚ Рё Р»РµРІРѕ/РїСЂР°РІРѕ.
 void save_exchange_data_part_xl(double *HostArrayPtr, double *DevArrayPtr, double *HostBuffer, double *DevBuffer, consts def)
 {
 	for (int j = 0; j < (def.locNy); j++)
