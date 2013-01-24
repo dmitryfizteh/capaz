@@ -87,9 +87,11 @@ int main(int argc, char* argv[])
 // 6. Расчет методом Ньютона давления воды P1 и насыщенности DNAPL S2
 // 7. Применение граничных условий для P1 и S2
 // 8. Обмен между процессорами пограничными значениями P1 и S2
+// 9. Вычисление и запись вспомогательной насыщенности(S_w - для двух фаз, S_g - для трех фаз) 
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t)
 {
 	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (8)
+	S_calculation(HostArraysPtr, DevArraysPtr, def); // (9)
 	ro_P_Xi_calculation(HostArraysPtr, DevArraysPtr, def); // (1)
 	P_ro_Xi_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (2)
 	u_calculation(HostArraysPtr, DevArraysPtr, def); // (3)
