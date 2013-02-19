@@ -458,6 +458,24 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
 					HostArraysPtr.ro_g[local] = def.ro0_g * HostArraysPtr.P_g[local] / def.P_atm;
 
+#ifdef ENERGY
+					// !!!! Нужно задать начальные распределения температуры, энтальпии, энергии!
+					HostArraysPtr.T[local] = 300;
+					HostArraysPtr.H_w[local] = 0;
+					HostArraysPtr.H_n[local] = 0;
+					HostArraysPtr.H_g[local] = 0;
+					HostArraysPtr.H_r[local] = 0;
+					HostArraysPtr.E[local] = 0;
+
+					test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.H_w[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.H_n[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.H_g[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.H_r[local], __FILE__, __LINE__);
+					test_positive(HostArraysPtr.E[local], __FILE__, __LINE__);
+#endif
+
+
 					test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 					test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
 					test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);

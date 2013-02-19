@@ -21,6 +21,8 @@
 #define TWO_LAYERS 1
 #define NR
 #endif
+// Учитывать ли тепловые процессы
+#define ENERGY
 
 // Количество видеоускорителей на узле кластера
 // Для К-100 - 3, для МВС-Экспресс 1 или 2
@@ -33,8 +35,8 @@
 #define BlockNZ 8
 
 // Размеры сетки из процессоров
-#define SizeX 2
-#define SizeY 2 
+#define SizeX 1
+#define SizeY 1 
 #define SizeZ 1
 
 #include <float.h>
@@ -65,6 +67,9 @@ struct ptr_Arrays_tag
 	double *m, *K;
 #ifdef THREE_PHASE
 	double *S_g, *P_g, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
+#endif
+#ifdef ENERGY
+	double *T, *H_w, *H_n, *H_g, *H_r, *E;
 #endif
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
