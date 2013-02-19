@@ -403,6 +403,14 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 		(*ArraysPtr).roS_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).roS_g_old = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 #endif
+#ifdef ENERGY
+		(*ArraysPtr).T = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).H_w = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).H_n = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).H_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).H_r = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).E = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+#endif
 	}
 	catch (...)
 	{
@@ -444,6 +452,14 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.Xi_g;
 	delete[] ArraysPtr.roS_g;
 	delete[] ArraysPtr.roS_g_old;
+#endif
+#ifdef ENERGY
+	delete[] ArraysPtr.T;
+	delete[] ArraysPtr.H_w;
+	delete[] ArraysPtr.H_n;
+	delete[] ArraysPtr.H_g;
+	delete[] ArraysPtr.H_r;
+	delete[] ArraysPtr.E;
 #endif
 }
 
