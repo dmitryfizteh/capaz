@@ -22,21 +22,21 @@ double assign_S_n_e(ptr_Arrays HostArraysPtr, int local, consts def)
 // Функции кап. давлений и их производных для центральной части интервала
 double P_k_nw(double S, consts def)
 {
-	//return 0;
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow((pow(S, A / (1. - A)) - 1.), 1. / A);
 }
 
 double P_k_gn(double S, consts def)
 {
-	//return 0;
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow((1. - S), A / (1. - A)) - 1., 1. / A);
 }
 
 double P_k_nw_S(double S, consts def)
 {
-	//return 0;
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_nw[media] * pow(pow(S, A / (1. - A)) - 1., 1. / A - 1.) * pow(S, (A / (1. - A) - 1.)) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -44,7 +44,7 @@ double P_k_nw_S(double S, consts def)
 
 double P_k_gn_S(double S, consts def)
 {
-	//return 0;
+	return 0;
 	double A = def.lambda[media];
 	return def.P_d_gn[media] * pow(pow(1. - S, A / (1. - A)) - 1., 1. / A - 1.) * pow(1. - S, A / (1. - A) - 1.) / (1. - A)
 		/ (1. - def.S_wr[media] - def.S_nr[media] - def.S_gr[media]);
@@ -55,6 +55,8 @@ double P_k_gn_S(double S, consts def)
 // Описание можно посмотреть в файле mathcad.
 double assign_P_k_nw(double S_w_e, consts def)
 {
+	return 0;
+
 	double Pk_nw = 0;
 
 	if (S_w_e <= S_w_range[0])
@@ -75,6 +77,8 @@ double assign_P_k_nw(double S_w_e, consts def)
 
 double assign_P_k_gn(double S_g_e, consts def)
 {
+	return 0;
+
 	double Pk_gn = 0;
 
 	if (S_g_e <= S_g_range[0])
@@ -96,6 +100,8 @@ double assign_P_k_gn(double S_g_e, consts def)
 // Функции вычисления производных капиллярных давлений по насыщенностям
 double assign_P_k_nw_S(double S_w_e, consts def)
 {
+	return 0;
+
 	double PkSw = 0;
 
 	if (S_w_e <= S_w_range[0])
@@ -116,6 +122,8 @@ double assign_P_k_nw_S(double S_w_e, consts def)
 
 double assign_P_k_gn_S(double S_g_e, consts def)
 {
+	return 0;
+
 	double PkSn = 0;
 
 	if (S_g_e <= S_g_range[0])
@@ -368,14 +376,14 @@ void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 		else if (j == 0)
 		{
-			if((i > (def.locNx) / 3) && (i < 2 * (def.locNx) / 3) && (((def.locNz) < 2) || (k > (def.locNz) / 3) && (k < 2 * (def.locNz) / 3)))
+			/*if((i > (def.locNx) / 3) && (i < 2 * (def.locNx) / 3) && (((def.locNz) < 2) || (k > (def.locNz) / 3) && (k < 2 * (def.locNz) / 3)))
 			{
 				//Открытая верхняя граница
 				HostArraysPtr.P_w[local] = def.P_atm;
 				HostArraysPtr.P_n[local] = def.P_atm;
 				HostArraysPtr.P_g[local] = def.P_atm;
 			}
-			else
+			else*/
 			{
 				// Условия непротекания
 				HostArraysPtr.P_w[local] = (HostArraysPtr.P_w[local1]
@@ -523,12 +531,12 @@ void wells_q(ptr_Arrays HostArraysPtr, int i, int j, int k, double* q_w, double*
 	*q_g = 0.0;
 	*q_n = 0.0;
 
-	if (is_injection_well(i, j, k, def))
+	/*if (is_injection_well(i, j, k, def))
 	{
 		*q_w = 0.01;
 		*q_g = 0.0;
 		*q_n = 0.0;
-	}
+	}*/
 	/*if (is_output_well(i, j, k, def))
 	{
 		q = 0.015;
