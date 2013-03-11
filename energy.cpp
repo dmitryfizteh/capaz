@@ -163,15 +163,58 @@ double assign_H_g (double T, consts def)
 	return integral;
 }
 
+double assign_H_r (double T, consts def)
+{
+	double integral = 0, sum = 0, h_temp;
+	int N_temp = 50;
+
+	h_temp = (T - T_0) / N_temp;
+
+
+	integral += с_r(T_0, def);
+	integral += с_r(T, def);
+
+	for(int i = 2; i < N_temp; i+=2)
+		sum += с_r(T_0 + i * h_temp, def);
+
+	sum *= 2;
+	integral += sum;
+	sum = 0;
+
+	for(int i = 1; i < N_temp; i+=2)
+		sum += с_r(T_0 + i * h_temp, def);
+
+	sum *= 4;
+	integral += sum;
+
+	h_temp /= 3;
+	integral *= h_temp;
+
+	return integral;
+}
+
 void assign_H (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, consts def)
 {
-	assign_H_w (HostArraysPtr.T[local], def);
-	assign_H_n (HostArraysPtr.T[local], def);
-	assign_H_g (HostArraysPtr.T[local], def);
+	HostArraysPtr.H_w[local] = assign_H_w (HostArraysPtr.T[local], def);
+	HostArraysPtr.H_n[local] = assign_H_n (HostArraysPtr.T[local], def);
+	HostArraysPtr.H_g[local] = assign_H_g (HostArraysPtr.T[local], def);
+	HostArraysPtr.H_r[local] = assign_H_r (HostArraysPtr.T[local], def);
+
+	test_positive(HostArraysPtr.H_w[local], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.H_n[local], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.H_g[local], __FILE__, __LINE__);
+	test_positive(HostArraysPtr.H_r[local], __FILE__, __LINE__);
 }
 
 // Коэффициенты вязкости для water, napl, gas and rock
 
 // Расчет потока энергии в точке
 
+void assign_E_current (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, consts def)
+{
+	HostArraysPtr.E[local] = (HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (HostArraysPtr.ro_w[local] * HostArraysPtr.H_w[local] - HostArraysPtr.P_w[local])
+		+ HostArraysPtr.S_n[local] * (HostArraysPtr.ro_n[local] * HostArraysPtr.H_n[local] - HostArraysPtr.P_n[local])
+		+ HostArraysPtr.S_g[local] * (HostArraysPtr.ro_g[local] * HostArraysPtr.H_g[local] - HostArraysPtr.P_g[local])) 
+		+ (1. - HostArraysPtr.m[local]) * (ro_r * HostArraysPtr.H_r[local] - HostArraysPtr.P_w[local]));
+}
 // Расчет теплового потока в точке
