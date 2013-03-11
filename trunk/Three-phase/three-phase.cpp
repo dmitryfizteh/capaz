@@ -222,7 +222,8 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 // Вспомогательная функции для метода Ньютона:
 // Нахождение обратной матрицы 3*3;
-void reverse_matrix(double* a)
+// Теперь будет использоваться функция reverse_matrix(double* aб int n) из gauss.cpp
+/*void reverse_matrix(double* a)
 {
 	int n = 3;
 	double b[9], det = 0;
@@ -250,6 +251,7 @@ void reverse_matrix(double* a)
 			test_nan(a[i + n * j], __FILE__, __LINE__);
 		}
 }
+*/
 
 //Функция решения системы 3*3 на основные параметры (Pn,Sw,Sg) методом Ньютона в точке (i,j,k) среды media
 //1. Вычисление эффективных насыщенностей
@@ -300,7 +302,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			dF[5] = def.ro0_n * (1. + def.beta_n * (HostArraysPtr.P_w[local] + Pk_nw - def.P_atm));
 			dF[8] = (-1) * def.ro0_g * (HostArraysPtr.P_w[local] + Pk_nw + Pk_gn - Sg * PkSn) / def.P_atm;
 
-			reverse_matrix(dF);
+			reverse_matrix(dF, 3);
 
 			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local]
 			        - (dF[0] * F1 + dF[1] * F2 + dF[2] * F3);

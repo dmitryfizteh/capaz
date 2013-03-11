@@ -179,6 +179,7 @@ extern void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void Border_P(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern int set_boundary_basic_coordinate(int i, int j, int k, consts def);
+extern int reverse_matrix (double *a, int n);
 
 extern void ro_P_Xi_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
 extern void P_ro_Xi_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* HostBuffer, double* DevBuffer, consts def);

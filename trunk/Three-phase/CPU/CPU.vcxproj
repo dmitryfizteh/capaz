@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\cpu.cpp" />
     <ClCompile Include="..\..\energy.cpp" />
+    <ClCompile Include="..\..\gauss.cpp" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\no_communication.cpp" />
     <ClCompile Include="..\..\shared_test.cpp" />
