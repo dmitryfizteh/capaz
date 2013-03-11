@@ -470,7 +470,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 #ifdef ENERGY
 					// !!!! Нужно задать начальные распределения температуры, энтальпии, энергии!
-					HostArraysPtr.T[local] = 300;
+					HostArraysPtr.T[local] = 273;
 					HostArraysPtr.H_w[local] = 0;
 					HostArraysPtr.H_n[local] = 0;
 					HostArraysPtr.H_g[local] = 0;
