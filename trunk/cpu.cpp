@@ -35,6 +35,18 @@ void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 				}
 }
 
+void H_E_current_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
+{
+	for (int i = 0; i < (def.locNx); i++)
+		for (int j = 0; j < (def.locNy); j++)
+			for (int k = 0; k < (def.locNz); k++)
+			{
+				int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+				assign_H(HostArraysPtr, local, def);
+				assign_E_current(HostArraysPtr, local, def);
+			}
+}
+
 void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
 	for (int i = 0; i < (def.locNx); i++)
