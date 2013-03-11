@@ -97,6 +97,7 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 	u_calculation(HostArraysPtr, DevArraysPtr, def); // (3)
 	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (4)
 	roS_calculation(HostArraysPtr, DevArraysPtr, t, def); // (5)
+	H_E_current_calculation(HostArraysPtr, DevArraysPtr, def);
 	P_S_calculation(HostArraysPtr, DevArraysPtr, def); // (6)
 	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
 }

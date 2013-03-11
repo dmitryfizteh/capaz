@@ -63,7 +63,7 @@ double lambda_r (double T, consts def)
 }
 
 // Эффективный коэффициент теплопроводности в точке (будет использоваться при расчете теплового потока)
-double assign_lambda_eff (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, consts def)
+double assign_lambda_eff (ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	return HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * lambda_w (HostArraysPtr.T[local], def)
 		+ HostArraysPtr.S_n[local] * lambda_n (HostArraysPtr.T[local], def)
@@ -121,7 +121,7 @@ double assign_H_r (double T, consts def)
 	return (T - T_0) * (c0_r + C_r * (T - T_0) / 2);
 }
 
-void assign_H (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, consts def)
+void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	HostArraysPtr.H_w[local] = assign_H_w (HostArraysPtr.T[local], def);
 	HostArraysPtr.H_n[local] = assign_H_n (HostArraysPtr.T[local], def);
@@ -138,11 +138,15 @@ void assign_H (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, con
 
 // Расчет потока энергии в точке
 
-void assign_E_current (ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, int local, consts def)
+// Расчет внутренней энергии всей системы в точке
+void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	HostArraysPtr.E[local] = (HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (HostArraysPtr.ro_w[local] * HostArraysPtr.H_w[local] - HostArraysPtr.P_w[local])
 		+ HostArraysPtr.S_n[local] * (HostArraysPtr.ro_n[local] * HostArraysPtr.H_n[local] - HostArraysPtr.P_n[local])
 		+ HostArraysPtr.S_g[local] * (HostArraysPtr.ro_g[local] * HostArraysPtr.H_g[local] - HostArraysPtr.P_g[local])) 
 		+ (1. - HostArraysPtr.m[local]) * (ro_r * HostArraysPtr.H_r[local] - HostArraysPtr.P_w[local]));
+
+	test_positive(HostArraysPtr.E[local], __FILE__, __LINE__);
 }
+
 // Расчет теплового потока в точке
