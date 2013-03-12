@@ -234,14 +234,12 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		double E_new, Q_hw = 0, Q_hr = 0; // источниковые члены
+		double Q_hw = 0, Q_hr = 0; // источниковые члены
 
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		E_new = HostArraysPtr.E[local] + (def.dt) * (assign_T_flow(HostArraysPtr, i, j, k, def) + Q_hw + Q_hr - assign_E_flow(HostArraysPtr, i, j, k, def));
+		HostArraysPtr.E_new[local] = HostArraysPtr.E[local] + (def.dt) * (assign_T_flow(HostArraysPtr, i, j, k, def) + Q_hw + Q_hr - assign_E_flow(HostArraysPtr, i, j, k, def));
 
-		HostArraysPtr.E[local] = E_new;
-
-		test_nan(HostArraysPtr.E[local], __FILE__, __LINE__);
+		test_nan(HostArraysPtr.E_new[local], __FILE__, __LINE__);
 	}
 }
