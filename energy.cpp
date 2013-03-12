@@ -243,3 +243,18 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def
 		test_nan(HostArraysPtr.E_new[local], __FILE__, __LINE__);
 	}
 }
+
+// Задание граничных условий на температуру
+void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
+	{
+		int local1 = set_boundary_basic_coordinate(i, j, k, def);
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+
+		// Будем считать границы области не теплопроводящими
+		HostArraysPtr.T[local] = HostArraysPtr.T[local1];
+
+		test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
+	}
+}
