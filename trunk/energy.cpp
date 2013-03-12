@@ -128,10 +128,10 @@ void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 	HostArraysPtr.H_g[local] = assign_H_g (HostArraysPtr.T[local], def);
 	HostArraysPtr.H_r[local] = assign_H_r (HostArraysPtr.T[local], def);
 
-	test_positive(HostArraysPtr.H_w[local], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.H_n[local], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.H_g[local], __FILE__, __LINE__);
-	test_positive(HostArraysPtr.H_r[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.H_w[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.H_n[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.H_g[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.H_r[local], __FILE__, __LINE__);
 }
 
 // Коэффициенты вязкости для water, napl, gas and rock
@@ -230,7 +230,7 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 }
 
 // Расчет внутренней энергии всей системы в точке на следующем шаге по времени
-void assign_E_current (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+void assign_E_new (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
