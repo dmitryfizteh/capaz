@@ -215,6 +215,7 @@ extern double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, cons
 extern double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 extern void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def);
 extern void H_E_current_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def);
+extern void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def);
 
 #endif
 

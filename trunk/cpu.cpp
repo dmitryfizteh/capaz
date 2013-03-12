@@ -82,6 +82,9 @@ void boundary_conditions(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, cons
 				{
 					Border_S(HostArraysPtr, i, j, k, def);
 					Border_P(HostArraysPtr, i, j, k, def);
+#ifdef ENERGY
+					Border_T(HostArraysPtr, i, j, k, def);
+#endif
 				}
 }
 
