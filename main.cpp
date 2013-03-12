@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
 // 7. Применение граничных условий для P1 и S2
 // 8. Обмен между процессорами пограничными значениями P1 и S2
 // 9. Вычисление и запись вспомогательной насыщенности(S_w - для двух фаз, S_g - для трех фаз) 
+// 10.Вычисление энтальпий фаз и суммарной внутренней энергии на текущем слое
+// 11.Вычисление суммарной внутренней энергии на следующем временном слое
 void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* DevBuffer, consts def, double t)
 {
 	P_S_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (8)
@@ -97,7 +99,10 @@ void time_step_function(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, doubl
 	u_calculation(HostArraysPtr, DevArraysPtr, def); // (3)
 	u_exchange(HostArraysPtr, DevArraysPtr, HostBuffer, DevBuffer, def); // (4)
 	roS_calculation(HostArraysPtr, DevArraysPtr, t, def); // (5)
-	H_E_current_calculation(HostArraysPtr, DevArraysPtr, def);
+#ifdef ENERGY
+	H_E_current_calculation(HostArraysPtr, DevArraysPtr, def); // (10)
+	E_calculation(HostArraysPtr, DevArraysPtr, def); // (11)
+#endif
 	P_S_calculation(HostArraysPtr, DevArraysPtr, def); // (6)
 	boundary_conditions(HostArraysPtr, DevArraysPtr, def); // (7)
 }
