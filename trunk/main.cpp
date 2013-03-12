@@ -411,6 +411,7 @@ void host_memory_allocation(ptr_Arrays* ArraysPtr, consts def)
 		(*ArraysPtr).H_g = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).H_r = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 		(*ArraysPtr).E = new double [(def.locNx) * (def.locNy) * (def.locNz)];
+		(*ArraysPtr).E_new = new double [(def.locNx) * (def.locNy) * (def.locNz)];
 #endif
 	}
 	catch (...)
@@ -461,6 +462,7 @@ void host_memory_free(ptr_Arrays ArraysPtr)
 	delete[] ArraysPtr.H_g;
 	delete[] ArraysPtr.H_r;
 	delete[] ArraysPtr.E;
+	delete[] ArraysPtr.E_new;
 #endif
 }
 

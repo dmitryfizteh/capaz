@@ -69,7 +69,7 @@ struct ptr_Arrays_tag
 	double *S_g, *P_g, *ro_g, *ux_g, *uy_g, *uz_g, *Xi_g, *roS_g, *roS_g_old;
 #endif
 #ifdef ENERGY
-	double *T, *H_w, *H_n, *H_g, *H_r, *E;
+	double *T, *H_w, *H_n, *H_g, *H_r, *E, *E_new;
 #endif
 };
 typedef struct ptr_Arrays_tag ptr_Arrays;
