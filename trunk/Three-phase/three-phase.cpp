@@ -343,8 +343,8 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 			// !!! Вынести коэффициенты теплового расширения в consts def и использовать T_0 оттуда же
 			// Эти значения также есть в cpu.cpp, energy.cpp
-			double alfa_w = 1.32E-4; // 1/K !!! E-4
-			double alfa_n = 9.2E-4;
+			double alfa_w = 1.32E-7; // 1/K !!! E-4
+			double alfa_n = 9.2E-7;
 			double T_0 = 273;
 			double ro_r = 2000.; // кг/м^3
 
@@ -575,12 +575,10 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 #ifdef ENERGY
 					// !!!! Нужно задать начальные распределения температуры, энтальпии, энергии!
-					HostArraysPtr.T[local] = 273;
+					HostArraysPtr.T[local] = 275;
 
 					test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
 #endif
-
-
 					test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
 					test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
 					test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);

@@ -143,8 +143,8 @@ void assign_ro(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #ifdef THREE_PHASE
 #ifdef ENERGY
 	// !!! Вынести коэффициенты теплового расширения в consts def и использовать T_0 оттуда же
-	double alfa_w = 1.32E-4; // 1/K !!! E-4
-	double alfa_n = 9.2E-4;
+	double alfa_w = 1.32E-7; // 1/K !!! E-4
+	double alfa_n = 9.2E-7;
 	double T_0 = 273;
 
 	HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm) - alfa_w * (HostArraysPtr.T[local] - T_0));
