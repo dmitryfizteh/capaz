@@ -136,7 +136,125 @@ void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 
 // Коэффициенты вязкости для water, napl, gas and rock
 
+// Расчет теплового потока в точке
+double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, char axis, consts def)
+{
+	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	{
+		double T_flow;
+		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+
+		switch (axis)
+		{
+		case 'x':
+			{
+				T_flow = (assign_lambda_eff(HostArraysPtr, local + 1, def) * HostArraysPtr.T[local + 1]
+				- 2 * assign_lambda_eff(HostArraysPtr, local, def) * HostArraysPtr.T[local]
+				+ assign_lambda_eff(HostArraysPtr, local - 1, def) * HostArraysPtr.T[local - 1]) / ((def.hx) * (def.hx));
+
+				break;
+			}
+
+		case 'y':
+			{
+				T_flow = (assign_lambda_eff(HostArraysPtr, local + def.locNx, def) * HostArraysPtr.T[local + def.locNx]
+				- 2 * assign_lambda_eff(HostArraysPtr, local, def) * HostArraysPtr.T[local]
+				+ assign_lambda_eff(HostArraysPtr, local - def.locNx, def) * HostArraysPtr.T[local - def.locNx]) / ((def.hy) * (def.hy));
+
+				break;
+			}
+		case 'z':
+			{
+				if ((def.locNz) > 2)
+				{
+					T_flow = (assign_lambda_eff(HostArraysPtr, local + (def.locNx) * (def.locNy), def) * HostArraysPtr.T[local + (def.locNx) * (def.locNy)]
+					- 2 * assign_lambda_eff(HostArraysPtr, local, def) * HostArraysPtr.T[local]
+					+ assign_lambda_eff(HostArraysPtr, local - (def.locNx) * (def.locNy), def) * HostArraysPtr.T[local - (def.locNx) * (def.locNy)]) / ((def.hz) * (def.hz));
+				}
+				else
+					T_flow = 0;
+
+				break;
+			}
+		default:
+			{
+				print_error("Axis of [assign_T_flow] is empty", __FILE__, __LINE__);
+				return 0;
+			}
+		}
+
+		test_u(T_flow, __FILE__, __LINE__);
+		return T_flow;
+	}
+	else
+		return 0;
+}
+
 // Расчет потока энергии в точке
+double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, char axis, consts def)
+{
+	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	{
+		double E_flow;
+		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+
+		switch (axis)
+		{
+		case 'x':
+			{
+				E_flow = (HostArraysPtr.ro_w[local + 1] * HostArraysPtr.H_w[local + 1] * HostArraysPtr.ux_w[local + 1]
+					- HostArraysPtr.ro_w[local - 1] * HostArraysPtr.H_w[local - 1] * HostArraysPtr.ux_w[local - 1]
+					+ HostArraysPtr.ro_n[local + 1] * HostArraysPtr.H_n[local + 1] * HostArraysPtr.ux_n[local + 1]
+					- HostArraysPtr.ro_n[local - 1] * HostArraysPtr.H_n[local - 1] * HostArraysPtr.ux_n[local - 1]
+					+ HostArraysPtr.ro_g[local + 1] * HostArraysPtr.H_g[local + 1] * HostArraysPtr.ux_g[local + 1]
+					- HostArraysPtr.ro_g[local - 1] * HostArraysPtr.H_g[local - 1] * HostArraysPtr.ux_g[local - 1]
+					) / (2. * (def.hx));	
+
+				break;
+			}
+
+		case 'y':
+			{
+				E_flow = (HostArraysPtr.ro_w[local + def.locNx] * HostArraysPtr.H_w[local + def.locNx] * HostArraysPtr.uy_w[local + def.locNx]
+				- HostArraysPtr.ro_w[local - def.locNx] * HostArraysPtr.H_w[local - def.locNx] * HostArraysPtr.uy_w[local - def.locNx]
+				+ HostArraysPtr.ro_n[local + def.locNx] * HostArraysPtr.H_n[local + def.locNx] * HostArraysPtr.uy_n[local + def.locNx]
+				- HostArraysPtr.ro_n[local - def.locNx] * HostArraysPtr.H_n[local - def.locNx] * HostArraysPtr.uy_n[local - def.locNx]
+				+ HostArraysPtr.ro_g[local + def.locNx] * HostArraysPtr.H_g[local + def.locNx] * HostArraysPtr.uy_g[local + def.locNx]
+				- HostArraysPtr.ro_g[local - def.locNx] * HostArraysPtr.H_g[local - def.locNx] * HostArraysPtr.uy_g[local - def.locNx]
+				)/ (2. * (def.hy));	
+
+				break;
+			}
+		case 'z':
+			{
+				if ((def.locNz) > 2)
+				{
+					E_flow = (HostArraysPtr.ro_w[local + (def.locNx) * (def.locNy)] * HostArraysPtr.H_w[local + (def.locNx) * (def.locNy)] * HostArraysPtr.uy_w[local + (def.locNx) * (def.locNy)]
+					- HostArraysPtr.ro_w[local - (def.locNx) * (def.locNy)] * HostArraysPtr.H_w[local - (def.locNx) * (def.locNy)] * HostArraysPtr.uy_w[local - (def.locNx) * (def.locNy)]
+					+ HostArraysPtr.ro_n[local + (def.locNx) * (def.locNy)] * HostArraysPtr.H_n[local + (def.locNx) * (def.locNy)] * HostArraysPtr.uy_n[local + (def.locNx) * (def.locNy)]
+					- HostArraysPtr.ro_n[local - (def.locNx) * (def.locNy)] * HostArraysPtr.H_n[local - (def.locNx) * (def.locNy)] * HostArraysPtr.uy_n[local - (def.locNx) * (def.locNy)]
+					+ HostArraysPtr.ro_g[local + (def.locNx) * (def.locNy)] * HostArraysPtr.H_g[local + (def.locNx) * (def.locNy)] * HostArraysPtr.uy_g[local + (def.locNx) * (def.locNy)]
+					- HostArraysPtr.ro_g[local - (def.locNx) * (def.locNy)] * HostArraysPtr.H_g[local - (def.locNx) * (def.locNy)] * HostArraysPtr.uy_g[local - (def.locNx) * (def.locNy)]
+					)/ (2. * (def.hz));	
+				}
+				else
+					E_flow = 0;
+
+				break;
+			}
+		default:
+			{
+				print_error("Axis of [assign_E_flow] is empty", __FILE__, __LINE__);
+				return 0;
+			}
+		}
+
+		test_u(E_flow, __FILE__, __LINE__);
+		return E_flow;
+	}
+	else
+		return 0;
+}
 
 // Расчет внутренней энергии всей системы в точке
 void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
@@ -146,7 +264,7 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 		+ HostArraysPtr.S_g[local] * (HostArraysPtr.ro_g[local] * HostArraysPtr.H_g[local] - HostArraysPtr.P_g[local])) 
 		+ (1. - HostArraysPtr.m[local]) * (ro_r * HostArraysPtr.H_r[local] - HostArraysPtr.P_w[local]));
 
-	test_positive(HostArraysPtr.E[local], __FILE__, __LINE__);
+	test_nan(HostArraysPtr.E[local], __FILE__, __LINE__);
 }
 
-// Расчет теплового потока в точке
+
