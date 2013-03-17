@@ -347,8 +347,19 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		// Будем считать границы области не теплопроводящими
-		HostArraysPtr.T[local] = HostArraysPtr.T[local1];
+		if (i == 0)
+		{
+			HostArraysPtr.T[local] = 400;
+		}
+		else if(i == (def.locNx) - 1)
+		{
+			HostArraysPtr.T[local] = 273;
+		}
+		else
+		{
+			// Будем считать границы области не теплопроводящими
+			HostArraysPtr.T[local] = HostArraysPtr.T[local1];
+		}
 
 		test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
 	}

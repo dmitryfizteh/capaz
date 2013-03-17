@@ -448,23 +448,23 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 						HostArraysPtr.S_n[local] = def.S_n_init;
 					}*/
 
-					/*double ro_g_dy = (def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
+					double ro_g_dy = ((def.ro0_g * (1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local])
 					+ def.ro0_w * HostArraysPtr.S_w[local]
-					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) * (def.g_const) * (def.hy);*/
+					+ def.ro0_n * HostArraysPtr.S_n[local]) * (HostArraysPtr.m[local]) + (1. - HostArraysPtr.m[local]) * 2000.) * (def.g_const) * (def.hy);
 
 					// Если отдельно задаем значения на границах через градиент
-					//if (j == 0)
+					if (j == 0)
 					{
 						HostArraysPtr.P_w[local] = def.P_atm;
 						HostArraysPtr.P_n[local] = def.P_atm;
 						HostArraysPtr.P_g[local] = def.P_atm;
 					}
-					/*else
+					else
 					{
 						HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local - (def.locNx)] + ro_g_dy;
 						HostArraysPtr.P_n[local] = HostArraysPtr.P_n[local - (def.locNx)] + ro_g_dy;
 						HostArraysPtr.P_g[local] = HostArraysPtr.P_g[local - (def.locNx)] + ro_g_dy;
-					}*/
+					}
 
 					HostArraysPtr.ro_w[local] = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm));
 					HostArraysPtr.ro_n[local] = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm));
@@ -472,7 +472,7 @@ void data_initialization(ptr_Arrays HostArraysPtr, long int* t, consts def)
 
 #ifdef ENERGY
 					// !!!! Нужно задать начальные распределения температуры, энтальпии, энергии!
-					HostArraysPtr.T[local] = 273;
+					HostArraysPtr.T[local] = 285;
 
 					test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
 #endif
