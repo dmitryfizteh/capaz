@@ -1,8 +1,11 @@
 #include "defines.h"
 
 // !!! Нужно потом будет вынести в структуру констант
+// Базовая температура
 double T_0 = 273.; // К
+// Плотность породы
 double ro_r = 2000.; // кг/м^3
+// Теплопроводность
 double lambda0_w = 0.553; // Вт/(м*К)
 double lambda0_n = 0.14;
 double lambda0_g = 0.0237;
@@ -10,6 +13,7 @@ double lambda0_r = 1.;
 double lambdaA_w = 3E-3; // 1/K
 double lambdaA_n = 1E-3;
 double lambdaA_g = 0.82;
+// Теплоемкость
 double c0_w = 4.194E3; // Дж/(кг*К)
 double c0_n = 1.7E3;
 double c0_g = 1E3;
@@ -19,6 +23,10 @@ double C_w2 = 0.015;
 double C_n = 3.4;
 double C_g = 0.119;
 double C_r = 0.75;
+// 1/K !!! E-4 Коэффициент теплового расширения (для плотности)
+double alfa_w = 1.32E-7; 
+double alfa_n = 9.2E-7;
+
 
 // Коэффициенты удельных теплоемкостей при постоянном давлении  для water, napl, gas and rock в Вт/(м*К)
 double с_w (double T, consts def)
@@ -81,7 +89,7 @@ double assign_H_w (double T, consts def)
 
 	h_temp = (T - T_0) / N_temp;
 	
-
+	integral += (def.P_atm / def.ro0_w);
 	integral += с_w(T_0, def);
 	integral += с_w(T, def);
 
@@ -103,22 +111,22 @@ double assign_H_w (double T, consts def)
 
 	return integral;
 	*/
-	return (T - T_0) * (c0_w - C_w * (T - T_0) / 2 + C_w2 * (T - T_0) * (T - T_0) / 3);
+	return (def.P_atm / def.ro0_w) + (T - T_0) * (c0_w - (T - T_0) * (C_w / 2 + C_w2 * (T - T_0) / 3));
 }
 
 double assign_H_n (double T, consts def)
 {
-	return (T - T_0) * (c0_n + C_n * (T - T_0) / 2);
+	return (def.P_atm / def.ro0_n) + (T - T_0) * (c0_n + C_n * (T - T_0) / 2);
 }
 
 double assign_H_g (double T, consts def)
 {
-	return (T - T_0) * (c0_g + C_g * (T - T_0) / 2);
+	return (def.P_atm / def.ro0_g) + (T - T_0) * (c0_g + C_g * (T - T_0) / 2);
 }
 
 double assign_H_r (double T, consts def)
 {
-	return (T - T_0) * (c0_r + C_r * (T - T_0) / 2);
+	return (def.P_atm / ro_r) + (T - T_0) * (c0_r + C_r * (T - T_0) / 2);
 }
 
 void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
@@ -132,6 +140,93 @@ void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 	test_nan(HostArraysPtr.H_n[local], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.H_g[local], __FILE__, __LINE__);
 	test_nan(HostArraysPtr.H_r[local], __FILE__, __LINE__);
+}
+
+// Возвращает значение плотности в точке фазы phase
+double ro(ptr_Arrays HostArraysPtr, int local, char phase, consts def)
+{
+	double result_ro;
+	switch (phase)
+	{
+	case 'w':
+		result_ro = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm) - alfa_w * (HostArraysPtr.T[local] - T_0));
+		break;
+	case 'n':
+		result_ro = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm) - alfa_n * (HostArraysPtr.T[local] - T_0));
+		break;
+	case 'g':
+		result_ro = def.ro0_g * (HostArraysPtr.P_g[local] / def.P_atm) * (T_0 / HostArraysPtr.T[local]);
+		break;
+	default:
+		printf ("Wrong phase in function ro!\n");
+		break;
+	}
+
+//	test_ro(result_ro, __FILE__, __LINE__);
+//	test_ro(result_ro, __FILE__, __LINE__);
+//	test_ro(result_ro, __FILE__, __LINE__);
+
+	return result_ro;
+}
+
+// Возвращает значение частной производной плотности в точке фазы phase по переменной var
+double d_ro(ptr_Arrays HostArraysPtr, int local, char phase, char var, consts def)
+{
+	double result_d_ro = 0;
+	switch (phase)
+	{
+	case 'w':
+		if (var == 'P')
+		{
+			result_d_ro = def.ro0_w * (def.beta_w);
+		} 
+		else if (var == 'T')
+		{
+			result_d_ro = (-1) * def.ro0_w * alfa_w;
+		}
+		else 
+		{
+			printf("Wrong var in function d_ro!\n");
+		}
+		break;
+	case 'n':
+		if (var == 'P')
+		{
+			result_d_ro = def.ro0_n * (def.beta_n);
+		} 
+		else if (var == 'T')
+		{
+			result_d_ro = (-1) * def.ro0_n * alfa_n;
+		}
+		else 
+		{
+			printf("Wrong var in function d_ro!\n");
+		}
+		break;
+	case 'g':
+		if (var == 'P')
+		{
+			result_d_ro = (def.ro0_g / def.P_atm) * (T_0 / HostArraysPtr.T[local]);
+		} 
+		else if (var == 'T')
+		{
+			result_d_ro = def.ro0_g * (HostArraysPtr.P_g[local] / def.P_atm) * (-1) * (T_0 / HostArraysPtr.T[local]) / HostArraysPtr.T[local];
+		}
+		else 
+		{
+			printf("Wrong var in function d_ro!\n");
+		}
+		break;
+	default:
+		printf ("Wrong phase in function d_ro!\n");
+		break;
+	}
+
+	//	test_ro(result_d_ro, __FILE__, __LINE__);
+	//	test_ro(result_d_ro, __FILE__, __LINE__);
+	//	test_ro(result_d_ro, __FILE__, __LINE__);
+
+	return result_d_ro;
 }
 
 // Коэффициенты вязкости для water, napl, gas and rock
