@@ -90,3 +90,15 @@ int reverse_matrix (double *a, int n)
 
 	return 0;
 }
+
+void mult_matrix_vector (double* result_vect, double* matr, double* vect, int n) 
+{
+	for (int i = 0; i < n; i++)
+	{
+		result_vect[i] = 0;
+
+		for (int j = 0; j < n; j++)
+			result_vect[i] += matr[j + n * i] * vect[j];
+
+	}
+}
