@@ -29,22 +29,22 @@ double alfa_n = 9.2E-7;
 
 
 // Коэффициенты удельных теплоемкостей при постоянном давлении  для water, napl, gas and rock в Вт/(м*К)
-double с_w (double T, consts def)
+double c_w (double T, consts def)
 {
 	return c0_w - C_w * (T - T_0) + C_w2 * (T - T_0) * (T - T_0);
 }
 
-double с_n (double T, consts def)
+double c_n (double T, consts def)
 {
 	return c0_n + C_n * (T - T_0);
 }
 
-double с_g (double T, consts def)
+double c_g (double T, consts def)
 {
 	return c0_g + C_g * (T - T_0);
 }
 
-double с_r (double T, consts def)
+double c_r (double T, consts def)
 {
 	return c0_r + C_r * (T - T_0);
 }
@@ -142,20 +142,20 @@ void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 	test_nan(HostArraysPtr.H_r[local], __FILE__, __LINE__);
 }
 
-// Возвращает значение плотности в точке фазы phase
-double ro(ptr_Arrays HostArraysPtr, int local, char phase, consts def)
+// Возвращает значение плотности в точке фазы phase как функции от P, T
+double ro(double P, double T, char phase, consts def)
 {
 	double result_ro;
 	switch (phase)
 	{
 	case 'w':
-		result_ro = def.ro0_w * (1. + (def.beta_w) * (HostArraysPtr.P_w[local] - def.P_atm) - alfa_w * (HostArraysPtr.T[local] - T_0));
+		result_ro = def.ro0_w * (1. + (def.beta_w) * (P - def.P_atm) - alfa_w * (T - T_0));
 		break;
 	case 'n':
-		result_ro = def.ro0_n * (1. + (def.beta_n) * (HostArraysPtr.P_n[local] - def.P_atm) - alfa_n * (HostArraysPtr.T[local] - T_0));
+		result_ro = def.ro0_n * (1. + (def.beta_n) * (P - def.P_atm) - alfa_n * (T - T_0));
 		break;
 	case 'g':
-		result_ro = def.ro0_g * (HostArraysPtr.P_g[local] / def.P_atm) * (T_0 / HostArraysPtr.T[local]);
+		result_ro = def.ro0_g * (P / def.P_atm) * (T_0 / T);
 		break;
 	default:
 		printf ("Wrong phase in function ro!\n");
@@ -170,7 +170,7 @@ double ro(ptr_Arrays HostArraysPtr, int local, char phase, consts def)
 }
 
 // Возвращает значение частной производной плотности в точке фазы phase по переменной var
-double d_ro(ptr_Arrays HostArraysPtr, int local, char phase, char var, consts def)
+double d_ro(double P, double T, char phase, char var, consts def)
 {
 	double result_d_ro = 0;
 	switch (phase)
@@ -206,11 +206,11 @@ double d_ro(ptr_Arrays HostArraysPtr, int local, char phase, char var, consts de
 	case 'g':
 		if (var == 'P')
 		{
-			result_d_ro = (def.ro0_g / def.P_atm) * (T_0 / HostArraysPtr.T[local]);
+			result_d_ro = (def.ro0_g / def.P_atm) * (T_0 / T);
 		} 
 		else if (var == 'T')
 		{
-			result_d_ro = def.ro0_g * (HostArraysPtr.P_g[local] / def.P_atm) * (-1) * (T_0 / HostArraysPtr.T[local]) / HostArraysPtr.T[local];
+			result_d_ro = def.ro0_g * (P / def.P_atm) * (-1) * (T_0 / T) / T;
 		}
 		else 
 		{
@@ -351,5 +351,101 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		HostArraysPtr.T[local] = HostArraysPtr.T[local1];
 
 		test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
+	}
+}
+
+// Расчет методом Ньютона значений переменных на новом шаге по времени, когда учитываем изменение энергии (случай 4х переменных)
+// !!! Пока "выбросим" капиллярные давления
+void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
+{
+	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	{
+		int n = 5; // Размерность системы
+		double *F; // Вектор значений функций (из системы уравнений)
+		double *correction; // Вектор поправок к функциям
+		double *dF; // Матрица Якоби (в виде одномерного массива)
+
+		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
+		
+		F = new double [n];
+		correction = new double [n];
+		dF = new double [n * n];
+
+		for (int w = 1; w <= def.newton_iterations; w++)
+		{
+			F[0] = HostArraysPtr.S_g[local] + HostArraysPtr.S_w[local] + HostArraysPtr.S_n[local] - 1.;
+			F[1] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', def) * HostArraysPtr.S_w[local] - HostArraysPtr.roS_w[local];
+			F[2] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', def) * HostArraysPtr.S_n[local] - HostArraysPtr.roS_n[local];
+			F[3] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', def) * HostArraysPtr.S_g[local] - HostArraysPtr.roS_g[local];
+			F[4] = HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', def) * HostArraysPtr.H_w[local] - HostArraysPtr.P_w[local])
+				+ HostArraysPtr.S_n[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', def) * HostArraysPtr.H_n[local] - HostArraysPtr.P_w[local])
+				+ HostArraysPtr.S_g[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', def) * HostArraysPtr.H_g[local] - HostArraysPtr.P_w[local])) 
+				+ (1. - HostArraysPtr.m[local]) * (ro_r * HostArraysPtr.H_r[local] - HostArraysPtr.P_w[local]) 
+				- HostArraysPtr.E_new[local];
+
+			// Матрица частных производных. Строки: dF/dSw, dF/dSn, dF/dSg, dF/dP, dF/dT
+
+			dF[0] = 1.;
+			dF[1] = 1.;
+			dF[2] = 1.;
+			dF[3] = 0.;
+			dF[4] = 0.;
+
+			dF[0 + n] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', def);
+			dF[1 + n] = 0.;
+			dF[2 + n] = 0.;
+			dF[3 + n] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', 'P', def) * HostArraysPtr.S_w[local];
+			dF[4 + n] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', 'T', def) * HostArraysPtr.S_w[local];
+
+			dF[0 + n * 2] = 0.;
+			dF[1 + n * 2] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', def);
+			dF[2 + n * 2] = 0.;
+			dF[3 + n * 2] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', 'P', def) * HostArraysPtr.S_n[local];
+			dF[4 + n * 2] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', 'T', def) * HostArraysPtr.S_n[local];
+
+			dF[0 + n * 3] = 0.;
+			dF[1 + n * 3] = 0.;
+			dF[2 + n * 3] = ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', def);
+			dF[3 + n * 3] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', 'P', def) * HostArraysPtr.S_g[local];
+			dF[4 + n * 3] = d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', 'T', def) * HostArraysPtr.S_g[local];
+
+			dF[0 + n * 4] = HostArraysPtr.m[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', def) * HostArraysPtr.H_w[local] - HostArraysPtr.P_w[local]);
+			dF[1 + n * 4] = HostArraysPtr.m[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', def) * HostArraysPtr.H_n[local] - HostArraysPtr.P_w[local]);
+			dF[2 + n * 4] = HostArraysPtr.m[local] * (ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', def) * HostArraysPtr.H_g[local] - HostArraysPtr.P_w[local]);
+			dF[3 + n * 4] = HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', 'P', def) * HostArraysPtr.H_w[local] - 1.) 
+				+ HostArraysPtr.S_n[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', 'P', def) * HostArraysPtr.H_n[local] - 1.)  
+				+ HostArraysPtr.S_g[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', 'P', def) * HostArraysPtr.H_g[local] - 1.))
+				+ (1. - HostArraysPtr.m[local]) * (-1);
+			dF[4 + n * 4] = HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', 'T', def) * HostArraysPtr.H_w[local] 
+				+ ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'w', def) * c_w(HostArraysPtr.T[local], def)) 
+				+ HostArraysPtr.S_n[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', 'T', def) * HostArraysPtr.H_n[local]
+				+ ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'n', def) * c_n(HostArraysPtr.T[local], def))
+				+ HostArraysPtr.S_g[local] * (d_ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', 'T', def) * HostArraysPtr.H_g[local]
+				+ ro(HostArraysPtr.P_w[local], HostArraysPtr.T[local], 'g', def) * c_g(HostArraysPtr.T[local], def)))
+				+ (1. - HostArraysPtr.m[local]) * ro_r * c_r(HostArraysPtr.T[local], def);
+
+			reverse_matrix(dF, n);
+			mult_matrix_vector(correction, dF, F, n);
+
+			HostArraysPtr.S_w[local] = HostArraysPtr.S_w[local] - correction[0];
+			HostArraysPtr.S_n[local] = HostArraysPtr.S_n[local] - correction[1];
+			HostArraysPtr.S_g[local] = HostArraysPtr.S_g[local] - correction[2];
+			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local] - correction[3];
+			HostArraysPtr.T[local] = HostArraysPtr.T[local] - correction[4];
+		}
+
+		// Обновление значения суммарной энергии, т.к. оно больше не понадобится
+		// !!! Лучше вынести в отдельную функцию (просто обменять указатели).
+		HostArraysPtr.E[local] = HostArraysPtr.E_new[local];
+
+		delete F;
+		delete correction;
+		delete dF;
+
+		test_S(HostArraysPtr.S_w[local], __FILE__, __LINE__);
+		test_S(HostArraysPtr.S_n[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.P_w[local], __FILE__, __LINE__);
+		test_positive(HostArraysPtr.T[local], __FILE__, __LINE__);
+		test_nan(HostArraysPtr.E[local], __FILE__, __LINE__);
 	}
 }
