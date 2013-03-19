@@ -347,11 +347,11 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		if (i == 0)
+		if (j == 0)
 		{
 			HostArraysPtr.T[local] = 400;
 		}
-		else if(i == (def.locNx) - 1)
+		else if(j == (def.locNy) - 1)
 		{
 			HostArraysPtr.T[local] = 273;
 		}
@@ -443,6 +443,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			HostArraysPtr.S_g[local] = HostArraysPtr.S_g[local] - correction[2];
 			HostArraysPtr.P_w[local] = HostArraysPtr.P_w[local] - correction[3];
 			HostArraysPtr.T[local] = HostArraysPtr.T[local] - correction[4];
+			assign_H(HostArraysPtr, local, def);
 		}
 
 		// Обновление значения суммарной энергии, т.к. оно больше не понадобится
