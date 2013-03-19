@@ -21,6 +21,16 @@ then
     debug_name="_$6"
 fi
 
+# Режим учета теплообмена
+if [ "$6" = "energy" ]
+then
+    debug="-D ENERGY"
+    debug_name="_$6"
+	energy="../gauss.cpp ../energy.cpp"
+else
+	energy=""
+fi
+
 case $4 in
    *[^0-9]* )
 	echo "Error in processors_count: $4 is not supported by CAPAZ" 
@@ -143,10 +153,17 @@ else 	if [ "$hostname" = "mvse" ]
 	fi
 fi
 
+if [ "$6" = "energy"]
+then
+	echo "Energy is supported" 
+else
+	echo "Energy is not supported" 
+fi
+
 mkdir ../$project_folder/Debug
 
-echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px"
-      $compilator $task_name $debug $lib_path ../main.cpp $comm_file ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px
+echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px"
+      $compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px
 
 cd ../$project_folder/Debug
 echo "mpirun $PPN -np $4 $maxtime ../$project_folder/Debug/$2_$3$debug_name.px"
