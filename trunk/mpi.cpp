@@ -43,6 +43,8 @@ void division(consts *def)
 
 	unsigned int s_x, s_y, s_z;
 
+	s_x = s_y = s_z = 1;
+
 	for(unsigned int s1=1;s1<=size && s1<Nx;s1++)
 		for(unsigned int s2=1;s2<=size/s1 && s2<Ny;s2++)
 			for(unsigned int s3=1;s3<=size/(s1*s2) && s3<Nz;s3++)
@@ -283,6 +285,9 @@ void P_S_exchange(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double* Hos
 {
 #ifdef THREE_PHASE
 	exchange(HostArraysPtr.S_w, DevArraysPtr.S_w, HostBuffer, DevBuffer, def);
+#ifdef ENERGY
+	exchange(HostArraysPtr.T, DevArraysPtr.T, HostBuffer, DevBuffer, def);
+#endif
 #endif
 	exchange(HostArraysPtr.P_w, DevArraysPtr.P_w, HostBuffer, DevBuffer, def);
 	exchange(HostArraysPtr.S_n, DevArraysPtr.S_n, HostBuffer, DevBuffer, def);
