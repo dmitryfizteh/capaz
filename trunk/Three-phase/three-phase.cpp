@@ -209,9 +209,9 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 
 #ifdef ENERGY
 	// Вынести в константы!!!
-	mu_w = 1. / (29.21 * HostArraysPtr.T[local] - 7506.64);
-	mu_n = 7.256E-10 * exp(4141.9 / HostArraysPtr.T[local]);
-	mu_g = 1.717E-5 * pow((HostArraysPtr.T[local] / 273.), 0.683);
+	double mu_w = 1. / (29.21 * HostArraysPtr.T[local] - 7506.64);
+	double mu_n = 7.256E-10 * exp(4141.9 / HostArraysPtr.T[local]);
+	double mu_g = 1.717E-5 * pow((HostArraysPtr.T[local] / 273.), 0.683);
 
 	HostArraysPtr.Xi_w[local] = (-1.) * (def.K[media]) * k_w / mu_w;
 	HostArraysPtr.Xi_n[local] = (-1.) * (def.K[media]) * k_n / mu_n;
