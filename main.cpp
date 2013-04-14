@@ -222,7 +222,7 @@ void global_to_local_vars(consts *def)
 // Является ли точка активной (т.е. не предназначенной только для обмена на границах)
 int is_active_point(int i, int j, int k, consts def)
 {
-	if (((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1)
+	if ((((def.rankx) != 0 && i == 0) || ((def.rankx) != (def.sizex) - 1 && i == (def.locNx) - 1) && (def.Nz) >= 2)
 	    || ((def.ranky) != 0 && j == 0)	|| ((def.ranky) != (def.sizey) - 1 && j == (def.locNy) - 1)
 	    || ((((def.rankz) != 0 && k == 0) || ((def.rankz) != (def.sizez) - 1 && k == (def.locNz) - 1)) && (def.Nz) >= 2))
 	{
@@ -564,17 +564,34 @@ void print_plots_top(double t, consts def)
 
 	if ((def.Nz) < 2)
 	{
+		if ((def.Nx) < 2)
+		{
 #ifdef THREE_PHASE
-		//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"porosity\" \n");
 #ifdef ENERGY
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"T\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
+			fprintf(fp, "VARIABLES = \"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"T\",\"uw_y\",\"un_y\",\"ug_y\",\"porosity\" \n");
 #else
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
+			fprintf(fp, "VARIABLES = \"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_y\",\"un_y\",\"ug_y\",\"porosity\" \n");
 #endif
 #else
-		fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"P_w\",\"u_x\", \"u_y\", \"porosity\" \n");
+			fprintf(fp, "VARIABLES = \"Y\",\"S_w\",\"P_w\",\"u_y\",\"porosity\" \n");
 #endif
-		fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
+			fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d, F = POINT\n", (def.Ny));
+		}
+		else 
+		{
+
+#ifdef THREE_PHASE
+			//		fprintf(fp,"VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"u_x\",\"u_y\",\"porosity\" \n");
+#ifdef ENERGY
+			fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"T\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
+#else
+			fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"S_n\",\"S_g\",\"P_w\",\"uw_x\",\"uw_y\",\"un_x\",\"un_y\",\"ug_x\",\"ug_y\",\"porosity\" \n");
+#endif
+#else
+			fprintf(fp, "VARIABLES = \"X\",\"Y\",\"S_w\",\"P_w\",\"u_x\", \"u_y\", \"porosity\" \n");
+#endif
+			fprintf(fp, "ZONE T = \"BIG ZONE\", K=%d,J=%d, F = POINT\n", (def.Nx), (def.Ny));
+		}
 	}
 	else
 	{
@@ -685,21 +702,36 @@ void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, con
 #ifdef THREE_PHASE
 	if (def.Nz < 2)
 	{
+		if (def.Nx < 2)	
+		{
+#ifdef ENERGY
+			fprintf(fp, "%.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local], 
+				(-1)*HostArraysPtr.uy_w[local], (-1)*HostArraysPtr.uy_n[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
+#else
+			fprintf(fp, "%.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", J * (def.hy),
+					HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
+					(-1)*HostArraysPtr.uy_w[local], (-1)*HostArraysPtr.uy_n[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
+#endif
+		}
+		else
+		{
 		/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), J*(def.hy),
 									HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 									HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 		*/
 #ifdef ENERGY
-		fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
-			HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
-			HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
-			(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
+			fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
+				HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
+				(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #else
-		fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
+			fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
 				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 				HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
 				(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #endif
+		}
 	}
 
 	else

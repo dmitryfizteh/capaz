@@ -222,7 +222,7 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	HostArraysPtr.Xi_g[local] = (-1.) * (def.K[media]) * k_g / def.mu_g;
 #endif
 
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		Pk_nw = assign_P_k_nw(S_w_e, def);
 		Pk_gn = assign_P_k_gn(S_g_e, def);
@@ -285,7 +285,7 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 #ifndef ENERGY
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		double S_w_e, S_g_e, S_n_e, Pk_nw, Pk_gn, PkSw, PkSn, Sg, F1, F2, F3;
 		double dF[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -344,7 +344,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Задание граничных условий с меньшим числом проверок, но с введением дополнительных переменных
 void Border_S(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
+	if ((((i == 0) || (i == (def.locNx) - 1)) && ((def.locNx) >= 2)) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
 		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
