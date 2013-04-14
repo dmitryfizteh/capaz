@@ -35,6 +35,7 @@ void S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 				}
 }
 
+#ifdef ENERGY
 void H_E_current_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	for (int i = 0; i < (def.locNx); i++)
@@ -46,6 +47,7 @@ void H_E_current_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, 
 				assign_E_current(HostArraysPtr, local, def);
 			}
 }
+#endif
 
 void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t, consts def)
 {
@@ -62,6 +64,7 @@ void roS_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, double t
 				}
 }
 
+#ifdef ENERGY
 void E_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
 	for (int i = 0; i < (def.locNx); i++)
@@ -72,6 +75,7 @@ void E_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def
 					assign_E_new(HostArraysPtr, i, j, k, def);
 				}
 }
+#endif
 
 void P_S_calculation(ptr_Arrays HostArraysPtr, ptr_Arrays DevArraysPtr, consts def)
 {
