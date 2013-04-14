@@ -234,7 +234,7 @@ double d_ro(double P, double T, char phase, char var, consts def)
 // Расчет теплового потока в точке
 double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {	
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		double T_flow = 0;
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
@@ -269,7 +269,7 @@ double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Расчет потока энергии в точке
 double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k,  consts def)
 {
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		double E_flow = 0;
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
@@ -327,7 +327,7 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 // Расчет внутренней энергии всей системы в точке на следующем шаге по времени
 void assign_E_new (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		double Q_hw = 0, Q_hr = 0; // источниковые члены
 
@@ -369,7 +369,7 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // !!! Пока "выбросим" капиллярные давления
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		int n = 5; // Размерность системы
 		double *F; // Вектор значений функций (из системы уравнений)

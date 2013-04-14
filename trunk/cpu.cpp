@@ -112,11 +112,11 @@ int set_boundary_basic_coordinate(int i, int j, int k, consts def)
 	j1 = j;
 	k1 = k;
 
-	if (i == 0)
+	if ((i == 0) && ((def.locNx) > 2))
 	{
 		i1 ++;
 	}
-	if (i == (def.locNx) - 1)
+	if ((i == (def.locNx) - 1) && ((def.locNx) > 2))
 	{
 		i1 --;
 	}
@@ -601,7 +601,7 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 
 void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts def)
 {
-	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
+	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
