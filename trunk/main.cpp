@@ -705,29 +705,29 @@ void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, con
 		if (def.Nx < 2)	
 		{
 #ifdef ENERGY
-			fprintf(fp, "%.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", J * (def.hy),
-				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local], 
+			fprintf(fp, "%.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local], 
 				(-1)*HostArraysPtr.uy_w[local], (-1)*HostArraysPtr.uy_n[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #else
-			fprintf(fp, "%.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", J * (def.hy),
-					HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
+			fprintf(fp, "%.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", J * (def.hy),
+					HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], 
 					(-1)*HostArraysPtr.uy_w[local], (-1)*HostArraysPtr.uy_n[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #endif
 		}
 		else
 		{
-		/*						fprintf(fp,"%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), J*(def.hy),
+		/*						fprintf(fp,"%.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I*(def.hx), J*(def.hy),
 									HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 									HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 		*/
 #ifdef ENERGY
-			fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
-				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
+			fprintf(fp, "%.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I * (def.hx), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
 				HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
 				(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #else
-			fprintf(fp, "%.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), J * (def.hy),
-				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
+			fprintf(fp, "%.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I * (def.hx), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local],
 				HostArraysPtr.ux_w[local], (-1)*HostArraysPtr.uy_w[local], HostArraysPtr.ux_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.ux_g[local],
 				(-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #endif
@@ -736,19 +736,19 @@ void print_plot_row(ptr_Arrays HostArraysPtr, FILE* fp, int i, int j, int k, con
 
 	else
 	{
-		/*						fprintf(fp,"%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I*(def.hx), K*(def.hz), J*(def.hy),
+		/*						fprintf(fp,"%.2e %.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I*(def.hx), K*(def.hz), J*(def.hy),
 									HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local],
 									HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local], HostArraysPtr.m[local]);
 		*/
 #ifdef ENERGY
-		fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy),
-			HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
+		fprintf(fp, "%.2e %.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I * (def.hx), K * (def.hz), J * (def.hy),
+			HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], HostArraysPtr.T[local],
 			HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
 			HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
 			HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
 #else
-		fprintf(fp, "%.2e %.2e %.2e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e %.3e\n", I * (def.hx), K * (def.hz), J * (def.hy),
-				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], 1. - HostArraysPtr.S_w[local] - HostArraysPtr.S_n[local], HostArraysPtr.P_w[local], 
+		fprintf(fp, "%.2e %.2e %.2e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n", I * (def.hx), K * (def.hz), J * (def.hy),
+				HostArraysPtr.S_w[local], HostArraysPtr.S_n[local], HostArraysPtr.S_g[local], HostArraysPtr.P_w[local], 
 				HostArraysPtr.ux_w[local], HostArraysPtr.uz_w[local], (-1)*HostArraysPtr.uy_w[local],
 				HostArraysPtr.ux_n[local], HostArraysPtr.uz_n[local], (-1)*HostArraysPtr.uy_n[local],
 				HostArraysPtr.ux_g[local], HostArraysPtr.uz_g[local], (-1)*HostArraysPtr.uy_g[local], HostArraysPtr.m[local]);
