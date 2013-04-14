@@ -208,10 +208,6 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	k_n = assign_k_n(S_w_e, S_n_e, def);
 
 #ifdef ENERGY
-	HostArraysPtr.Xi_w[local] = (-1.) * (def.K[media]) * k_w / def.mu_w;
-	HostArraysPtr.Xi_n[local] = (-1.) * (def.K[media]) * k_n / def.mu_n;
-	HostArraysPtr.Xi_g[local] = (-1.) * (def.K[media]) * k_g / def.mu_g;
-#else
 	// Вынести в константы!!!
 	mu_w = 1. / (29.21 * HostArraysPtr.T[local] - 7506.64);
 	mu_n = 7.256E-10 * exp(4141.9 / HostArraysPtr.T[local]);
@@ -220,6 +216,10 @@ void assign_P_Xi(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	HostArraysPtr.Xi_w[local] = (-1.) * (def.K[media]) * k_w / mu_w;
 	HostArraysPtr.Xi_n[local] = (-1.) * (def.K[media]) * k_n / mu_n;
 	HostArraysPtr.Xi_g[local] = (-1.) * (def.K[media]) * k_g / mu_g;
+#else
+	HostArraysPtr.Xi_w[local] = (-1.) * (def.K[media]) * k_w / def.mu_w;
+	HostArraysPtr.Xi_n[local] = (-1.) * (def.K[media]) * k_n / def.mu_n;
+	HostArraysPtr.Xi_g[local] = (-1.) * (def.K[media]) * k_g / def.mu_g;
 #endif
 
 	if ((i != 0) && (i != (def.locNx) - 1) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
