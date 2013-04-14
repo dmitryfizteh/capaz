@@ -153,7 +153,7 @@ else 	if [ "$hostname" = "mvse" ]
 	fi
 fi
 
-if [ "$6" = "energy"]
+if [ "$6" = "energy" ]
 then
 	echo "Energy is supported" 
 else
