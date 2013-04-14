@@ -1,20 +1,20 @@
 #include "defines.h"
 
-// !!! Нужно потом будет вынести в структуру констант
-// Базовая температура
-double T_0 = 273.; // К
-// Плотность породы
-double ro_r = 2000.; // кг/м^3
-// Теплопроводность
-double lambda0_w = 0.553; // Вт/(м*К)
+// !!! РќСѓР¶РЅРѕ РїРѕС‚РѕРј Р±СѓРґРµС‚ РІС‹РЅРµСЃС‚Рё РІ СЃС‚СЂСѓРєС‚СѓСЂСѓ РєРѕРЅСЃС‚Р°РЅС‚
+// Р‘Р°Р·РѕРІР°СЏ С‚РµРјРїРµСЂР°С‚СѓСЂР°
+double T_0 = 273.; // Рљ
+// РџР»РѕС‚РЅРѕСЃС‚СЊ РїРѕСЂРѕРґС‹
+double ro_r = 2000.; // РєРі/Рј^3
+// РўРµРїР»РѕРїСЂРѕРІРѕРґРЅРѕСЃС‚СЊ
+double lambda0_w = 0.553; // Р’С‚/(Рј*Рљ)
 double lambda0_n = 0.14;
 double lambda0_g = 0.0237;
 double lambda0_r = 1.;
 double lambdaA_w = 3E-3; // 1/K
 double lambdaA_n = 1E-3;
 double lambdaA_g = 0.82;
-// Теплоемкость
-double c0_w = 4.194E3; // Дж/(кг*К)
+// РўРµРїР»РѕРµРјРєРѕСЃС‚СЊ
+double c0_w = 4.194E3; // Р”Р¶/(РєРі*Рљ)
 double c0_n = 1.7E3;
 double c0_g = 1E3;
 double c0_r = 0.8E3;
@@ -23,12 +23,12 @@ double C_w2 = 0.015;
 double C_n = 3.4;
 double C_g = 0.119;
 double C_r = 0.75;
-// 1/K !!! E-4 Коэффициент теплового расширения (для плотности)
+// 1/K !!! E-4 РљРѕСЌС„С„РёС†РёРµРЅС‚ С‚РµРїР»РѕРІРѕРіРѕ СЂР°СЃС€РёСЂРµРЅРёСЏ (РґР»СЏ РїР»РѕС‚РЅРѕСЃС‚Рё)
 double alfa_w = 1.32E-7; 
 double alfa_n = 9.2E-7;
 
 
-// Коэффициенты удельных теплоемкостей при постоянном давлении  для water, napl, gas and rock в Вт/(м*К)
+// РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ СѓРґРµР»СЊРЅС‹С… С‚РµРїР»РѕРµРјРєРѕСЃС‚РµР№ РїСЂРё РїРѕСЃС‚РѕСЏРЅРЅРѕРј РґР°РІР»РµРЅРёРё  РґР»СЏ water, napl, gas and rock РІ Р’С‚/(Рј*Рљ)
 double c_w (double T, consts def)
 {
 	return c0_w - C_w * (T - T_0) + C_w2 * (T - T_0) * (T - T_0);
@@ -49,7 +49,7 @@ double c_r (double T, consts def)
 	return c0_r + C_r * (T - T_0);
 }
 
-// Коэффициенты теплопроводности для water, napl, gas and rock
+// РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ С‚РµРїР»РѕРїСЂРѕРІРѕРґРЅРѕСЃС‚Рё РґР»СЏ water, napl, gas and rock
 double lambda_w (double T, consts def)
 {
 	return lambda0_w * (1 - lambdaA_w * (T - T_0));
@@ -70,7 +70,7 @@ double lambda_r (double T, consts def)
 	return lambda0_r;
 }
 
-// Эффективный коэффициент теплопроводности в точке (будет использоваться при расчете теплового потока)
+// Р­С„С„РµРєС‚РёРІРЅС‹Р№ РєРѕСЌС„С„РёС†РёРµРЅС‚ С‚РµРїР»РѕРїСЂРѕРІРѕРґРЅРѕСЃС‚Рё РІ С‚РѕС‡РєРµ (Р±СѓРґРµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РїСЂРё СЂР°СЃС‡РµС‚Рµ С‚РµРїР»РѕРІРѕРіРѕ РїРѕС‚РѕРєР°)
 double assign_lambda_eff (ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	return HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * lambda_w (HostArraysPtr.T[local], def)
@@ -79,29 +79,29 @@ double assign_lambda_eff (ptr_Arrays HostArraysPtr, int local, consts def)
 		+ (1. - HostArraysPtr.m[local]) * lambda_r (HostArraysPtr.T[local], def);
 }
 
-// Расчет энтальпии по температуре и теплоемкости
-// !!! Переписать, задав точность для метода Симпсона и передавая указатель на функцию, чтобы не копировать одно и то же
+// Р Р°СЃС‡РµС‚ СЌРЅС‚Р°Р»СЊРїРёРё РїРѕ С‚РµРјРїРµСЂР°С‚СѓСЂРµ Рё С‚РµРїР»РѕРµРјРєРѕСЃС‚Рё
+// !!! РџРµСЂРµРїРёСЃР°С‚СЊ, Р·Р°РґР°РІ С‚РѕС‡РЅРѕСЃС‚СЊ РґР»СЏ РјРµС‚РѕРґР° РЎРёРјРїСЃРѕРЅР° Рё РїРµСЂРµРґР°РІР°СЏ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С„СѓРЅРєС†РёСЋ, С‡С‚РѕР±С‹ РЅРµ РєРѕРїРёСЂРѕРІР°С‚СЊ РѕРґРЅРѕ Рё С‚Рѕ Р¶Рµ
 double assign_H_w (double T, consts def)
 {
-	/* Возможно, что Симпсон понадобиться позже, а пока все равно нужно знать явную зависимость энергии от температуры
+	/* Р’РѕР·РјРѕР¶РЅРѕ, С‡С‚Рѕ РЎРёРјРїСЃРѕРЅ РїРѕРЅР°РґРѕР±РёС‚СЊСЃСЏ РїРѕР·Р¶Рµ, Р° РїРѕРєР° РІСЃРµ СЂР°РІРЅРѕ РЅСѓР¶РЅРѕ Р·РЅР°С‚СЊ СЏРІРЅСѓСЋ Р·Р°РІРёСЃРёРјРѕСЃС‚СЊ СЌРЅРµСЂРіРёРё РѕС‚ С‚РµРјРїРµСЂР°С‚СѓСЂС‹
 	double integral = 0, sum = 0, h_temp;
 	int N_temp = 50;
 
 	h_temp = (T - T_0) / N_temp;
 	
 	integral += (def.P_atm / def.ro0_w);
-	integral += с_w(T_0, def);
-	integral += с_w(T, def);
+	integral += СЃ_w(T_0, def);
+	integral += СЃ_w(T, def);
 
 	for(int i = 2; i < N_temp; i+=2)
-		sum += с_w(T_0 + i * h_temp, def);
+		sum += СЃ_w(T_0 + i * h_temp, def);
 
 	sum *= 2;
 	integral += sum;
 	sum = 0;
 
 	for(int i = 1; i < N_temp; i+=2)
-		sum += с_w(T_0 + i * h_temp, def);
+		sum += СЃ_w(T_0 + i * h_temp, def);
 
 	sum *= 4;
 	integral += sum;
@@ -142,7 +142,7 @@ void assign_H (ptr_Arrays HostArraysPtr, int local, consts def)
 	test_nan(HostArraysPtr.H_r[local], __FILE__, __LINE__);
 }
 
-// Возвращает значение плотности в точке фазы phase как функции от P, T
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ РїР»РѕС‚РЅРѕСЃС‚Рё РІ С‚РѕС‡РєРµ С„Р°Р·С‹ phase РєР°Рє С„СѓРЅРєС†РёРё РѕС‚ P, T
 double ro(double P, double T, char phase, consts def)
 {
 	double result_ro;
@@ -169,7 +169,7 @@ double ro(double P, double T, char phase, consts def)
 	return result_ro;
 }
 
-// Возвращает значение частной производной плотности в точке фазы phase по переменной var
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ С‡Р°СЃС‚РЅРѕР№ РїСЂРѕРёР·РІРѕРґРЅРѕР№ РїР»РѕС‚РЅРѕСЃС‚Рё РІ С‚РѕС‡РєРµ С„Р°Р·С‹ phase РїРѕ РїРµСЂРµРјРµРЅРЅРѕР№ var
 double d_ro(double P, double T, char phase, char var, consts def)
 {
 	double result_d_ro = 0;
@@ -229,9 +229,9 @@ double d_ro(double P, double T, char phase, char var, consts def)
 	return result_d_ro;
 }
 
-// Коэффициенты вязкости для water, napl, gas and rock
+// РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ РІСЏР·РєРѕСЃС‚Рё РґР»СЏ water, napl, gas and rock
 
-// Расчет теплового потока в точке
+// Р Р°СЃС‡РµС‚ С‚РµРїР»РѕРІРѕРіРѕ РїРѕС‚РѕРєР° РІ С‚РѕС‡РєРµ
 double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {	
 	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
@@ -266,7 +266,7 @@ double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		return 0;
 }
 
-// Расчет потока энергии в точке
+// Р Р°СЃС‡РµС‚ РїРѕС‚РѕРєР° СЌРЅРµСЂРіРёРё РІ С‚РѕС‡РєРµ
 double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k,  consts def)
 {
 	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
@@ -313,7 +313,7 @@ double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k,  consts def
 		return 0;
 }
 
-// Расчет внутренней энергии всей системы в точке
+// Р Р°СЃС‡РµС‚ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЌРЅРµСЂРіРёРё РІСЃРµР№ СЃРёСЃС‚РµРјС‹ РІ С‚РѕС‡РєРµ
 void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 {
 	HostArraysPtr.E[local] = (HostArraysPtr.m[local] * (HostArraysPtr.S_w[local] * (HostArraysPtr.ro_w[local] * HostArraysPtr.H_w[local] - HostArraysPtr.P_w[local])
@@ -324,12 +324,12 @@ void assign_E_current (ptr_Arrays HostArraysPtr, int local, consts def)
 	test_nan(HostArraysPtr.E[local], __FILE__, __LINE__);
 }
 
-// Расчет внутренней энергии всей системы в точке на следующем шаге по времени
+// Р Р°СЃС‡РµС‚ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЌРЅРµСЂРіРёРё РІСЃРµР№ СЃРёСЃС‚РµРјС‹ РІ С‚РѕС‡РєРµ РЅР° СЃР»РµРґСѓСЋС‰РµРј С€Р°РіРµ РїРѕ РІСЂРµРјРµРЅРё
 void assign_E_new (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		double Q_hw = 0, Q_hr = 0; // источниковые члены
+		double Q_hw = 0, Q_hr = 0; // РёСЃС‚РѕС‡РЅРёРєРѕРІС‹Рµ С‡Р»РµРЅС‹
 
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
@@ -339,7 +339,7 @@ void assign_E_new (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
-// Задание граничных условий на температуру
+// Р—Р°РґР°РЅРёРµ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№ РЅР° С‚РµРјРїРµСЂР°С‚СѓСЂСѓ
 void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
@@ -357,7 +357,7 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		}
 		else
 		{
-			// Будем считать границы области не теплопроводящими
+			// Р‘СѓРґРµРј СЃС‡РёС‚Р°С‚СЊ РіСЂР°РЅРёС†С‹ РѕР±Р»Р°СЃС‚Рё РЅРµ С‚РµРїР»РѕРїСЂРѕРІРѕРґСЏС‰РёРјРё
 			HostArraysPtr.T[local] = HostArraysPtr.T[local1];
 		}
 
@@ -365,16 +365,16 @@ void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 	}
 }
 
-// Расчет методом Ньютона значений переменных на новом шаге по времени, когда учитываем изменение энергии (случай 4х переменных)
-// !!! Пока "выбросим" капиллярные давления
+// Р Р°СЃС‡РµС‚ РјРµС‚РѕРґРѕРј РќСЊСЋС‚РѕРЅР° Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РЅР° РЅРѕРІРѕРј С€Р°РіРµ РїРѕ РІСЂРµРјРµРЅРё, РєРѕРіРґР° СѓС‡РёС‚С‹РІР°РµРј РёР·РјРµРЅРµРЅРёРµ СЌРЅРµСЂРіРёРё (СЃР»СѓС‡Р°Р№ 4С… РїРµСЂРµРјРµРЅРЅС‹С…)
+// !!! РџРѕРєР° "РІС‹Р±СЂРѕСЃРёРј" РєР°РїРёР»Р»СЏСЂРЅС‹Рµ РґР°РІР»РµРЅРёСЏ
 void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
 	if ((((i != 0) && (i != (def.locNx) - 1)) || ((def.locNx) < 2)) && (j != 0) && (j != (def.locNy) - 1) && (((k != 0) && (k != (def.locNz) - 1)) || ((def.locNz) < 2)))
 	{
-		int n = 5; // Размерность системы
-		double *F; // Вектор значений функций (из системы уравнений)
-		double *correction; // Вектор поправок к функциям
-		double *dF; // Матрица Якоби (в виде одномерного массива)
+		int n = 5; // Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ СЃРёСЃС‚РµРјС‹
+		double *F; // Р’РµРєС‚РѕСЂ Р·РЅР°С‡РµРЅРёР№ С„СѓРЅРєС†РёР№ (РёР· СЃРёСЃС‚РµРјС‹ СѓСЂР°РІРЅРµРЅРёР№)
+		double *correction; // Р’РµРєС‚РѕСЂ РїРѕРїСЂР°РІРѕРє Рє С„СѓРЅРєС†РёСЏРј
+		double *dF; // РњР°С‚СЂРёС†Р° РЇРєРѕР±Рё (РІ РІРёРґРµ РѕРґРЅРѕРјРµСЂРЅРѕРіРѕ РјР°СЃСЃРёРІР°)
 
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 		
@@ -394,7 +394,7 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 				+ (1. - HostArraysPtr.m[local]) * (ro_r * HostArraysPtr.H_r[local] - HostArraysPtr.P_w[local]) 
 				- HostArraysPtr.E_new[local];
 
-			// Матрица частных производных. Строки: dF/dSw, dF/dSn, dF/dSg, dF/dP, dF/dT
+			// РњР°С‚СЂРёС†Р° С‡Р°СЃС‚РЅС‹С… РїСЂРѕРёР·РІРѕРґРЅС‹С…. РЎС‚СЂРѕРєРё: dF/dSw, dF/dSn, dF/dSg, dF/dP, dF/dT
 
 			dF[0] = 1.;
 			dF[1] = 1.;
@@ -446,8 +446,8 @@ void Newton(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 			assign_H(HostArraysPtr, local, def);
 		}
 
-		// Обновление значения суммарной энергии, т.к. оно больше не понадобится
-		// !!! Лучше вынести в отдельную функцию (просто обменять указатели).
+		// РћР±РЅРѕРІР»РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ СЃСѓРјРјР°СЂРЅРѕР№ СЌРЅРµСЂРіРёРё, С‚.Рє. РѕРЅРѕ Р±РѕР»СЊС€Рµ РЅРµ РїРѕРЅР°РґРѕР±РёС‚СЃСЏ
+		// !!! Р›СѓС‡С€Рµ РІС‹РЅРµСЃС‚Рё РІ РѕС‚РґРµР»СЊРЅСѓСЋ С„СѓРЅРєС†РёСЋ (РїСЂРѕСЃС‚Рѕ РѕР±РјРµРЅСЏС‚СЊ СѓРєР°Р·Р°С‚РµР»Рё).
 		HostArraysPtr.E[local] = HostArraysPtr.E_new[local];
 
 		delete F;
