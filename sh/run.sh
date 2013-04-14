@@ -26,7 +26,7 @@ if [ "$6" = "energy" ]
 then
     debug="-D ENERGY"
     debug_name="_$6"
-	energy="../gauss.cpp ../energy.cpp"
+	energy="../energy.cpp"
 else
 	energy=""
 fi
@@ -162,8 +162,8 @@ fi
 
 mkdir ../$project_folder/Debug
 
-echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px"
-      $compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px
+echo "$compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp ../gauss.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px"
+      $compilator $task_name $debug $lib_path ../main.cpp $comm_file $energy ../shared_test.cpp ../gauss.cpp $arch_file -o ../$project_folder/Debug/$2_$3$debug_name.px
 
 cd ../$project_folder/Debug
 echo "mpirun $PPN -np $4 $maxtime ../$project_folder/Debug/$2_$3$debug_name.px"
