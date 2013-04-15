@@ -239,13 +239,13 @@ double assign_T_flow (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 		double T_flow = 0;
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		if ((def.locNz) > 2)
+		if ((def.locNx) > 2)
 		{
 			T_flow += (assign_lambda_eff(HostArraysPtr, local + 1, def) * HostArraysPtr.T[local + 1]
 			- 2 * assign_lambda_eff(HostArraysPtr, local, def) * HostArraysPtr.T[local]
 			+ assign_lambda_eff(HostArraysPtr, local - 1, def) * HostArraysPtr.T[local - 1]) / ((def.hx) * (def.hx));
 		}
-		if ((def.locNz) > 2)
+		if ((def.locNy) > 2)
 		{
 			T_flow += (assign_lambda_eff(HostArraysPtr, local + def.locNx, def) * HostArraysPtr.T[local + def.locNx]
 			- 2 * assign_lambda_eff(HostArraysPtr, local, def) * HostArraysPtr.T[local]
@@ -274,7 +274,7 @@ double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k,  consts def
 		double E_flow = 0;
 		int local=i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
 
-		if ((def.locNz) > 2)
+		if ((def.locNx) > 2)
 		{
 			E_flow += (HostArraysPtr.ro_w[local + 1] * HostArraysPtr.H_w[local + 1] * HostArraysPtr.ux_w[local + 1]
 				- HostArraysPtr.ro_w[local - 1] * HostArraysPtr.H_w[local - 1] * HostArraysPtr.ux_w[local - 1]
@@ -284,7 +284,7 @@ double assign_E_flow (ptr_Arrays HostArraysPtr, int i, int j, int k,  consts def
 				- HostArraysPtr.ro_g[local - 1] * HostArraysPtr.H_g[local - 1] * HostArraysPtr.ux_g[local - 1]
 				) / (2. * (def.hx));
 		}
-		if ((def.locNz) > 2)
+		if ((def.locNy) > 2)
 		{
 			E_flow += (HostArraysPtr.ro_w[local + def.locNx] * HostArraysPtr.H_w[local + def.locNx] * HostArraysPtr.uy_w[local + def.locNx]
 			- HostArraysPtr.ro_w[local - def.locNx] * HostArraysPtr.H_w[local - def.locNx] * HostArraysPtr.uy_w[local - def.locNx]
@@ -342,7 +342,7 @@ void assign_E_new (ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 // Задание граничных условий на температуру
 void Border_T(ptr_Arrays HostArraysPtr, int i, int j, int k, consts def)
 {
-	if ((i == 0) || (i == (def.locNx) - 1) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
+	if ((((i == 0) || (i == (def.locNx) - 1)) && ((def.locNx) >= 2)) || (j == 0) || (j == (def.locNy) - 1) || (((k == 0) || (k == (def.locNz) - 1)) && ((def.locNz) >= 2)))
 	{
 		int local1 = set_boundary_basic_coordinate(i, j, k, def);
 		int local = i + j * (def.locNx) + k * (def.locNx) * (def.locNy);
