@@ -518,28 +518,45 @@ void assign_roS(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, consts 
 #endif
 		}
 
-		divgrad1 += multi_divgrad (HostArraysPtr.ro_w + local, HostArraysPtr.S_w + local, 'x', def);
+		if ((def.Nx) < 2)
+		{
+			Tx1 = 0.;
+			Tx2 = 0.;
+#ifdef THREE_PHASE
+			divgrad3 = 0.;
+			Tx3 = 0.;
+#endif
+		}
+		else
+		{
+			divgrad1 += multi_divgrad (HostArraysPtr.ro_w + local, HostArraysPtr.S_w + local, 'x', def);
+			divgrad2 += multi_divgrad (HostArraysPtr.ro_n + local, HostArraysPtr.S_n + local, 'x', def);
+
+			Tx1 = multi_central_difference (HostArraysPtr.ro_w + local, HostArraysPtr.uz_w + local, 'x', def);
+			Tx2 = multi_central_difference (HostArraysPtr.ro_n + local, HostArraysPtr.uz_n + local, 'x', def);
+
+#ifdef THREE_PHASE
+			divgrad3 += multi_divgrad (HostArraysPtr.ro_g + local, HostArraysPtr.S_g + local, 'x', def);
+			Tx3 = multi_central_difference (HostArraysPtr.ro_g + local, HostArraysPtr.uz_g + local, 'x', def);
+#endif
+		}
+
 		divgrad1 += multi_divgrad (HostArraysPtr.ro_w + local, HostArraysPtr.S_w + local, 'y', def);
 		divgrad1 *= HostArraysPtr.m[local] * (def.l) * (def.c_w);
 
-		divgrad2 += multi_divgrad (HostArraysPtr.ro_n + local, HostArraysPtr.S_n + local, 'x', def);
 		divgrad2 += multi_divgrad (HostArraysPtr.ro_n + local, HostArraysPtr.S_n + local, 'y', def);
 		divgrad2 *= HostArraysPtr.m[local] * (def.l) * (def.c_n);
 
-		Tx1 = multi_central_difference (HostArraysPtr.ro_w + local, HostArraysPtr.uz_w + local, 'x', def);
 		Ty1 = multi_central_difference (HostArraysPtr.ro_w + local, HostArraysPtr.uz_w + local, 'y', def);		
-		Tx2 = multi_central_difference (HostArraysPtr.ro_n + local, HostArraysPtr.uz_n + local, 'x', def);
 		Ty2 = multi_central_difference (HostArraysPtr.ro_n + local, HostArraysPtr.uz_n + local, 'y', def);
 
 		test_arrowhead(Tx1 + Ty1 + Tz1, divgrad1, __FILE__, __LINE__);
 		test_arrowhead(Tx2 + Ty2 + Tz2, divgrad2, __FILE__, __LINE__);
 
 #ifdef THREE_PHASE
-		divgrad3 += multi_divgrad (HostArraysPtr.ro_g + local, HostArraysPtr.S_g + local, 'x', def);
 		divgrad3 += multi_divgrad (HostArraysPtr.ro_g + local, HostArraysPtr.S_g + local, 'y', def);
 		divgrad3 *= HostArraysPtr.m[local] * (def.l) * (def.c_g);
 
-		Tx3 = multi_central_difference (HostArraysPtr.ro_g + local, HostArraysPtr.uz_g + local, 'x', def);
 		Ty3 = multi_central_difference (HostArraysPtr.ro_g + local, HostArraysPtr.uz_g + local, 'y', def);
 
 		test_arrowhead(Tx3 + Ty3 + Tz3, divgrad3, __FILE__, __LINE__);
@@ -655,18 +672,36 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 #endif
 		}
 
-		x2 = -1. * right_difference (HostArraysPtr.P_w+local, 'x', def); //-(HostArraysPtr.P_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pw) / def.hx;
-		x1 = -1. * left_difference (HostArraysPtr.P_w+local, 'x', def); //-(Pw - HostArraysPtr.P_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
+		if ((def.Nx) < 2)
+		{
+			fx_w = 0.;
+			fx_n = 0.;
+#ifdef THREE_PHASE
+			fx_g = 0.;
+#endif
+		}
+		else
+		{
+			x2 = -1. * right_difference (HostArraysPtr.P_w+local, 'x', def); //-(HostArraysPtr.P_w[i + 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)] - Pw) / def.hx;
+			x1 = -1. * left_difference (HostArraysPtr.P_w+local, 'x', def); //-(Pw - HostArraysPtr.P_w[i - 1 + j * (def.locNx) + k * (def.locNx) * (def.locNy)]) / def.hx;
+			fx_w = directed_difference (x1, x2, HostArraysPtr.Xi_w+local, HostArraysPtr.ro_w+local, 'x', def);
+
+			x2 = -1. * right_difference (HostArraysPtr.P_n+local, 'x', def); 
+			x1 = -1. * left_difference (HostArraysPtr.P_n+local, 'x', def);
+			fx_n = directed_difference (x1, x2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'x', def);
+#ifdef THREE_PHASE
+			x2 = -1. * right_difference (HostArraysPtr.P_g+local, 'x', def); 
+			x1 = -1. * left_difference (HostArraysPtr.P_g+local, 'x', def); 
+			fx_g = directed_difference (x1, x2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'x', def);
+#endif
+		}
+
 		y2 = -1. * right_difference (HostArraysPtr.P_w+local, 'y', def) + def.g_const * (HostArraysPtr.ro_w[local]);
 		y1 = -1. * left_difference (HostArraysPtr.P_w+local, 'y', def) + def.g_const * (HostArraysPtr.ro_w[local]);
-		fx_w = directed_difference (x1, x2, HostArraysPtr.Xi_w+local, HostArraysPtr.ro_w+local, 'x', def);
 		fy_w = directed_difference (y1, y2, HostArraysPtr.Xi_w+local, HostArraysPtr.ro_w+local, 'y', def);
-
-		x2 = -1. * right_difference (HostArraysPtr.P_n+local, 'x', def); 
-		x1 = -1. * left_difference (HostArraysPtr.P_n+local, 'x', def); 
+ 
 		y2 = -1. * right_difference (HostArraysPtr.P_n+local, 'y', def) + def.g_const * (HostArraysPtr.ro_n[local]);
 		y1 = -1. * left_difference (HostArraysPtr.P_n+local, 'y', def) + def.g_const * (HostArraysPtr.ro_n[local]);
-		fx_n = directed_difference (x1, x2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'x', def);
 		fy_n = directed_difference (y1, y2, HostArraysPtr.Xi_n+local, HostArraysPtr.ro_n+local, 'y', def);
 
 		A1 = HostArraysPtr.roS_w[local] - (def.dt / HostArraysPtr.m[local]) * (-q_w + fx_w + fy_w + fz_w);
@@ -681,11 +716,8 @@ void assign_roS_nr(ptr_Arrays HostArraysPtr, double t, int i, int j, int k, cons
 		test_positive(HostArraysPtr.roS_n[local], __FILE__, __LINE__);
 
 #ifdef THREE_PHASE
-		x2 = -1. * right_difference (HostArraysPtr.P_g+local, 'x', def); 
-		x1 = -1. * left_difference (HostArraysPtr.P_g+local, 'x', def); 
 		y2 = -1. * right_difference (HostArraysPtr.P_g+local, 'y', def) + def.g_const * (HostArraysPtr.ro_g[local]);
 		y1 = -1. * left_difference (HostArraysPtr.P_g+local, 'y', def) + def.g_const * (HostArraysPtr.ro_g[local]);
-		fx_g = directed_difference (x1, x2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'x', def);
 		fy_g = directed_difference (y1, y2, HostArraysPtr.Xi_g+local, HostArraysPtr.ro_g+local, 'y', def);
 
 		A3 = HostArraysPtr.roS_g[local] - (def.dt / HostArraysPtr.m[local]) * (q_g + fx_g + fy_g + fz_g);
