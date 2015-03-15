@@ -1,0 +1,1 @@
+Capaz - project of grid computations on the hybrid architecture
